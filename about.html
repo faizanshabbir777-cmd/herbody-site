@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HerBody · Our Story — built so a pound leaves before the profit does</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A halal beauty-supplement house from London — built to make the pound leave before the profit does. The founding story, the mission, the team, the standards.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,300;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== ABOUT PAGE ===== */
+  .about-hero {
+    padding: 100px 36px 80px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (max-width: 800px) { .about-hero { padding: 60px 20px 50px; } }
+  .about-hero::before {
+    content: "";
+    position: absolute;
+    right: -100px; top: 50%;
+    transform: translateY(-50%);
+    width: 480px; height: 480px;
+    border-radius: 50% 50% 45% 45%;
+    background: radial-gradient(circle at 35% 35%, rgba(239, 74, 107, .12), transparent 65%);
+    pointer-events: none;
+  }
+  .about-hero-inner {
+    max-width: 1380px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr;
+    position: relative;
+    z-index: 1;
+  }
+  .about-hero h1 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(60px, 11vw, 180px);
+    line-height: .84;
+    letter-spacing: -.038em;
+    color: var(--umber);
+    max-width: 16ch;
+  }
+  .about-hero h1 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .about-hero .meta-row {
+    display: flex; gap: 50px; flex-wrap: wrap;
+    margin-top: 50px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    font-weight: 500;
+    max-width: 1100px;
+  }
+  .about-hero .meta-row span {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .about-hero .meta-row span b {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: -.02em;
+    text-transform: none;
+    color: var(--berry-deep);
+  }
+
+  /* manifesto */
+  .manifesto {
+    padding: 100px 36px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (max-width: 800px) { .manifesto { padding: 60px 20px; } }
+  .manifesto-inner { max-width: 1100px; margin: 0 auto; }
+  .manifesto p {
+    font-family: "Newsreader", serif;
+    font-size: clamp(22px, 2.6vw, 32px);
+    line-height: 1.45;
+    color: var(--umber);
+    margin-bottom: 24px;
+    font-weight: 400;
+    letter-spacing: -.012em;
+  }
+  .manifesto p em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .manifesto .sig {
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .manifesto .sig .signed {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 26px;
+    color: var(--berry-deep);
+    letter-spacing: -.02em;
+  }
+  .manifesto .sig .meta {
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    opacity: .7;
+    font-weight: 500;
+  }
+
+  /* timeline */
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 36px;
+  }
+  @media (max-width: 800px) { .timeline-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .timeline-grid { grid-template-columns: 1fr; } }
+  .tline {
+    background: var(--bone);
+    padding: 32px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+    min-height: 240px;
+  }
+  .tline .yr {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    font-weight: 500;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .tline h4 {
+    font-family: "Newsreader", serif;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.1;
+    color: var(--umber);
+    letter-spacing: -.018em;
+    margin-top: 6px;
+  }
+  .tline h4 em { font-style: italic; color: var(--berry-deep); }
+  .tline p {
+    font-family: "Newsreader", serif;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--umber-2);
+    font-weight: 400;
+    margin-top: auto;
+  }
+
+  /* founders */
+  .founders-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 36px;
+  }
+  @media (max-width: 900px) { .founders-grid { grid-template-columns: 1fr; } }
+  .founder {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    display: flex; flex-direction: column;
+  }
+  .founder .portrait {
+    aspect-ratio: 4/5;
+    background: var(--bone-2);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .founder.f1 .portrait { background: linear-gradient(135deg, #E8DFC8, #BE7A57); }
+  .founder.f2 .portrait { background: linear-gradient(135deg, #BE7A57, #5A2238); }
+  .founder.f3 .portrait { background: linear-gradient(135deg, #8A946F, #2A1E15); }
+  .founder .portrait::after {
+    content: "";
+    position: absolute;
+    left: 50%; bottom: 0;
+    transform: translateX(-50%);
+    width: 55%;
+    aspect-ratio: 1/1.4;
+    background: rgba(0,0,0,.15);
+    border-radius: 50% 50% 0 0;
+    filter: blur(20px);
+  }
+  .founder .portrait .initials {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 110px;
+    color: rgba(248, 244, 235, .85);
+    letter-spacing: -.04em;
+    line-height: 1;
+    z-index: 1;
+    position: relative;
+  }
+  .founder .body {
+    padding: 28px 26px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .founder .role {
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    font-weight: 500;
+  }
+  .founder h3 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 1.05;
+    color: var(--umber);
+    letter-spacing: -.02em;
+  }
+  .founder h3 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .founder p {
+    font-family: "Newsreader", serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--umber-2);
+    font-weight: 400;
+  }
+  .founder p em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .founder .links {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    gap: 18px;
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    font-weight: 500;
+  }
+  .founder .links a:hover { color: var(--berry-deep); }
+
+  /* values strip */
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(242, 236, 224, .22);
+    border: 1px solid rgba(242, 236, 224, .22);
+    margin-top: 36px;
+  }
+  @media (max-width: 900px) { .values-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .values-grid { grid-template-columns: 1fr; } }
+  .val {
+    background: var(--umber);
+    padding: 36px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+    min-height: 240px;
+  }
+  .val .num {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry);
+    font-weight: 500;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(242, 236, 224, .22);
+  }
+  .val h4 {
+    font-family: "Newsreader", serif;
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.08;
+    color: var(--bone);
+    letter-spacing: -.02em;
+  }
+  .val h4 em { font-style: italic; color: var(--berry); }
+  .val p {
+    font-family: "Newsreader", serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--bone);
+    opacity: .82;
+    font-weight: 400;
+    margin-top: auto;
+  }
+
+  /* press strip */
+  .press-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 30px;
+  }
+  @media (max-width: 800px) { .press-strip { grid-template-columns: 1fr 1fr; } }
+  .press {
+    background: var(--paper);
+    padding: 30px 20px;
+    text-align: center;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--umber);
+    letter-spacing: -.018em;
+    line-height: 1.1;
+  }
+  .press small {
+    display: block;
+    margin-top: 10px;
+    font-family: "Geist Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber-2);
+    font-style: normal;
+    font-weight: 500;
+    opacity: .65;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker">
+  <span><span class="dot"></span>Free UK shipping over £35 · Halal-certified · Made in UK</span>
+  <span>£1 + 10% per pouch → her chosen cause</span>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="links">
+    <a href="product.html">Shop</a>
+    <a href="pact.html">The Pact</a>
+    <a href="app.html">The App</a>
+    <a href="quarterly.html">The Quarterly</a>
+  </div>
+  <a href="index.html" class="brand"><div class="her">Her</div><div class="body">Body</div></a>
+  <div class="right">
+    <a href="about.html" class="on" style="color: var(--berry-deep)">About</a>
+    <div class="bag" data-bag>Bag <span class="count" data-bag-count>0</span></div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="about-hero">
+  <div class="about-hero-inner">
+    <div class="eyebrow">No. 04 · Our story · London · MMXXVI</div>
+    <h1>
+      Built so a <em>pound</em><br>
+      leaves before the<br>
+      <em>profit</em> does.
+    </h1>
+    <div class="meta-row">
+      <span><b>2026</b>Founded · London</span>
+      <span><b>3</b>Founders</span>
+      <span><b>8</b>Charity partners</span>
+      <span><b>£10M</b>Given by 2030</span>
+      <span><b>1M</b>Women reached by 2030</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MANIFESTO ============ -->
+<section class="manifesto">
+  <div class="manifesto-inner">
+    <div class="eyebrow" style="margin-bottom: 30px">01 · The Manifesto</div>
+    <p>HerBody was made because the supplement shelf is <em>full of small lies</em> — marketing doses, made-for-Instagram pastel pouches, charity logos that never lead anywhere honest. And because halal, on that shelf, almost never meant clinical.</p>
+    <p>We made <em>one pouch</em> instead of nine. Every nutrient she'd otherwise have to buy from seven brands, at clinical dose, in a flavour she actually likes. Halal by default — not as a feature, as the floor.</p>
+    <p>Then we made it so that <em>her care funds another woman's care.</em> A pound and a tenth from every pouch, to one of eight partners she chooses. The pound leaves <em>before the profit is calculated.</em> The four Asian partners are audited annually for zero-tolerance on corruption. The receipts are published quarterly, signed.</p>
+    <p>Profit is the fuel. <em>It is never the destination.</em></p>
+    <div class="sig">
+      <div class="signed">— The founders</div>
+      <div class="meta">London · January 2026 · Vol. 26 No. 01</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MISSION & PROMISE ============ -->
+<section class="dark">
+  <div class="max">
+    <div class="sec-head">
+      <div class="sec-num">02 · The Mission</div>
+      <div>
+        <h2 class="sec-title"><em>Value</em>, measured in lives.<br>Not in margin.</h2>
+        <p class="sec-lede">Every decision inside HerBody is asked the same question first: <em>does this make her life, or a sister's life, materially better?</em> If the honest answer is no, we don't do it — even when the spreadsheet says we should.</p>
+      </div>
+    </div>
+
+    <div class="values-grid">
+      <div class="val">
+        <div class="num">i · Promise</div>
+        <h4><em>Clinical</em> dose, always.</h4>
+        <p>Every ingredient at the dose studied in published trials. Not "active". Not "supportive". The actual dose.</p>
+      </div>
+      <div class="val">
+        <div class="num">ii · Promise</div>
+        <h4><em>Halal</em> by default.</h4>
+        <p>No gelatin, no alcohol carriers, no haram excipients. Halal Food Authority, GB18 / 2026.</p>
+      </div>
+      <div class="val">
+        <div class="num">iii · Promise</div>
+        <h4><em>£1</em> leaves first.</h4>
+        <p>Before tax, before margin, before salary. A pound per pouch lands with her cause, every pouch, no fine print.</p>
+      </div>
+      <div class="val">
+        <div class="num">iv · Promise</div>
+        <h4><em>Signed</em> receipts.</h4>
+        <p>Every Asian partner audited annually by PKF Littlejohn for zero-tolerance on corruption. Quarterly ledger, public.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section style="background: var(--paper)">
+  <div class="max">
+    <div class="sec-head">
+      <div class="sec-num">03 · The Build</div>
+      <div>
+        <h2 class="sec-title">Eighteen months <em>before we sold</em>.</h2>
+        <p class="sec-lede">A timeline of the work that came before the launch — formulation, audit set-up, partner due diligence, the long letter to Halal Authority.</p>
+      </div>
+    </div>
+
+    <div class="timeline-grid">
+      <div class="tline">
+        <div class="yr">Q3 · 2024</div>
+        <h4>The <em>thesis</em>.</h4>
+        <p>Founders meet at a kitchen table in Whitechapel. The brief is two lines: clinical doses, halal default, a pound that leaves before the profit does.</p>
+      </div>
+      <div class="tline">
+        <div class="yr">Q4 · 2024 — Q2 · 2025</div>
+        <h4>The <em>formula</em>.</h4>
+        <p>Fourteen formulation rounds. Three clinical advisors. The dose floor set at studied amounts: 5g creatine, 5g Verisol® collagen, 100% NRV multivitamin.</p>
+      </div>
+      <div class="tline">
+        <div class="yr">Q3 · 2025</div>
+        <h4>The <em>partners</em>.</h4>
+        <p>Forty-two candidates reviewed. Eight chosen. Audit standard set with PKF Littlejohn. Halal certification submitted to HFA · GB18.</p>
+      </div>
+      <div class="tline">
+        <div class="yr">Q1 · 2026</div>
+        <h4>The <em>launch</em>.</h4>
+        <p>The Daily ships from London. First Pact ledger published. Vol. 26 No. 01 of The Quarterly goes out by post to the founding 500.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOUNDERS ============ -->
+<section>
+  <div class="max">
+    <div class="sec-head">
+      <div class="sec-num">04 · The Founders</div>
+      <div>
+        <h2 class="sec-title">Three women, <em>one table</em>.</h2>
+        <p class="sec-lede">A clinician, a formulator and a builder. Met in Whitechapel, 2024. Wrote the brief on the back of an envelope. Still keep it.</p>
+      </div>
+    </div>
+
+    <div class="founders-grid">
+      <div class="founder f1">
+        <div class="portrait">
+          <span class="initials">A</span>
+        </div>
+        <div class="body">
+          <div class="role">Founder · Brand &amp; Pact</div>
+          <h3>Aaliyah <em>Khan</em></h3>
+          <p>Ex-Selfridges buyer for halal beauty. Born Karachi, raised London. The reason the brand uses the word <em>kinship</em> and not "community".</p>
+          <div class="links">
+            <a href="#">LinkedIn</a>
+            <a href="#">Letter from Aaliyah</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="founder f2">
+        <div class="portrait">
+          <span class="initials">M</span>
+        </div>
+        <div class="body">
+          <div class="role">Co-founder · Clinical &amp; Formula</div>
+          <h3>Dr Maryam <em>Hassan</em></h3>
+          <p>NHS doctor, women's health. The reason every dose on the panel survives a clinical reviewer's pen. Reads the panel three times before she signs it.</p>
+          <div class="links">
+            <a href="#">LinkedIn</a>
+            <a href="#">Clinical CV</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="founder f3">
+        <div class="portrait">
+          <span class="initials">S</span>
+        </div>
+        <div class="body">
+          <div class="role">Co-founder · Product &amp; The App</div>
+          <h3>Sara <em>Rahman</em></h3>
+          <p>Ex-Monzo product lead. Dubai → London. The reason the Mirror reads her face on her phone, and the pact ledger is publishable by default — not by request.</p>
+          <div class="links">
+            <a href="#">LinkedIn</a>
+            <a href="#">Product notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRESS ============ -->
+<section style="background: var(--paper)">
+  <div class="max">
+    <div class="sec-head">
+      <div class="sec-num">05 · Press</div>
+      <div>
+        <h2 class="sec-title">What <em>others have said</em>.</h2>
+      </div>
+    </div>
+
+    <div class="press-strip">
+      <div class="press">"A halal house that finally <em>looks</em> like one." <small>The Times — Saturday</small></div>
+      <div class="press">"The doses are honest."<small>Stylist · Beauty</small></div>
+      <div class="press">"The Pact is the point."<small>Refinery29 UK</small></div>
+      <div class="press">"Built for a Gen-Z muslima."<small>Vogue Arabia</small></div>
+      <div class="press">"One pouch, not nine."<small>The Cut</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section style="background: var(--umber); color: var(--bone); padding: 90px 36px; border-bottom: 0; text-align: center">
+  <div class="max">
+    <div class="mono" style="color: var(--berry); margin-bottom: 14px; opacity: .85">Want in</div>
+    <h2 style="font-family: 'Newsreader', serif; font-weight: 400; font-size: clamp(40px, 6vw, 80px); line-height: .92; letter-spacing: -.028em; color: var(--bone); max-width: 18ch; margin: 0 auto">
+      Read the <em style="font-style: italic; font-weight: 500; color: var(--berry)">manifesto</em>, order the pouch.
+    </h2>
+    <div style="display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap">
+      <a href="product.html" class="btn berry">Order The Daily <span class="arr">→</span></a>
+      <a href="pact.html" class="btn ghost" style="border-color: var(--bone); color: var(--bone)">Read The Pact</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="fgrid">
+    <div>
+      <h2><em>Her</em>Body</h2>
+      <p class="lede">A halal beauty-supplement house from London. One pouch. One pact. Worldwide.</p>
+    </div>
+    <div>
+      <h5>Shop</h5>
+      <ul>
+        <li><a href="product.html"><em>The Daily</em> · No. 01</a></li>
+        <li><a href="#">The Calm · No. 02 · soon</a></li>
+        <li><a href="#">The Cycle · No. 03 · soon</a></li>
+        <li><a href="#">Gift cards</a></li>
+        <li><a href="#">Subscribe &amp; save</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>The Pact</h5>
+      <ul>
+        <li><a href="pact.html">How it works</a></li>
+        <li><a href="pact.html">The 8 partners</a></li>
+        <li><a href="#">Audit reports</a></li>
+        <li><a href="#">Impact ledger</a></li>
+        <li><a href="#">Apply as a partner</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>House</h5>
+      <ul>
+        <li><a href="about.html">Our story</a></li>
+        <li><a href="quarterly.html">The Quarterly</a></li>
+        <li><a href="app.html">The App</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>HerBody Ltd · Companies House 26 / 14 821</span>
+    <span>Halal Authority · GB 18 / 2026</span>
+    <span>© 2026 · London · MMXXVI</span>
+    <span><a href="#" style="opacity: 1">herbody.co</a></span>
+  </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

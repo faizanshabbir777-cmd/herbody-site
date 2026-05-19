@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Daily · No. 01 — HerBody Creatine + Collagen, Strawberry Lemonade, 300g</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="HerBody The Daily — 5g creatine, 5g Verisol® collagen, full multivitamin at 100% NRV. Halal-certified, made in UK. Strawberry Lemonade. 300g, 20 servings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,300;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* PDP layout */
+  .pdp { padding: 40px 36px 80px; }
+  @media (max-width: 800px) { .pdp { padding: 24px 20px 60px; } }
+  .pdp-max { max-width: 1380px; margin: 0 auto; }
+
+  .breadcrumb {
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber-2);
+    font-weight: 500;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .breadcrumb a { color: var(--umber-2); opacity: .7; }
+  .breadcrumb a:hover { color: var(--berry-deep); opacity: 1; }
+  .breadcrumb .sep { opacity: .4; }
+  .breadcrumb .here { color: var(--berry-deep); }
+
+  .pdp-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 60px; align-items: flex-start; }
+  @media (max-width: 1000px) { .pdp-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+  /* Gallery */
+  .gallery { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 80px; }
+  @media (max-width: 1000px) { .gallery { position: static; } }
+  .gallery .stage {
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(180deg, #FBE9EC 0%, #F4D6DA 100%);
+    border: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .gallery .stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 90%, rgba(239, 74, 107, .22), transparent 60%);
+    pointer-events: none;
+  }
+  .gallery .stage .pouch { width: min(380px, 72%); }
+  .gallery .stage .label {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    font-weight: 500;
+    background: var(--paper);
+    padding: 4px 8px;
+  }
+  .thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .thumb {
+    aspect-ratio: 1 / 1;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 8px;
+    transition: border-color .15s;
+    font-family: "Geist Mono", monospace;
+    font-size: 8.5px;
+    letter-spacing: .18em;
+    color: var(--umber-2);
+    opacity: .6;
+    text-transform: uppercase;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .thumb:hover { border-color: var(--berry-deep); opacity: 1; }
+  .thumb.on { border-color: var(--umber); opacity: 1; border-width: 2px; }
+  .thumb .mp { width: 90%; height: 90%; background: linear-gradient(180deg, var(--berry), var(--berry-deep)); border-radius: 5px; position: relative; }
+  .thumb .mp::before { content: ""; position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 50%; height: 3px; background: var(--berry-deep); }
+
+  /* Right column */
+  .pdp-info { display: flex; flex-direction: column; gap: 18px; }
+  .pdp-info .ribbon { display: flex; gap: 8px; font-family: "Geist Mono", monospace; font-size: 9.5px; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; flex-wrap: wrap; }
+  .pdp-info .ribbon span { padding: 4px 10px; background: var(--umber); color: var(--bone); }
+  .pdp-info .ribbon .berry { background: var(--berry); color: var(--paper); }
+  .pdp-info .ribbon .ghost { background: transparent; color: var(--umber); border: 1px solid var(--rule); }
+  .pdp-info .pn { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: .24em; color: var(--berry-deep); text-transform: uppercase; font-weight: 500; }
+  .pdp-info h1 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(44px, 6vw, 72px); line-height: .9; letter-spacing: -.028em; color: var(--umber); }
+  .pdp-info h1 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .pdp-info .kw { font-family: "Newsreader", serif; font-weight: 500; font-size: 24px; color: var(--umber); letter-spacing: -.015em; }
+  .pdp-info .kw em { font-style: italic; color: var(--berry-deep); font-weight: 500; }
+  .pdp-info .stars { display: flex; align-items: center; gap: 10px; font-family: "Geist", sans-serif; font-size: 13px; color: var(--umber-2); font-weight: 400; }
+  .pdp-info .stars .s { color: var(--berry-deep); font-family: "Newsreader", serif; letter-spacing: 1.5px; font-size: 17px; font-weight: 500; }
+  .pdp-info .desc { font-family: "Newsreader", serif; font-size: 18px; line-height: 1.5; color: var(--umber-2); font-weight: 400; max-width: 54ch; }
+  .pdp-info .desc em { font-style: italic; color: var(--berry-deep); font-weight: 500; }
+
+  /* Purchase block */
+  .buy { background: var(--paper); border: 1px solid var(--rule); padding: 24px; display: flex; flex-direction: column; gap: 18px; margin-top: 6px; }
+  .buy .opt { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .buy .row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--rule);
+    background: var(--bone);
+    align-items: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .buy .row:hover { border-color: var(--berry-deep); }
+  .buy .row.on { border-color: var(--umber); background: var(--paper); border-width: 2px; padding: 15px 17px; }
+  .buy .row .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--rule); position: relative; flex-shrink: 0; }
+  .buy .row.on .radio { border-color: var(--umber); }
+  .buy .row.on .radio::after { content: ""; position: absolute; inset: 3px; background: var(--berry); border-radius: 50%; }
+  .buy .row .lbl { display: flex; flex-direction: column; gap: 2px; }
+  .buy .row .lbl .top { font-family: "Newsreader", serif; font-size: 19px; font-weight: 500; color: var(--umber); letter-spacing: -.015em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .buy .row .lbl .top em { font-style: italic; color: var(--berry-deep); font-weight: 500; }
+  .buy .row .lbl .top .tag { font-family: "Geist Mono", monospace; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; background: var(--berry); color: var(--paper); padding: 2px 6px; font-weight: 600; }
+  .buy .row .lbl .sub { font-family: "Geist", sans-serif; font-size: 13px; color: var(--umber-2); font-weight: 400; }
+  .buy .row .price { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+  .buy .row .price .now { font-family: "Newsreader", serif; font-style: italic; font-weight: 500; font-size: 26px; color: var(--umber); letter-spacing: -.01em; line-height: 1; }
+  .buy .row .price .was { font-family: "Geist Mono", monospace; font-size: 10px; color: var(--umber-2); font-weight: 500; letter-spacing: .05em; text-decoration: line-through; opacity: .55; margin-top: 4px; }
+
+  .qty-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--bone); border: 1px solid var(--rule); }
+  .qty-row .q { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--umber-2); font-weight: 500; }
+  .qty-row .stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--rule); background: var(--paper); }
+  .qty-row .stepper button { width: 32px; height: 32px; background: transparent; border: 0; font-family: "Newsreader", serif; font-size: 20px; cursor: pointer; color: var(--umber); font-weight: 500; transition: background .15s, color .15s; }
+  .qty-row .stepper button:hover { background: var(--umber); color: var(--bone); }
+  .qty-row .stepper .v { padding: 0 14px; font-family: "Newsreader", serif; font-size: 18px; font-weight: 500; min-width: 36px; text-align: center; color: var(--umber); }
+
+  .total-row { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--rule); font-family: "Newsreader", serif; }
+  .total-row .lbl { font-size: 14px; color: var(--umber-2); font-weight: 400; }
+  .total-row .v { font-size: 34px; font-weight: 500; color: var(--umber); letter-spacing: -.02em; }
+  .total-row .v em { font-style: italic; color: var(--berry-deep); }
+
+  /* Trust badges */
+  .trust-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; background: var(--rule); border: 1px solid var(--rule); }
+  .trust-tiles div { background: var(--paper); padding: 14px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .trust-tiles div:not(:last-child) { border-right: 1px solid var(--rule); }
+  .trust-tiles .l { font-family: "Geist Mono", monospace; font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--berry-deep); font-weight: 500; }
+  .trust-tiles .v { font-family: "Newsreader", serif; font-size: 14px; font-weight: 500; color: var(--umber); line-height: 1.2; }
+
+  /* Pact pill */
+  .pact-pill { background: var(--umber); color: var(--bone); padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+  .pact-pill .l { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .pact-pill .t { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; color: var(--berry); text-transform: uppercase; font-weight: 500; }
+  .pact-pill .h { font-family: "Newsreader", serif; font-size: 18px; font-weight: 500; line-height: 1.2; letter-spacing: -.01em; }
+  .pact-pill .h em { font-style: italic; color: var(--berry-soft); font-weight: 500; }
+  .pact-pill .pick { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--berry); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+
+  /* Details sections */
+  .details { padding: 60px 36px; border-top: 1px solid var(--rule); }
+  @media (max-width: 800px) { .details { padding: 40px 20px; } }
+  .details-max { max-width: 1380px; margin: 0 auto; }
+  .details h2 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(36px, 4.5vw, 56px); line-height: .95; letter-spacing: -.025em; color: var(--umber); margin-bottom: 40px; }
+  .details h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+
+  .panel { background: var(--paper); border: 1px solid var(--rule); padding: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 800px) { .panel { grid-template-columns: 1fr; padding: 28px 22px; } }
+  .panel h3 { font-family: "Newsreader", serif; font-weight: 500; font-size: 26px; letter-spacing: -.018em; color: var(--umber); margin-bottom: 14px; }
+  .panel h3 em { font-style: italic; color: var(--berry-deep); }
+  .panel p { font-family: "Newsreader", serif; font-size: 16px; line-height: 1.5; color: var(--umber-2); font-weight: 400; margin-bottom: 10px; }
+  .panel p em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+
+  /* Ingredient table */
+  .ing-table { background: var(--bone); border: 1px solid var(--rule); overflow: hidden; }
+  .ing-table .ihead { padding: 18px 24px; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .ing-table .ihead h3 { font-family: "Newsreader", serif; font-weight: 500; font-size: 24px; color: var(--umber); letter-spacing: -.015em; }
+  .ing-table .ihead h3 em { font-style: italic; color: var(--berry-deep); }
+  .ing-table .ihead .meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--umber-2); font-weight: 500; }
+  .ing-table .ihead .meta span:last-child { color: var(--berry-deep); }
+
+  .sub-row { padding: 10px 24px; background: var(--paper); font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--berry-deep); font-weight: 500; border-bottom: 1px solid var(--rule-soft); }
+  .ing-line { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 16px 24px; border-bottom: 1px solid var(--rule-soft); align-items: center; }
+  .ing-line:last-child { border-bottom: 0; }
+  .ing-line .nm { font-family: "Newsreader", serif; font-size: 18px; color: var(--umber); font-weight: 500; letter-spacing: -.005em; line-height: 1.15; }
+  .ing-line .nm em { font-style: normal; font-family: "Geist", sans-serif; font-size: 13.5px; display: block; margin-top: 3px; font-weight: 400; color: var(--umber-2); letter-spacing: 0; }
+  .ing-line .dose { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--umber); text-align: right; line-height: 1.4; white-space: nowrap; }
+  .ing-line .dose b { color: var(--berry-deep); font-weight: 600; }
+
+  /* How-to strip */
+  .how { background: var(--umber); color: var(--bone); padding: 50px 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  @media (max-width: 800px) { .how { grid-template-columns: 1fr; padding: 36px 24px; gap: 28px; } }
+  .how .step { display: flex; flex-direction: column; gap: 10px; }
+  .how .step .n { font-family: "Newsreader", serif; font-style: italic; font-weight: 500; font-size: 60px; color: var(--berry); line-height: .85; letter-spacing: -.03em; }
+  .how .step h3 { font-family: "Newsreader", serif; font-weight: 500; font-size: 24px; color: var(--bone); letter-spacing: -.018em; }
+  .how .step p { font-family: "Newsreader", serif; font-size: 16px; line-height: 1.5; color: var(--bone); opacity: .78; font-weight: 400; }
+
+  /* PDP FAQ */
+  .pdp-faq { margin-top: 50px; display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule); }
+  .pdp-faq details { border-bottom: 1px solid var(--rule); padding: 24px 0; }
+  .pdp-faq summary {
+    font-family: "Newsreader", serif;
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--umber);
+    letter-spacing: -.015em;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+  }
+  .pdp-faq summary em { font-style: italic; color: var(--berry-deep); }
+  .pdp-faq summary::-webkit-details-marker { display: none; }
+  .pdp-faq summary::after { content: "+"; font-family: "Newsreader", serif; font-style: italic; color: var(--berry-deep); font-weight: 500; font-size: 30px; transition: transform .2s; flex-shrink: 0; }
+  .pdp-faq details[open] summary::after { content: "−"; }
+  .pdp-faq .a { font-family: "Newsreader", serif; font-size: 17px; line-height: 1.55; color: var(--umber-2); font-weight: 400; margin-top: 14px; max-width: 74ch; }
+  .pdp-faq .a em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+
+  /* Compare */
+  .compare { background: var(--bone); border: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 700px) { .compare { grid-template-columns: 1fr; } }
+  .compare .col { padding: 28px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .compare .col:not(:last-child) { border-right: 1px solid var(--rule); }
+  @media (max-width: 700px) { .compare .col:not(:last-child) { border-right: 0; border-bottom: 1px solid var(--rule); } }
+  .compare h4 { font-family: "Newsreader", serif; font-weight: 500; font-size: 22px; color: var(--umber); letter-spacing: -.015em; }
+  .compare h4 em { font-style: italic; color: var(--berry-deep); }
+  .compare h4 small { display: block; font-family: "Geist", sans-serif; font-weight: 400; font-size: 12px; color: var(--umber-2); letter-spacing: 0; margin-top: 4px; }
+  .compare ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .compare ul li { font-family: "Geist", sans-serif; font-size: 13.5px; line-height: 1.5; color: var(--umber); font-weight: 400; display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; }
+  .compare ul li.tick::before { content: "✓"; color: var(--sage-deep); font-weight: 600; }
+  .compare ul li.cross::before { content: "×"; color: var(--berry-deep); font-weight: 600; font-size: 16px; }
+  .compare ul li.dash::before { content: "—"; color: var(--umber-2); opacity: .5; }
+  .compare .price-tag { font-family: "Newsreader", serif; font-style: italic; font-size: 22px; font-weight: 500; color: var(--umber); margin-top: auto; border-top: 1px solid var(--rule); padding-top: 12px; letter-spacing: -.01em; }
+  .compare .col.us { background: var(--paper); }
+  .compare .col.us h4 em { color: var(--berry-deep); }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <span><span class="dot"></span>Free UK shipping over £35 · Halal-certified · Made in UK</span>
+  <span>£1 + 10% per pouch → her chosen cause</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav" aria-label="Site navigation">
+  <div class="links">
+    <a href="product.html" class="on">Shop</a>
+    <a href="pact.html">The Pact</a>
+    <a href="app.html">The App</a>
+    <a href="quarterly.html">The Quarterly</a>
+  </div>
+  <a href="index.html" class="brand" aria-label="HerBody home">
+    <div class="her">Her</div>
+    <div class="body">Body</div>
+  </a>
+  <div class="right">
+    <a href="about.html">About</a>
+    <button class="bag" id="bag-btn" data-bag aria-label="View bag"><span style="display:inline-block;margin-right:6px">Bag</span><span class="count" data-bag-count>0</span></button>
+  </div>
+</nav>
+
+<!-- PDP -->
+<div class="pdp">
+  <div class="pdp-max">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <a href="product.html">Shop</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <span class="here" aria-current="page">No. 01 · The Daily</span>
+    </nav>
+
+    <div class="pdp-grid">
+      <!-- Gallery -->
+      <div class="gallery">
+        <div class="stage">
+          <span class="label">No. 01 · Strawberry Lemonade</span>
+          <div class="pouch" role="img" aria-label="HerBody No. 01 The Daily — Creatine + Collagen Strawberry Lemonade 300g pouch">
+            <div class="top"><span>HerBody · No. 01</span><span>UK</span></div>
+            <div class="word"><div class="her">Her</div><div class="body">Body</div></div>
+            <div class="kw">Creatine<span>+</span>Collagen</div>
+            <div class="stats">
+              <div><b>300g</b>20 servings</div>
+              <div><b>10g</b>active dose</div>
+            </div>
+            <div class="flav">Strawberry Lemonade</div>
+            <div class="foot"><span>Halal · Vegan-source</span><span class="seal">HB</span></div>
+          </div>
+        </div>
+        <div class="thumbs" role="list" aria-label="Product images">
+          <div class="thumb on" role="listitem" tabindex="0" aria-label="Main pouch view">
+            <div class="mp" aria-hidden="true"></div>
+          </div>
+          <div class="thumb" role="listitem" tabindex="0">Back<br>panel</div>
+          <div class="thumb" role="listitem" tabindex="0">Inside<br>scoop</div>
+          <div class="thumb" role="listitem" tabindex="0">In glass</div>
+          <div class="thumb" role="listitem" tabindex="0">Unboxed</div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="pdp-info">
+        <div class="ribbon" role="list" aria-label="Product badges">
+          <span class="berry" role="listitem">Best Seller</span>
+          <span class="ghost" role="listitem">Halal GB18</span>
+          <span class="ghost" role="listitem">Made in UK</span>
+        </div>
+
+        <div class="pn">No. 01 · 300g · 20 servings</div>
+
+        <h1>The <em>Daily</em>.<br>One scoop. <em>Twenty mornings</em>.</h1>
+
+        <p class="kw"><em>Creatine</em> + <em>Collagen</em> · Strawberry Lemonade</p>
+
+        <div class="stars">
+          <span class="s" aria-label="5 stars">★★★★★</span>
+          <strong>4.8</strong> · 1,247 reviews
+        </div>
+
+        <p class="desc">5g creatine. 5g Verisol® collagen. Inositol, biotin, methylfolate, P-5-P, chromium, cranberry PAC, dandelion. Full multivitamin at 100% NRV. <em>Halal-certified</em>. Vegan-source. Made in the UK. <em>£1 from every pouch</em> goes to the woman she names.</p>
+
+        <!-- Purchase -->
+        <div class="buy">
+          <div class="opt" role="radiogroup" aria-label="Purchase option">
+            <div class="row on" role="radio" aria-checked="true" tabindex="0" data-price="28.00" data-label="Subscribe">
+              <span class="radio" aria-hidden="true"></span>
+              <span class="lbl">
+                <span class="top"><em>Subscribe</em> · monthly<span class="tag">Save 20%</span></span>
+                <span class="sub">Ships every 28 days · skip or cancel anytime</span>
+              </span>
+              <span class="price">
+                <span class="now">£28</span>
+                <span class="was">£39.99</span>
+              </span>
+            </div>
+            <div class="row" role="radio" aria-checked="false" tabindex="0" data-price="39.99" data-label="Single">
+              <span class="radio" aria-hidden="true"></span>
+              <span class="lbl">
+                <span class="top">Single pouch</span>
+                <span class="sub">One-off purchase · 20 servings</span>
+              </span>
+              <span class="price">
+                <span class="now">£39.99</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="qty-row">
+            <span class="q">Quantity</span>
+            <div class="stepper" role="group" aria-label="Quantity">
+              <button id="qty-dec" aria-label="Decrease quantity">−</button>
+              <span class="v" id="qty-val" aria-live="polite">1</span>
+              <button id="qty-inc" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+
+          <div class="total-row">
+            <span class="lbl" id="total-label">Today's total · 1 pouch · 20 servings</span>
+            <span class="v"><em id="total-price">£28.00</em></span>
+          </div>
+
+          <button class="btn berry full" id="add-to-bag">Add to bag · £28 <span class="arr">→</span></button>
+
+          <div class="pact-pill">
+            <div class="l">
+              <span class="t">The Pact · this month</span>
+              <span class="h"><em>£1 + 10%</em> from this pouch → <em>Pakistan flood relief</em></span>
+            </div>
+            <a href="pact.html" class="pick">Change cause →</a>
+          </div>
+        </div>
+
+        <div class="trust-tiles" role="list" aria-label="Purchase assurances">
+          <div role="listitem"><span class="l">Ships</span><span class="v">In 24 hrs · UK</span></div>
+          <div role="listitem"><span class="l">Returns</span><span class="v">30 days · no q's</span></div>
+          <div role="listitem"><span class="l">Pact</span><span class="v">Audited annually</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW TO USE -->
+<div class="how" role="list" aria-label="How to use">
+  <div class="step" role="listitem">
+    <div class="n" aria-hidden="true">i.</div>
+    <h3>Scoop.</h3>
+    <p>One 15g scoop into a glass, or a shaker, or the bottom of your morning protein.</p>
+  </div>
+  <div class="step" role="listitem">
+    <div class="n" aria-hidden="true">ii.</div>
+    <h3>Shake.</h3>
+    <p>Add 200ml of cold water. Stir or shake for ten seconds. No clumps, no chalk, no stevia aftertaste.</p>
+  </div>
+  <div class="step" role="listitem">
+    <div class="n" aria-hidden="true">iii.</div>
+    <h3>Drink.</h3>
+    <p>Every morning. Twenty mornings per pouch. Mark it in the app — the Calendar tracks the small honest line.</p>
+  </div>
+</div>
+
+<!-- INGREDIENT PANEL -->
+<div class="details" aria-labelledby="formula-title">
+  <div class="details-max">
+    <h2 id="formula-title">What's <em>in the scoop</em>.</h2>
+
+    <div class="ing-table">
+      <div class="ihead">
+        <h3>The <em>formula</em></h3>
+        <div class="meta">
+          <span>Per serve · 1 scoop · 15g</span>
+          <span>All doses · clinical</span>
+        </div>
+      </div>
+
+      <div class="sub-row">i · The hero pair</div>
+      <div class="ing-line">
+        <span class="nm">Creatine monohydrate<em>Strength, energy, cognition</em></span>
+        <span class="dose"><b>5,000</b> mg</span>
+      </div>
+      <div class="ing-line">
+        <span class="nm">Verisol® bioactive collagen peptides<em>Hair, skin, nails — clinically studied</em></span>
+        <span class="dose"><b>5,000</b> mg</span>
+      </div>
+
+      <div class="sub-row">ii · Clinical actives</div>
+      <div class="ing-line">
+        <span class="nm">Myo + D-chiro inositol (40:1)<em>Hormonal balance · PCOS support</em></span>
+        <span class="dose"><b>500</b> mg</span>
+      </div>
+      <div class="ing-line">
+        <span class="nm">Dandelion root extract<em>Liver &amp; lymphatic</em></span>
+        <span class="dose"><b>250</b> mg</span>
+      </div>
+      <div class="ing-line">
+        <span class="nm">Cranberry PAC extract<em>Urinary tract support</em></span>
+        <span class="dose"><b>36</b> mg PAC</span>
+      </div>
+
+      <div class="sub-row">iii · Multivitamin · 100% NRV</div>
+      <div class="ing-line"><span class="nm">Biotin (B7)<em>Skin, hair, nails</em></span><span class="dose"><b>5,000</b> µg</span></div>
+      <div class="ing-line"><span class="nm">L-methylfolate (B9)<em>Active form</em></span><span class="dose"><b>400</b> µg</span></div>
+      <div class="ing-line"><span class="nm">Vitamin B6 as P-5-P<em>Hormonal regulation</em></span><span class="dose"><b>10</b> mg</span></div>
+      <div class="ing-line"><span class="nm">Chromium picolinate<em>Glucose &amp; cravings</em></span><span class="dose"><b>200</b> µg</span></div>
+      <div class="ing-line"><span class="nm">A, C, D3, E, K2 + full B-complex<em>All essentials, daily</em></span><span class="dose"><b>100%</b> NRV</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE -->
+<div class="details" style="background:var(--paper)" aria-labelledby="compare-title">
+  <div class="details-max">
+    <h2 id="compare-title">How HerBody <em>compares</em>.</h2>
+
+    <div class="compare">
+      <div class="col us">
+        <h4><em>HerBody</em> · The Daily<small>One pouch · everything in one scoop</small></h4>
+        <ul>
+          <li class="tick">5g creatine · clinical dose</li>
+          <li class="tick">5g Verisol® collagen</li>
+          <li class="tick">Full multivitamin · 100% NRV</li>
+          <li class="tick">Halal · GB18 certified</li>
+          <li class="tick">Made in UK</li>
+          <li class="tick">£1 + 10% to her chosen cause</li>
+          <li class="tick">Cycle-aligned app</li>
+        </ul>
+        <div class="price-tag"><em>£28</em> · monthly</div>
+      </div>
+      <div class="col">
+        <h4>Collagen brand<small>Average UK collagen supplement</small></h4>
+        <ul>
+          <li class="tick">Collagen powder</li>
+          <li class="cross">No creatine</li>
+          <li class="cross">No multivitamin</li>
+          <li class="dash">Some halal, some not</li>
+          <li class="dash">Mixed origin</li>
+          <li class="cross">No charity pact</li>
+          <li class="cross">No app</li>
+        </ul>
+        <div class="price-tag">£24–34 / mo</div>
+      </div>
+      <div class="col">
+        <h4>"Women's" multi<small>Pharmacy multivitamin</small></h4>
+        <ul>
+          <li class="cross">No creatine</li>
+          <li class="cross">No collagen</li>
+          <li class="tick">Multivitamin · varies</li>
+          <li class="dash">Usually not halal</li>
+          <li class="tick">UK made</li>
+          <li class="cross">No charity pact</li>
+          <li class="cross">No app</li>
+        </ul>
+        <div class="price-tag">£8–15 / mo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="details" aria-labelledby="about-title">
+  <div class="details-max">
+    <div class="panel">
+      <div>
+        <h3>What it <em>does</em>.</h3>
+        <p>The Daily is built around two clinically-studied actives — <em>creatine monohydrate</em> at 5g (the dose used in the published trials for strength, energy and cognitive support), and <em>Verisol® bioactive collagen peptides</em> at 5g (the dose clinically shown to improve skin elasticity in 8 weeks).</p>
+        <p>Around them sits a complete multivitamin at 100% NRV, plus inositol 40:1 for hormonal balance, dandelion for liver support, cranberry PAC for urinary health, and methylated B-vitamins for energy.</p>
+      </div>
+      <div>
+        <h3>What it <em>doesn't have</em>.</h3>
+        <p>No gelatin. No alcohol carriers. No haram excipients. <em>No stevia aftertaste</em>, no chalkiness, no rose-pink "for-women" marketing dust. No magnesium stearate, no titanium dioxide, no synthetic colours.</p>
+        <p>And — quietly important — no proprietary blends. Every dose is on the panel, in milligrams, at the level the peer-reviewed work calls effective.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="details" style="background:var(--paper)" aria-labelledby="faq-title">
+  <div class="details-max">
+    <h2 id="faq-title">Frequently <em>asked</em>.</h2>
+
+    <div class="pdp-faq">
+      <details open>
+        <summary>Is it <em>actually halal-certified</em>?</summary>
+        <p class="a">Yes. Halal Food Authority, certificate GB18 / 2026. No gelatin, no alcohol carriers, no haram excipients. Halal isn't a feature for us — it's the default. The certificate is on the audit page if you want to see it.</p>
+      </details>
+      <details>
+        <summary>How fast will I <em>see results</em>?</summary>
+        <p class="a">The Verisol® clinical line is skin elasticity improvement in <em>8 weeks</em>. Strength and energy from the creatine show up sooner, usually in 2–3 weeks. The Mirror in the app tracks your own line so you're not guessing.</p>
+      </details>
+      <details>
+        <summary>Is creatine <em>safe for women</em>?</summary>
+        <p class="a">Extensively studied and yes. 5g daily is the standard research dose. It does <em>not</em> cause bloating, weight gain or "bulk" in women at this dose — that's a persistent myth from the 1990s bodybuilding era.</p>
+      </details>
+      <details>
+        <summary>Can I take it <em>during pregnancy</em>?</summary>
+        <p class="a">Please speak to your doctor before taking any supplement in pregnancy or while breastfeeding. We don't make claims either way — your clinician should make this call with the panel in front of them.</p>
+      </details>
+      <details>
+        <summary>What if I <em>don't love</em> the flavour?</summary>
+        <p class="a">Email hello@herbody.co within 30 days and we'll refund the pouch, no questions. We don't use retention tricks. We'd rather you came back than felt trapped.</p>
+      </details>
+      <details>
+        <summary>Where does <em>my £1</em> go?</summary>
+        <p class="a">To the cause you chose this month in the app — one of eight audited partners. It leaves before profit is even calculated. Receipts are published quarterly, line by line. The Asian partners (Shaukat Khanum, Edhi, Pakistan flood relief, Girls' Education) are independently audited annually with zero-tolerance on corruption.</p>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="fgrid">
+    <div>
+      <h2><em>Her</em>Body</h2>
+      <p class="lede">A halal beauty-supplement house from London. One pouch. One pact. Worldwide.</p>
+    </div>
+    <nav aria-label="Shop">
+      <h5>Shop</h5>
+      <ul>
+        <li><a href="product.html"><em>The Daily</em> · No. 01</a></li>
+        <li><a href="#">The Calm · soon</a></li>
+        <li><a href="#">The Cycle · soon</a></li>
+        <li><a href="#">Subscribe &amp; save</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="The Pact">
+      <h5>The Pact</h5>
+      <ul>
+        <li><a href="pact.html">How it works</a></li>
+        <li><a href="pact.html">The 8 partners</a></li>
+        <li><a href="#">Audit reports</a></li>
+        <li><a href="#">Apply as a partner</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="House">
+      <h5>House</h5>
+      <ul>
+        <li><a href="about.html">Our story</a></li>
+        <li><a href="quarterly.html">The Quarterly</a></li>
+        <li><a href="app.html">The App</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="fbot">
+    <span>HerBody Ltd · 26 / 14 821</span>
+    <span>Halal Authority · GB 18 / 2026</span>
+    <span>© 2026 · London · MMXXVI</span>
+    <span>herbody.co</span>
+  </div>
+</footer>
+
+<script>
+  var unitPrice = 28.00;
+  var qty = 1;
+
+  // Purchase option toggle
+  document.querySelectorAll('.buy .row').forEach(function(row) {
+    function activate() {
+      document.querySelectorAll('.buy .row').forEach(function(r) {
+        r.classList.remove('on');
+        r.setAttribute('aria-checked', 'false');
+      });
+      row.classList.add('on');
+      row.setAttribute('aria-checked', 'true');
+      unitPrice = parseFloat(row.dataset.price);
+      updateTotal();
+    }
+    row.addEventListener('click', activate);
+    row.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+    });
+  });
+
+  // Quantity stepper
+  document.getElementById('qty-dec').addEventListener('click', function() {
+    if (qty > 1) { qty--; updateTotal(); }
+  });
+  document.getElementById('qty-inc').addEventListener('click', function() {
+    qty++;
+    updateTotal();
+  });
+
+  function updateTotal() {
+    var total = (unitPrice * qty).toFixed(2);
+    document.getElementById('qty-val').textContent = qty;
+    document.getElementById('total-price').textContent = '£' + total;
+    var lbl = qty === 1 ? '1 pouch · 20 servings' : qty + ' pouches · ' + (qty * 20) + ' servings';
+    document.getElementById('total-label').textContent = 'Today\'s total · ' + lbl;
+    var formatted = '£' + (unitPrice % 1 === 0 ? unitPrice.toFixed(0) : unitPrice.toFixed(2));
+    document.getElementById('add-to-bag').firstChild.textContent = 'Add to bag · ' + formatted + ' ';
+  }
+
+  // Add to bag — defer count to shared site.js helper so it persists across pages
+  document.getElementById('add-to-bag').addEventListener('click', function() {
+    if (window.HerBody && typeof window.HerBody.bumpBag === 'function') {
+      window.HerBody.bumpBag(qty);
+    } else {
+      var count = document.querySelector('.bag .count');
+      var current = parseInt(count.textContent) || 0;
+      count.textContent = current + qty;
+    }
+    this.firstChild.textContent = 'Added! ';
+    var self = this;
+    setTimeout(function() {
+      var formatted = '£' + (unitPrice % 1 === 0 ? unitPrice.toFixed(0) : unitPrice.toFixed(2));
+      self.firstChild.textContent = 'Add to bag · ' + formatted + ' ';
+    }, 2000);
+  });
+</script>
+<script src="site.js" defer></script>
+
+</body>
+</html>

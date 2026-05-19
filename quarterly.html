@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HerBody · The Quarterly — long reads, signed and numbered</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="The Quarterly is HerBody's journal. Long essays on the formula, the partners, the audit and the women whose lives the pound is reaching. Four issues a year, signed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,300;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== QUARTERLY PAGE ===== */
+  .q-hero {
+    padding: 80px 36px 60px;
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (max-width: 800px) { .q-hero { padding: 50px 20px 40px; } }
+  .q-hero-inner {
+    max-width: 1380px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: end;
+  }
+  @media (max-width: 1000px) { .q-hero-inner { grid-template-columns: 1fr; gap: 40px; } }
+  .q-hero h1 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(60px, 10vw, 160px);
+    line-height: .84;
+    letter-spacing: -.035em;
+    color: var(--umber);
+  }
+  .q-hero h1 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .q-hero .lede {
+    font-family: "Newsreader", serif;
+    font-size: 21px;
+    line-height: 1.45;
+    color: var(--umber-2);
+    max-width: 42ch;
+    margin-top: 22px;
+    padding-left: 24px;
+    border-left: 1px solid var(--rule);
+    font-weight: 400;
+  }
+  .q-hero .lede em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .q-hero .meta-row {
+    display: flex; gap: 36px; margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    font-weight: 500;
+    flex-wrap: wrap;
+  }
+  .q-hero .meta-row span {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .q-hero .meta-row span b {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 24px;
+    letter-spacing: -.015em;
+    text-transform: none;
+    color: var(--berry-deep);
+  }
+
+  /* featured cover */
+  .featured {
+    border: 1px solid var(--rule);
+    background: linear-gradient(135deg, #FBE9EC, #F4D6DA);
+    padding: 50px 40px;
+    aspect-ratio: 3/4;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .featured::after {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(42, 30, 21, .25);
+    pointer-events: none;
+  }
+  .featured .top {
+    display: flex; justify-content: space-between;
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    font-weight: 500;
+  }
+  .featured .mid h2 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: .94;
+    letter-spacing: -.025em;
+    color: var(--umber);
+    max-width: 14ch;
+  }
+  .featured .mid h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .featured .mid .by {
+    font-family: "Newsreader", serif;
+    font-size: 16px;
+    color: var(--umber-2);
+    margin-top: 14px;
+    font-weight: 400;
+  }
+  .featured .bot {
+    display: flex; justify-content: space-between; align-items: end;
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    opacity: .8;
+    font-weight: 500;
+  }
+
+  /* issue grid */
+  .issue-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 50px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: center;
+  }
+  @media (max-width: 800px) { .issue-row { grid-template-columns: 1fr; gap: 24px; } }
+  .issue-row:first-child { padding-top: 0; }
+  .issue-row .cover {
+    aspect-ratio: 3/4;
+    border: 1px solid var(--rule);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .issue-row .cover.c1 { background: linear-gradient(135deg, #FBE9EC, #F4D6DA); }
+  .issue-row .cover.c2 { background: linear-gradient(135deg, #E8DFC8, #B8A985); }
+  .issue-row .cover.c3 { background: linear-gradient(135deg, #8A946F, #4F5A3D); }
+  .issue-row .cover.c4 { background: linear-gradient(135deg, #2A1E15, #3D2C1F); }
+  .issue-row .cover.c5 { background: linear-gradient(135deg, #E89B73, #B86D49); }
+  .issue-row .cover.c6 { background: linear-gradient(135deg, #7A2E4A, #5A2238); }
+  .issue-row .cover .vol {
+    position: absolute; top: 14px; left: 14px;
+    font-family: "Geist Mono", monospace;
+    font-size: 8.5px;
+    letter-spacing: .22em;
+    color: var(--umber);
+    text-transform: uppercase;
+    font-weight: 500;
+    background: var(--paper);
+    padding: 4px 7px;
+    border: 1px solid var(--rule);
+  }
+  .issue-row .cover.c3 .vol, .issue-row .cover.c4 .vol, .issue-row .cover.c6 .vol {
+    color: var(--bone);
+    background: rgba(0,0,0,.4);
+    border-color: rgba(255,255,255,.2);
+  }
+  .issue-row .cover .ph {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--umber);
+    text-align: center;
+    line-height: 1.1;
+    max-width: 80%;
+    opacity: .55;
+  }
+  .issue-row .cover.c3 .ph, .issue-row .cover.c4 .ph, .issue-row .cover.c6 .ph { color: var(--bone); opacity: .65; }
+  .issue-row .info .meta {
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    font-weight: 500;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .issue-row .info .meta span:not(:last-child)::after {
+    content: "·"; margin-left: 16px; color: var(--umber); opacity: .35;
+  }
+  .issue-row .info h3 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 48px);
+    line-height: .96;
+    letter-spacing: -.022em;
+    color: var(--umber);
+    max-width: 22ch;
+  }
+  .issue-row .info h3 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .issue-row .info p {
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--umber-2);
+    margin-top: 14px;
+    max-width: 56ch;
+    font-weight: 400;
+  }
+  .issue-row .info p em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .issue-row .info .by {
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    color: var(--umber-2);
+    margin-top: 14px;
+    font-weight: 500;
+  }
+  .issue-row .info .by b { color: var(--umber); font-weight: 600; }
+  .issue-row .info .read {
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    color: var(--umber);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule);
+  }
+  .issue-row .info .read .arr {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--berry-deep);
+  }
+
+  /* topics rail */
+  .topics {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 24px 0;
+    margin-bottom: 32px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .topics .ch {
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    padding: 8px 14px;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+    font-weight: 500;
+  }
+  .topics .ch:hover { background: var(--umber); color: var(--bone); border-color: var(--umber); }
+  .topics .ch.on { background: var(--berry); color: var(--paper); border-color: var(--berry); }
+</style>
+</head>
+<body>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker">
+  <span><span class="dot"></span>Free UK shipping over £35 · Halal-certified · Made in UK</span>
+  <span>£1 + 10% per pouch → her chosen cause</span>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="links">
+    <a href="product.html">Shop</a>
+    <a href="pact.html">The Pact</a>
+    <a href="app.html">The App</a>
+    <a href="quarterly.html" class="on">The Quarterly</a>
+  </div>
+  <a href="index.html" class="brand"><div class="her">Her</div><div class="body">Body</div></a>
+  <div class="right">
+    <a href="about.html">About</a>
+    <div class="bag" data-bag>Bag <span class="count" data-bag-count>0</span></div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="q-hero">
+  <div class="q-hero-inner">
+    <div>
+      <div class="eyebrow">No. 03 · The Quarterly · Vol. 26</div>
+      <h1>
+        Long reads,<br>
+        <em>numbered.</em>
+      </h1>
+      <p class="lede">
+        Four issues a year. The formula, the partners, the audit, the women whose lives the pound is reaching. <em>Signed by us. Sent by post and email.</em> Never sold, never spammed.
+      </p>
+      <div class="meta-row">
+        <span><b>26</b>Volume</span>
+        <span><b>03</b>Issues this year</span>
+        <span><b>14k</b>Readers</span>
+        <span><b>4</b>Issues a year</span>
+      </div>
+    </div>
+    <div>
+      <a href="#" class="featured">
+        <div class="top"><span>Vol. 26 · No. 03</span><span>Featured · 14 min</span></div>
+        <div class="mid">
+          <h2>The <em>receipt</em> from Sindh.</h2>
+          <p class="by">By the founders · with field photography by Aamna R.</p>
+        </div>
+        <div class="bot"><span>Pakistan flood relief</span><span>Read →</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOPICS + ISSUE LIST ============ -->
+<section style="padding-top: 60px">
+  <div class="max">
+    <div class="sec-head">
+      <div class="sec-num">01 · The Issues</div>
+      <div>
+        <h2 class="sec-title">Every drop, <em>every cause, every audit</em>.</h2>
+        <p class="sec-lede">No editorial calendar. We publish when there's something worth reading. Filter by topic, or read every word from Vol. 26 No. 01.</p>
+      </div>
+    </div>
+
+    <div class="topics">
+      <span class="ch on">All issues</span>
+      <span class="ch">The formula</span>
+      <span class="ch">The Pact · audit</span>
+      <span class="ch">Founders</span>
+      <span class="ch">Halal &amp; clinical</span>
+      <span class="ch">The women</span>
+      <span class="ch">Field reports</span>
+    </div>
+
+    <div class="issue-list">
+
+      <div class="issue-row">
+        <div class="cover c1">
+          <div class="vol">Vol. 26 · No. 03</div>
+          <div class="ph">"Sindh, 2022"</div>
+        </div>
+        <div class="info">
+          <div class="meta"><span>The Pact · audit</span><span>Field report</span><span>14 min read</span></div>
+          <h3>The <em>receipt</em> from Sindh.</h3>
+          <p>Where the first quarter's pounds went. Line by line. Signed. The mothers Pakistan flood relief reached. <em>78 households, four district hospitals, one refurbished maternity ward in Larkana.</em></p>
+          <p class="by"><b>By Aaliyah K. &amp; Maryam H.</b> · Field photography by Aamna R. · Published Mar 2026</p>
+          <a href="#" class="read">Read the issue <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="issue-row">
+        <div class="cover c2">
+          <div class="vol">Vol. 26 · No. 02</div>
+          <div class="ph">"Five grams"</div>
+        </div>
+        <div class="info">
+          <div class="meta"><span>The formula</span><span>Halal &amp; clinical</span><span>9 min read</span></div>
+          <h3>Why <em>five grams</em> of creatine.</h3>
+          <p>The studies. The dose floor. The reason every pouch carries the studied amount, not the marketing amount. Why women have been undersupplied with creatine for two decades, and why the trial data doesn't support pulling the dose under 5g.</p>
+          <p class="by"><b>By Dr Maryam H.</b> · Reviewed by clinical advisory board · Published Feb 2026</p>
+          <a href="#" class="read">Read the issue <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="issue-row">
+        <div class="cover c3">
+          <div class="vol">Vol. 26 · No. 01</div>
+          <div class="ph">"One Body"</div>
+        </div>
+        <div class="info">
+          <div class="meta"><span>Founders</span><span>The women</span><span>14 min read</span></div>
+          <h3>One <em>body</em>, kept beautifully.</h3>
+          <p>A long letter from the founders on what HerBody is for — and what it refuses to be. Why halal isn't a feature. Why beauty is the wrong word, and the only one we have. <em>Why the £1 leaves before the profit is even calculated.</em></p>
+          <p class="by"><b>By the founders</b> · The founding issue · Published Jan 2026</p>
+          <a href="#" class="read">Read the issue <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="issue-row">
+        <div class="cover c4">
+          <div class="vol">Vol. 25 · No. 04</div>
+          <div class="ph">"Before the launch"</div>
+        </div>
+        <div class="info">
+          <div class="meta"><span>Founders</span><span>Pre-launch</span><span>7 min read</span></div>
+          <h3>What we built <em>before we sold.</em></h3>
+          <p>Eighteen months of formula testing, halal review, audit set-up and partner due-diligence — written down, in order, with the document numbers. <em>Why we waited.</em></p>
+          <p class="by"><b>By the founders</b> · Pre-launch issue · Published Dec 2025</p>
+          <a href="#" class="read">Read the issue <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="issue-row">
+        <div class="cover c5">
+          <div class="vol">Vol. 25 · No. 03</div>
+          <div class="ph">"Strawberry &amp; lemon"</div>
+        </div>
+        <div class="info">
+          <div class="meta"><span>The formula</span><span>Field report</span><span>6 min read</span></div>
+          <h3>The flavour <em>that didn't lie.</em></h3>
+          <p>How we landed on Strawberry Lemonade — and why the fourteen earlier flavour briefs failed. The role of cross-modal taste in compliance. Why the pouch should taste like a treat, not a supplement.</p>
+          <p class="by"><b>By the formulators</b> · Sensory panel notes · Published Nov 2025</p>
+          <a href="#" class="read">Read the issue <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="issue-row">
+        <div class="cover c6">
+          <div class="vol">Vol. 25 · No. 02</div>
+          <div class="ph">"Eight names"</div>
+        </div>
+        <div class="info">
+          <div class="meta"><span>The Pact · audit</span><span>The women</span><span>11 min read</span></div>
+          <h3>How we chose <em>the eight.</em></h3>
+          <p>Forty-two charity candidates, twelve months of due diligence, the audit standard that knocked thirty-four of them out. Why Shaukat Khanum and Edhi were never in question. Why three UK-based partners were.</p>
+          <p class="by"><b>By the Pact committee</b> · Reviewed by external auditors · Published Oct 2025</p>
+          <a href="#" class="read">Read the issue <span class="arr">→</span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ NEWSLETTER ============ -->
+<section class="news-band" style="background: var(--berry); color: var(--paper); padding: 80px 36px; border-bottom: 0">
+  <div class="news-inner" style="max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 1fr; gap: 50px; align-items: end">
+    <div>
+      <div class="mono" style="color: var(--paper); opacity: .8; margin-bottom: 12px">The Quarterly · into her inbox</div>
+      <h2 style="font-family: 'Newsreader', serif; font-weight: 400; font-size: clamp(38px, 5.5vw, 68px); line-height: .92; letter-spacing: -.028em; color: var(--paper)">
+        Joined by <em style="font-style: italic; font-weight: 500; color: var(--lemon)">letter</em>,<br>not by ad.
+      </h2>
+      <p style="font-family: 'Newsreader', serif; font-size: 17px; line-height: 1.5; color: var(--paper); opacity: .85; margin-top: 14px; max-width: 36ch; font-weight: 400">
+        A long essay, four times a year, signed by us. The receipt for the quarter. Never sold, never spammed.
+      </p>
+    </div>
+    <form class="news-form" data-newsletter style="display: flex; flex-direction: column; gap: 12px">
+      <div class="row" style="display: flex; gap: 0; border: 1px solid var(--paper)">
+        <input type="email" placeholder="your@email" required style="flex: 1; background: transparent; border: 0; padding: 14px 18px; font-family: 'Newsreader', serif; font-size: 18px; color: var(--paper); outline: none; letter-spacing: -.01em">
+        <button type="submit" style="background: var(--paper); color: var(--berry-deep); border: 0; padding: 14px 20px; font-family: 'Geist Mono', monospace; font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; cursor: pointer">Subscribe</button>
+      </div>
+      <div class="hint" style="font-family: 'Geist Mono', monospace; font-size: 9.5px; letter-spacing: .2em; color: var(--paper); opacity: .7; text-transform: uppercase; font-weight: 500">No spam · unsubscribe in one click</div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="fgrid">
+    <div>
+      <h2><em>Her</em>Body</h2>
+      <p class="lede">A halal beauty-supplement house from London. One pouch. One pact. Worldwide.</p>
+    </div>
+    <div>
+      <h5>Shop</h5>
+      <ul>
+        <li><a href="product.html"><em>The Daily</em> · No. 01</a></li>
+        <li><a href="#">The Calm · No. 02 · soon</a></li>
+        <li><a href="#">The Cycle · No. 03 · soon</a></li>
+        <li><a href="#">Gift cards</a></li>
+        <li><a href="#">Subscribe &amp; save</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>The Pact</h5>
+      <ul>
+        <li><a href="pact.html">How it works</a></li>
+        <li><a href="pact.html">The 8 partners</a></li>
+        <li><a href="#">Audit reports</a></li>
+        <li><a href="#">Impact ledger</a></li>
+        <li><a href="#">Apply as a partner</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>House</h5>
+      <ul>
+        <li><a href="about.html">Our story</a></li>
+        <li><a href="quarterly.html">The Quarterly</a></li>
+        <li><a href="app.html">The App</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>HerBody Ltd · Companies House 26 / 14 821</span>
+    <span>Halal Authority · GB 18 / 2026</span>
+    <span>© 2026 · London · MMXXVI</span>
+    <span><a href="#" style="opacity: 1">herbody.co</a></span>
+  </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

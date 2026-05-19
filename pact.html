@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Pact — How HerBody's £1 + 10% reaches her chosen cause</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Eight audited charity partners. £1 + 10% of profit per pouch. She picks the cause each month. Receipts published quarterly. Zero-tolerance on corruption.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,300;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Pact hero */
+  .pact-hero {
+    background: var(--umber);
+    color: var(--bone);
+    padding: 80px 36px 90px;
+    border-bottom: 1px solid #000;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (max-width: 800px) { .pact-hero { padding: 50px 20px 60px; } }
+  .pact-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 100%, rgba(239, 74, 107, .18), transparent 55%);
+    pointer-events: none;
+  }
+  .ph-max { max-width: 1380px; margin: 0 auto; position: relative; }
+  .pact-hero .eyebrow {
+    color: var(--berry);
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .pact-hero .eyebrow::before { content: ""; width: 32px; height: 1px; background: var(--berry); }
+  .pact-hero h1 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(64px, 11vw, 180px);
+    line-height: .85;
+    letter-spacing: -.035em;
+    color: var(--bone);
+  }
+  .pact-hero h1 em { font-style: italic; font-weight: 500; color: var(--berry); }
+  .pact-hero .lede {
+    font-family: "Newsreader", serif;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--bone);
+    opacity: .82;
+    margin-top: 40px;
+    max-width: 60ch;
+    font-weight: 400;
+  }
+  .pact-hero .lede em { font-style: italic; font-weight: 500; color: var(--berry-soft); }
+
+  /* Live ledger band */
+  .ledger-band {
+    background: #1A130D;
+    padding: 20px 36px;
+    border-top: 1px solid rgba(242, 236, 224, .18);
+    border-bottom: 1px solid rgba(242, 236, 224, .18);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 800px) { .ledger-band { padding: 14px 20px; gap: 18px; } }
+  .ledger-band .live-label {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--bone);
+    font-weight: 500;
+    opacity: .7;
+  }
+  .ledger-band .live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--berry);
+    animation: pulse 2.2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 74, 107, .6); }
+    50% { box-shadow: 0 0 0 7px rgba(239, 74, 107, 0); }
+  }
+  .ledger-band .stats { display: flex; gap: 36px; flex-wrap: wrap; }
+  .ledger-band .stats > div { display: flex; flex-direction: column; gap: 2px; }
+  .ledger-band .stats .k { font-family: "Geist Mono", monospace; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--berry); font-weight: 500; }
+  .ledger-band .stats .v { font-family: "Newsreader", serif; font-style: italic; font-weight: 500; font-size: 22px; color: var(--bone); letter-spacing: -.01em; }
+
+  /* Mechanic section */
+  .mech { padding: 90px 36px; background: var(--bone); }
+  @media (max-width: 800px) { .mech { padding: 60px 20px; } }
+  .mech-max { max-width: 1380px; margin: 0 auto; }
+  .mech h2 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(40px, 5.4vw, 68px); line-height: .95; letter-spacing: -.025em; color: var(--umber); max-width: 18ch; margin-bottom: 18px; }
+  .mech h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .mech .lede { font-family: "Newsreader", serif; font-size: 20px; line-height: 1.4; color: var(--umber-2); max-width: 54ch; font-weight: 400; margin-bottom: 60px; }
+  .mech .lede em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr 60px 1fr 60px 1fr;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 60px;
+  }
+  @media (max-width: 900px) { .flow { grid-template-columns: 1fr; gap: 14px; } .flow .arrow { display: none; } }
+  .step {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 280px;
+    justify-content: space-between;
+  }
+  .step .n { font-family: "Geist Mono", monospace; font-size: 10.5px; letter-spacing: .24em; color: var(--berry-deep); text-transform: uppercase; font-weight: 500; }
+  .step .v {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(80px, 11vw, 128px);
+    line-height: .82;
+    color: var(--umber);
+    letter-spacing: -.035em;
+  }
+  .step h3 { font-family: "Newsreader", serif; font-weight: 500; font-size: 22px; color: var(--umber); letter-spacing: -.015em; line-height: 1.1; }
+  .step h3 em { font-style: italic; color: var(--berry-deep); }
+  .step p { font-family: "Newsreader", serif; font-size: 15px; line-height: 1.5; color: var(--umber-2); font-weight: 400; }
+  .step p em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .arrow { display: flex; align-items: center; justify-content: center; font-family: "Newsreader", serif; font-style: italic; font-weight: 500; font-size: 28px; color: var(--berry-deep); }
+
+  /* Audit strip */
+  .audit-strip {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 800px) { .audit-strip { grid-template-columns: 1fr; gap: 20px; padding: 24px; } }
+  .audit-strip .a { display: flex; flex-direction: column; gap: 8px; }
+  .audit-strip .k { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--berry-deep); font-weight: 500; }
+  .audit-strip h4 { font-family: "Newsreader", serif; font-weight: 500; font-size: 22px; color: var(--umber); letter-spacing: -.015em; line-height: 1.15; }
+  .audit-strip h4 em { font-style: italic; color: var(--berry-deep); }
+  .audit-strip p { font-family: "Newsreader", serif; font-size: 15px; line-height: 1.5; color: var(--umber-2); font-weight: 400; }
+  .audit-strip a { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--berry-deep); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Partners */
+  .partners-wrap { padding: 90px 36px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+  @media (max-width: 800px) { .partners-wrap { padding: 60px 20px; } }
+  .partners-max { max-width: 1380px; margin: 0 auto; }
+  .partners-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 50px; gap: 30px; flex-wrap: wrap; }
+  .partners-head h2 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(40px, 5.4vw, 64px); line-height: .95; letter-spacing: -.025em; color: var(--umber); max-width: 18ch; }
+  .partners-head h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .partners-head .tabs { display: flex; gap: 8px; font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; font-weight: 500; flex-wrap: wrap; }
+  .partners-head .tabs button { padding: 8px 14px; border: 1px solid var(--rule); cursor: pointer; background: var(--bone); color: var(--umber); transition: background .15s, color .15s, border-color .15s; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; font-weight: inherit; }
+  .partners-head .tabs button.on { background: var(--umber); color: var(--bone); border-color: var(--umber); }
+  .partners-head .tabs button:hover:not(.on) { border-color: var(--berry-deep); }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  @media (max-width: 1000px) { .partners-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .partners-grid { grid-template-columns: 1fr; } }
+  .pcard {
+    background: var(--bone);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 340px;
+    justify-content: space-between;
+  }
+  .pcard .ord { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .22em; color: var(--berry-deep); text-transform: uppercase; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
+  .pcard .ord .region { color: var(--umber-2); opacity: .6; }
+  .pcard h3 { font-family: "Newsreader", serif; font-weight: 500; font-size: 30px; line-height: 1.02; letter-spacing: -.02em; color: var(--umber); }
+  .pcard h3 em { font-style: italic; color: var(--berry-deep); font-weight: 500; }
+  .pcard p { font-family: "Newsreader", serif; font-size: 15px; line-height: 1.5; color: var(--umber-2); font-weight: 400; }
+  .pcard .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .pcard .meta .audit { display: flex; align-items: center; gap: 6px; color: var(--sage-deep); }
+  .pcard .meta .audit::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sage-deep); }
+  .pcard .meta .audit.none { color: var(--umber-2); opacity: .5; }
+  .pcard .meta .audit.none::before { background: var(--umber-2); opacity: .4; }
+  .pcard .meta .pick { color: var(--berry-deep); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Impact ledger */
+  .impact { padding: 90px 36px; background: var(--bone); }
+  @media (max-width: 800px) { .impact { padding: 60px 20px; } }
+  .impact-max { max-width: 1380px; margin: 0 auto; }
+  .impact h2 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(40px, 5.4vw, 64px); line-height: .95; letter-spacing: -.025em; color: var(--umber); margin-bottom: 18px; }
+  .impact h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .impact .lede { font-family: "Newsreader", serif; font-size: 19px; line-height: 1.45; color: var(--umber-2); max-width: 60ch; font-weight: 400; margin-bottom: 40px; }
+  .impact .lede em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+
+  .ledger-table { background: var(--paper); border: 1px solid var(--rule); }
+  .ledger-head {
+    display: grid;
+    grid-template-columns: 80px 1.5fr 1fr 1fr auto;
+    gap: 18px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--umber);
+    background: var(--bone-2);
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber);
+    font-weight: 600;
+  }
+  @media (max-width: 800px) { .ledger-head { display: none; } }
+  .ledger-row {
+    display: grid;
+    grid-template-columns: 80px 1.5fr 1fr 1fr auto;
+    gap: 18px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: center;
+  }
+  @media (max-width: 800px) { .ledger-row { grid-template-columns: 1fr; gap: 6px; padding: 18px; } }
+  .ledger-row .date { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--berry-deep); font-weight: 500; }
+  .ledger-row .to { font-family: "Newsreader", serif; font-weight: 500; font-size: 17px; color: var(--umber); letter-spacing: -.01em; line-height: 1.2; }
+  .ledger-row .to em { font-style: italic; color: var(--berry-deep); display: block; font-size: 13px; font-weight: 400; margin-top: 2px; }
+  .ledger-row .what { font-family: "Geist", sans-serif; font-size: 13.5px; color: var(--umber-2); font-weight: 400; line-height: 1.4; }
+  .ledger-row .amt { font-family: "Newsreader", serif; font-style: italic; font-weight: 500; font-size: 22px; color: var(--umber); letter-spacing: -.01em; text-align: right; }
+  @media (max-width: 800px) { .ledger-row .amt { text-align: left; } }
+  .ledger-row .receipt {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--umber);
+    font-weight: 500;
+    border: 1px solid var(--rule);
+    padding: 6px 10px;
+    justify-self: end;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .ledger-row .receipt:hover { background: var(--umber); color: var(--bone); }
+  .ledger-foot {
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--umber);
+    color: var(--bone);
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    font-weight: 500;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .ledger-foot .total { font-family: "Newsreader", serif; font-style: italic; font-weight: 500; font-size: 28px; color: var(--berry); letter-spacing: -.015em; text-transform: none; }
+
+  /* FAQ */
+  .faq-sect { padding: 90px 36px; background: var(--paper); border-top: 1px solid var(--rule); }
+  @media (max-width: 800px) { .faq-sect { padding: 60px 20px; } }
+  .faq-max { max-width: 1380px; margin: 0 auto; }
+  .faq-sect h2 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(40px, 5.4vw, 64px); line-height: .95; letter-spacing: -.025em; color: var(--umber); margin-bottom: 18px; }
+  .faq-sect h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 40px; }
+  @media (max-width: 800px) { .faq-grid { grid-template-columns: 1fr; } }
+  .faq-grid > div { background: var(--bone); padding: 28px; }
+  .faq-grid .q { font-family: "Newsreader", serif; font-weight: 500; font-size: 22px; color: var(--umber); letter-spacing: -.015em; margin-bottom: 10px; line-height: 1.15; }
+  .faq-grid .q em { font-style: italic; color: var(--berry-deep); }
+  .faq-grid .a { font-family: "Newsreader", serif; font-size: 16px; line-height: 1.5; color: var(--umber-2); font-weight: 400; }
+  .faq-grid .a em { font-style: italic; color: var(--berry-deep); font-weight: 500; }
+
+  /* CTA band */
+  .cta-band {
+    background: var(--berry);
+    color: var(--paper);
+    padding: 80px 36px;
+    border-bottom: 1px solid var(--berry-deep);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (max-width: 800px) { .cta-band { padding: 50px 20px; } }
+  .cta-band::before { content: ""; position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; border-radius: 50%; background: rgba(244, 200, 74, .15); pointer-events: none; }
+  .cta-inner {
+    max-width: 1380px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 60px;
+    align-items: end;
+    position: relative;
+  }
+  @media (max-width: 800px) { .cta-inner { grid-template-columns: 1fr; gap: 30px; } }
+  .cta-inner h2 { font-family: "Newsreader", serif; font-weight: 400; font-size: clamp(48px, 7vw, 96px); line-height: .88; letter-spacing: -.03em; color: var(--paper); }
+  .cta-inner h2 em { font-style: italic; font-weight: 500; color: var(--lemon); }
+  .cta-inner .lede { font-family: "Newsreader", serif; font-size: 19px; line-height: 1.45; color: var(--paper); opacity: .88; max-width: 40ch; font-weight: 400; }
+  .cta-inner .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .cta-inner .btn { background: var(--paper); color: var(--berry-deep); border-color: var(--paper); }
+  .cta-inner .btn:hover { background: var(--umber); color: var(--paper); border-color: var(--umber); }
+  .cta-inner .btn.ghost { background: transparent; color: var(--paper); border-color: var(--paper); }
+  .cta-inner .btn.ghost:hover { background: var(--paper); color: var(--berry-deep); }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <span><span class="dot"></span>The Pact · audited annually · zero-tolerance on corruption</span>
+  <span>Receipts published quarterly · Q1 26 signed</span>
+</div>
+
+<nav class="nav" aria-label="Site navigation">
+  <div class="links">
+    <a href="product.html">Shop</a>
+    <a href="pact.html" class="on">The Pact</a>
+    <a href="app.html">The App</a>
+    <a href="quarterly.html">The Quarterly</a>
+  </div>
+  <a href="index.html" class="brand" aria-label="HerBody home">
+    <div class="her">Her</div>
+    <div class="body">Body</div>
+  </a>
+  <div class="right">
+    <a href="about.html">About</a>
+    <button class="bag" data-bag aria-label="View bag">Bag <span class="count" data-bag-count>0</span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="pact-hero" aria-labelledby="pact-hero-title">
+  <div class="ph-max">
+    <div class="eyebrow">02 · The Pact · How it works</div>
+    <h1 id="pact-hero-title">
+      A <em>pound</em>,<br>
+      a <em>tenth</em>,<br>
+      eight <em>partners</em>.
+    </h1>
+    <p class="lede">Every pouch HerBody sells carries one pound and ten percent of profit to a woman somewhere with less. <em>She</em> chooses the cause each month, in the app. The four Asian partners are audited annually by an independent third-party with <em>zero-tolerance on corruption</em>. Receipts are published quarterly — line by line, every pound named.</p>
+  </div>
+</section>
+
+<!-- LIVE LEDGER BAND -->
+<div class="ledger-band" role="status" aria-label="Live giving statistics">
+  <div class="live-label"><span class="live-dot" aria-hidden="true"></span>Live · this month</div>
+  <div class="stats">
+    <div><span class="k">Pouches sold</span><span class="v">14,247</span></div>
+    <div><span class="k">£ given · YTD</span><span class="v">£18,420</span></div>
+    <div><span class="k">Top cause · May</span><span class="v">Pakistan flood relief</span></div>
+    <div><span class="k">Next audit</span><span class="v">Q2 · Jul 26</span></div>
+  </div>
+</div>
+
+<!-- MECHANIC -->
+<section class="mech" aria-labelledby="mechanic-title">
+  <div class="mech-max">
+    <h2 id="mechanic-title">How <em>her pound</em> moves.</h2>
+    <p class="lede">No marketing math. Three steps from her hand to a woman with less — every step <em>verifiable</em>.</p>
+
+    <div class="flow" role="list" aria-label="Four steps from purchase to impact">
+      <div class="step" role="listitem">
+        <div class="n">i · She buys</div>
+        <div class="v" aria-label="£1">£1</div>
+        <h3>The <em>pound</em>.</h3>
+        <p>Leaves <em>before profit</em> is calculated. Held in a ringfenced charity account. Per pouch, every pouch, no exceptions.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="step" role="listitem">
+        <div class="n">ii · The tithe</div>
+        <div class="v" aria-label="10%">10%</div>
+        <h3>The <em>profit share</em>.</h3>
+        <p>Ten percent of net profit, added at the end of each quarter. Independently audited. Published on the audit page.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="step" role="listitem">
+        <div class="n">iii · She chooses</div>
+        <div class="v" aria-label="8 partners">8</div>
+        <h3>The <em>cause</em>.</h3>
+        <p>Eight vetted partners. She picks each month in the app. Four in Asia carry the <em>zero-tolerance audit tag</em>.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="step" role="listitem">
+        <div class="n">iv · It lands</div>
+        <div class="v" aria-hidden="true">→</div>
+        <h3>Her <em>impact</em>.</h3>
+        <p>Treatments funded, shelter nights, school terms, helpline calls. <em>Real outcomes</em>, visible in the app's Impact view.</p>
+      </div>
+    </div>
+
+    <div class="audit-strip" role="list" aria-label="Audit standards">
+      <div class="a" role="listitem">
+        <span class="k">Audit standard</span>
+        <h4>An <em>independent</em> third-party annually</h4>
+        <p>Asian partners audited each year against UK Charity Commission criteria and on-the-ground spend verification.</p>
+      </div>
+      <div class="a" role="listitem">
+        <span class="k">Corruption policy</span>
+        <h4><em>Zero-tolerance</em>, no second chances</h4>
+        <p>One finding and the partner is replaced before the next pouch ships. The four Asian partners have signed the policy.</p>
+      </div>
+      <div class="a" role="listitem">
+        <span class="k">Receipts</span>
+        <h4>Every <em>line</em>, every quarter</h4>
+        <p>Quarterly receipt is published as a PDF on this page and posted in every customer's app. <a href="#ledger">Read Q1 26 →</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section class="partners-wrap" aria-labelledby="partners-title">
+  <div class="partners-max">
+    <div class="partners-head">
+      <h2 id="partners-title">The <em>eight</em> partners.</h2>
+      <div class="tabs" role="tablist" aria-label="Filter partners">
+        <button class="on" role="tab" aria-selected="true" aria-controls="partners-grid" data-filter="all">All eight</button>
+        <button role="tab" aria-selected="false" data-filter="asia">Asia · audited</button>
+        <button role="tab" aria-selected="false" data-filter="uk">UK</button>
+        <button role="tab" aria-selected="false" data-filter="global">Africa · Global</button>
+      </div>
+    </div>
+
+    <div class="partners-grid" id="partners-grid" role="list">
+      <article class="pcard" role="listitem" data-region="asia">
+        <div>
+          <div class="ord"><span>No. 01</span><span class="region">Asia</span></div>
+          <h3>Shaukat Khanum <em>cancer care</em></h3>
+          <p>Pakistan's leading cancer hospital, providing free treatment to women who cannot pay. Funds chemotherapy cycles, surgeries, post-operative care.</p>
+        </div>
+        <div class="meta">
+          <span class="audit">Audited annually</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="asia">
+        <div>
+          <div class="ord"><span>No. 02</span><span class="region">Asia</span></div>
+          <h3>Edhi <em>Foundation</em></h3>
+          <p>Pakistan's largest welfare network. Women's shelters, free ambulance service, abandoned-child rescue, food kitchens.</p>
+        </div>
+        <div class="meta">
+          <span class="audit">Audited annually</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="asia">
+        <div>
+          <div class="ord"><span>No. 03</span><span class="region">Asia</span></div>
+          <h3>Pakistan <em>flood relief</em></h3>
+          <p>Sindh and Balochistan. Mothers and children displaced by the 2022 floods and the seasonal floods every year since. Food, shelter, school re-entry.</p>
+        </div>
+        <div class="meta">
+          <span class="audit">Audited annually</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="asia">
+        <div>
+          <div class="ord"><span>No. 04</span><span class="region">Asia</span></div>
+          <h3>Girls' <em>education</em></h3>
+          <p>South Asia. Scholarships for secondary school completion. Includes uniform, books, transport — the small frictions that end up ending school.</p>
+        </div>
+        <div class="meta">
+          <span class="audit">Audited annually</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="uk">
+        <div>
+          <div class="ord"><span>No. 05</span><span class="region">UK</span></div>
+          <h3>Survivors of <em>violence</em></h3>
+          <p>Refuge, helpline and casework for women fleeing domestic violence. UK Charity Commission registered.</p>
+        </div>
+        <div class="meta">
+          <span class="audit none">Regulated · UK</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="uk">
+        <div>
+          <div class="ord"><span>No. 06</span><span class="region">UK</span></div>
+          <h3>Period <em>poverty</em></h3>
+          <p>Free period products in UK schools, refuges and food banks. Dignity kits for women in crisis housing.</p>
+        </div>
+        <div class="meta">
+          <span class="audit none">Regulated · UK</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="global">
+        <div>
+          <div class="ord"><span>No. 07</span><span class="region">Africa</span></div>
+          <h3>Maternal <em>health</em></h3>
+          <p>Sub-Saharan Africa. Training of birth attendants, antenatal care, post-partum support. Reduces preventable maternal death.</p>
+        </div>
+        <div class="meta">
+          <span class="audit none">Regulated</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+
+      <article class="pcard" role="listitem" data-region="global">
+        <div>
+          <div class="ord"><span>No. 08</span><span class="region">Global</span></div>
+          <h3>Refugee <em>women</em></h3>
+          <p>MENA and Mediterranean. Shelter, legal aid, dignity kits, women's clinic access in transit and host countries.</p>
+        </div>
+        <div class="meta">
+          <span class="audit none">Regulated</span>
+          <a href="product.html" class="pick">Choose →</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT LEDGER -->
+<section class="impact" id="ledger" aria-labelledby="ledger-title">
+  <div class="impact-max">
+    <h2 id="ledger-title">The <em>Q1 receipt</em>.</h2>
+    <p class="lede">January–March 2026. Every transfer that left the ringfenced account, where it went, what it bought. <em>Signed</em> on 12 April 2026 — auditor below.</p>
+
+    <div class="ledger-table">
+      <div class="ledger-head" role="row">
+        <span role="columnheader">Date</span>
+        <span role="columnheader">Partner</span>
+        <span role="columnheader">What it funded</span>
+        <span role="columnheader">Amount</span>
+        <span role="columnheader">Receipt</span>
+      </div>
+
+      <div class="ledger-row">
+        <span class="date">15 · 01 · 26</span>
+        <span class="to">Pakistan flood relief<em>Sindh · women's shelter</em></span>
+        <span class="what">76 mothers + children · 4 weeks emergency shelter, food, blankets</span>
+        <span class="amt">£4,200</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+      <div class="ledger-row">
+        <span class="date">14 · 02 · 26</span>
+        <span class="to">Shaukat Khanum<em>Lahore · women's cancer ward</em></span>
+        <span class="what">12 cycles of free chemotherapy · 4 women</span>
+        <span class="amt">£3,840</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+      <div class="ledger-row">
+        <span class="date">12 · 03 · 26</span>
+        <span class="to">Edhi Foundation<em>Karachi · women's home</em></span>
+        <span class="what">184 shelter nights · women fleeing domestic situations</span>
+        <span class="amt">£2,760</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+      <div class="ledger-row">
+        <span class="date">22 · 03 · 26</span>
+        <span class="to">Girls' education<em>Punjab · 9 scholars</em></span>
+        <span class="what">9 secondary-school term fees, including uniforms and transport</span>
+        <span class="amt">£1,890</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+      <div class="ledger-row">
+        <span class="date">28 · 03 · 26</span>
+        <span class="to">UK Refuge network<em>London · helpline</em></span>
+        <span class="what">41 helpline calls answered + casework set-up for 6 women</span>
+        <span class="amt">£1,330</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+      <div class="ledger-row">
+        <span class="date">30 · 03 · 26</span>
+        <span class="to">Period poverty UK<em>Bradford · 12 schools</em></span>
+        <span class="what">12 schools fully stocked for one academic term · 1,840 girls served</span>
+        <span class="amt">£2,200</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+      <div class="ledger-row">
+        <span class="date">31 · 03 · 26</span>
+        <span class="to">Maternal health<em>Sub-Saharan · training</em></span>
+        <span class="what">8 birth attendants trained · 3-week intensive · serving ~400 mothers/yr</span>
+        <span class="amt">£2,200</span>
+        <a href="#" class="receipt">PDF →</a>
+      </div>
+
+      <div class="ledger-foot">
+        <span>Q1 · 2026 · 14,247 pouches</span>
+        <span>Audited by: <em style="color:var(--berry);font-style:italic">PKF Littlejohn · 12 Apr 26</em></span>
+        <span class="total">£18,420 given</span>
+      </div>
+    </div>
+
+    <p style="margin-top:24px;font-family:'Newsreader',serif;font-style:italic;font-size:16px;color:var(--umber-2);max-width:78ch;font-weight:500">Every customer sees this in her app as part of the Impact view, plus the proportion of each entry that came from her own pouches. The pound is hers; the receipt is hers.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-sect" aria-labelledby="faq-title">
+  <div class="faq-max">
+    <h2 id="faq-title">Five questions, <em>answered</em>.</h2>
+
+    <div class="faq-grid">
+      <div>
+        <div class="q">How do you choose <em>the partners</em>?</div>
+        <div class="a">A combination of regulator status (UK Charity Commission, equivalent in country), on-the-ground spend efficiency, audit history, and — for the Asian partners — willingness to sign our <em>zero-tolerance corruption policy</em>. We update annually.</div>
+      </div>
+      <div>
+        <div class="q">What if a partner <em>fails an audit</em>?</div>
+        <div class="a">They are replaced before the next pouch ships. We publish the finding, the response, and the replacement on the audit page. No second chances, no quiet renewals — that's the policy.</div>
+      </div>
+      <div>
+        <div class="q">Why <em>£1</em>, not 1%?</div>
+        <div class="a">Because a fixed pound per pouch is honest math she can do in her head. It removes the "but how much really?" question that ruins most cause-marketing. £1 is the floor; the 10% profit share sits on top of it.</div>
+      </div>
+      <div>
+        <div class="q">Can <em>I see</em> what my pouch funded?</div>
+        <div class="a">Yes, in the Impact view of the app. Each quarter your individual pouches are mapped to the line-by-line receipts. <em>Your pound</em>, named.</div>
+      </div>
+      <div>
+        <div class="q">Why is <em>Asia</em> over-represented?</div>
+        <div class="a">Because the brand was built by and for women in the South Asian diaspora — and because the audit work and partner trust we have built sits deepest there. We expect Africa and global coverage to grow over Year 2.</div>
+      </div>
+      <div>
+        <div class="q">Can <em>I nominate</em> a partner?</div>
+        <div class="a">Yes. Email pact@herbody.co with the organisation's registration details and impact data. We review on a quarterly basis, with an annual partner refresh.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<section class="cta-band" aria-labelledby="cta-title">
+  <div class="cta-inner">
+    <div>
+      <div class="mono" style="color:var(--paper);opacity:.8;margin-bottom:14px">Begin the pact</div>
+      <h2 id="cta-title">Buy a <em>pouch</em>.<br>Name a <em>sister</em>.</h2>
+      <p class="lede">One scoop, every morning. £1 + 10% of profit to the woman she chooses. Audited. Receipted. Signed.</p>
+    </div>
+    <div class="actions">
+      <a href="product.html" class="btn">Shop The Daily <span class="arr">→</span></a>
+      <a href="#ledger" class="btn ghost">Read the Q1 receipt</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="fgrid">
+    <div>
+      <h2><em>Her</em>Body</h2>
+      <p class="lede">A halal beauty-supplement house from London. One pouch. One pact. Worldwide.</p>
+    </div>
+    <nav aria-label="Shop">
+      <h5>Shop</h5>
+      <ul>
+        <li><a href="product.html"><em>The Daily</em> · No. 01</a></li>
+        <li><a href="#">The Calm · soon</a></li>
+        <li><a href="#">The Cycle · soon</a></li>
+        <li><a href="#">Subscribe &amp; save</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="The Pact">
+      <h5>The Pact</h5>
+      <ul>
+        <li><a href="pact.html">How it works</a></li>
+        <li><a href="pact.html">The 8 partners</a></li>
+        <li><a href="#">Audit reports</a></li>
+        <li><a href="#">Apply as a partner</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="House">
+      <h5>House</h5>
+      <ul>
+        <li><a href="about.html">Our story</a></li>
+        <li><a href="quarterly.html">The Quarterly</a></li>
+        <li><a href="app.html">The App</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="fbot">
+    <span>HerBody Ltd · 26 / 14 821</span>
+    <span>Halal Authority · GB 18 / 2026</span>
+    <span>© 2026 · London · MMXXVI</span>
+    <span>herbody.co</span>
+  </div>
+</footer>
+
+<script>
+  // Partner filter tabs
+  document.querySelectorAll('.tabs button').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var filter = this.dataset.filter;
+
+      document.querySelectorAll('.tabs button').forEach(function(t) {
+        t.classList.remove('on');
+        t.setAttribute('aria-selected', 'false');
+      });
+      this.classList.add('on');
+      this.setAttribute('aria-selected', 'true');
+
+      document.querySelectorAll('.pcard').forEach(function(card) {
+        if (filter === 'all') {
+          card.style.display = '';
+        } else if (filter === 'asia' && card.dataset.region === 'asia') {
+          card.style.display = '';
+        } else if (filter === 'uk' && card.dataset.region === 'uk') {
+          card.style.display = '';
+        } else if (filter === 'global' && card.dataset.region === 'global') {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+<script src="site.js" defer></script>
+
+</body>
+</html>

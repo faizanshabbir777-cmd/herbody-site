@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HerBody · The App — the Mirror, the Calendar, the Pact, Impact</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="The HerBody app is the personal layer of the formula. The Mirror reads her change, the Calendar matches her cycle, the Pact hands her the keys, Impact shows what her pound did.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,300;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== APP PAGE SPECIFIC ===== */
+  .app-hero {
+    padding: 80px 36px 60px;
+    background: var(--bone);
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (max-width: 800px) { .app-hero { padding: 50px 20px 40px; } }
+  .app-hero-grid {
+    max-width: 1380px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 60px;
+    align-items: end;
+  }
+  @media (max-width: 1000px) { .app-hero-grid { grid-template-columns: 1fr; gap: 40px; } }
+  .app-hero h1 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(54px, 9vw, 140px);
+    line-height: .86;
+    letter-spacing: -.035em;
+    color: var(--umber);
+  }
+  .app-hero h1 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .app-hero .lede {
+    font-family: "Newsreader", serif;
+    font-size: 21px;
+    line-height: 1.4;
+    color: var(--umber-2);
+    max-width: 44ch;
+    margin-top: 28px;
+    padding-left: 24px;
+    border-left: 1px solid var(--rule);
+    font-weight: 400;
+  }
+  .app-hero .lede em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .store-badges { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+  .store-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--umber);
+    color: var(--bone);
+    border: 1px solid var(--umber);
+    transition: background .15s, color .15s;
+  }
+  .store-badge:hover { background: var(--berry-deep); border-color: var(--berry-deep); }
+  .store-badge .glyph {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Newsreader", serif; font-weight: 600; font-size: 18px;
+  }
+  .store-badge .copy { display: flex; flex-direction: column; line-height: 1; }
+  .store-badge .copy .a { font-family: "Geist Mono", monospace; font-size: 9px; letter-spacing: .22em; opacity: .7; text-transform: uppercase; font-weight: 500; }
+  .store-badge .copy .b { font-family: "Newsreader", serif; font-size: 17px; font-weight: 500; margin-top: 3px; letter-spacing: -.01em; }
+
+  /* phone row */
+  .phone-stage {
+    display: flex; gap: 14px; justify-content: center; align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .phone-stage .mphone:nth-child(2) { transform: translateY(-22px); }
+  @media (max-width: 700px) { .phone-stage .mphone:nth-child(2) { transform: none; } }
+
+  /* feature blocks */
+  .feat-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  @media (max-width: 1000px) { .feat-block { grid-template-columns: 1fr; gap: 36px; } }
+  .feat-block.flip > .text { order: 2; }
+  @media (max-width: 1000px) { .feat-block.flip > .text { order: 0; } }
+  .feat-block .text .num {
+    font-family: "Geist Mono", monospace;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: .24em;
+    color: var(--berry-deep);
+    text-transform: uppercase;
+    padding-top: 14px;
+    border-top: 1px solid var(--umber);
+    display: inline-block;
+    padding-right: 30px;
+  }
+  .feat-block .text h2 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(40px, 5.5vw, 72px);
+    line-height: .94;
+    letter-spacing: -.025em;
+    color: var(--umber);
+    margin-top: 22px;
+    max-width: 14ch;
+  }
+  .feat-block .text h2 em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .feat-block .text .body {
+    font-family: "Newsreader", serif;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--umber-2);
+    margin-top: 22px;
+    max-width: 44ch;
+    font-weight: 400;
+  }
+  .feat-block .text .body em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+  .feat-block .text .row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    margin-top: 28px;
+    border: 1px solid var(--rule);
+  }
+  .feat-block .text .row > div { padding: 16px 18px; }
+  .feat-block .text .row > div + div { border-left: 1px solid var(--rule); }
+  .feat-block .text .row .k {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .feat-block .text .row .v {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--umber);
+    letter-spacing: -.015em;
+  }
+  .feat-block .text .row .l {
+    font-family: "Geist", sans-serif;
+    font-size: 12px;
+    color: var(--umber-2);
+    margin-top: 6px;
+    line-height: 1.4;
+    font-weight: 400;
+  }
+
+  /* big phone (single feature focus) */
+  .big-phone {
+    background: var(--umber);
+    border-radius: 40px;
+    padding: 12px;
+    width: min(320px, 90%);
+    aspect-ratio: .49 / 1;
+    box-shadow: 0 60px 80px -50px rgba(0, 0, 0, .55);
+    margin: 0 auto;
+    position: relative;
+  }
+  .big-phone .ms {
+    background: var(--bone);
+    height: 100%;
+    border-radius: 30px;
+    overflow: hidden;
+    padding: 36px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+  }
+  .big-phone .notch {
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 90px; height: 18px;
+    background: var(--umber);
+    border-radius: 11px;
+    z-index: 2;
+  }
+  .big-phone .tb {
+    display: flex; justify-content: space-between;
+    font-family: "Geist Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--umber-2);
+    font-weight: 500;
+  }
+  .big-phone .h {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: 36px;
+    line-height: .92;
+    letter-spacing: -.02em;
+    color: var(--umber);
+    margin-top: 4px;
+  }
+  .big-phone .h em { font-style: italic; font-weight: 500; color: var(--berry-deep); }
+
+  /* Mirror big phone */
+  .big-phone .face {
+    flex: 1;
+    background: linear-gradient(180deg, var(--bone-2), #DDD2BD);
+    border-radius: 8px;
+    border: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+  }
+  .big-phone .face .sil {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -46%);
+    width: 50%;
+    aspect-ratio: 1 / 1.25;
+    border: 1px dashed var(--umber);
+    border-radius: 50% 50% 45% 45%;
+    opacity: .55;
+  }
+  .big-phone .face .scan {
+    position: absolute;
+    left: 14%; right: 14%;
+    top: 55%;
+    height: 1px;
+    background: var(--berry);
+  }
+  .big-phone .face .scan::before, .big-phone .face .scan::after {
+    content: ""; position: absolute; top: -3px;
+    width: 6px; height: 6px;
+    background: var(--berry);
+    border-radius: 50%;
+  }
+  .big-phone .face .scan::before { left: -3px; }
+  .big-phone .face .scan::after { right: -3px; }
+  .big-phone .face .corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    border: 1px solid var(--berry);
+  }
+  .big-phone .face .corner.tl { top: 16px; left: 16px; border-right: 0; border-bottom: 0; }
+  .big-phone .face .corner.tr { top: 16px; right: 16px; border-left: 0; border-bottom: 0; }
+  .big-phone .face .corner.bl { bottom: 16px; left: 16px; border-right: 0; border-top: 0; }
+  .big-phone .face .corner.br { bottom: 16px; right: 16px; border-left: 0; border-top: 0; }
+  .big-phone .met {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .big-phone .met .m {
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .big-phone .met .m .l {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--umber);
+    font-weight: 500;
+  }
+  .big-phone .met .m .r {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .12em;
+    color: var(--sage-deep);
+    font-weight: 600;
+  }
+
+  /* Calendar phone */
+  .big-phone.cal .ring-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 0;
+  }
+  .big-phone.cal .ring {
+    width: 200px; height: 200px;
+    position: relative;
+  }
+  .big-phone.cal .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .big-phone.cal .ring .day {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .big-phone.cal .ring .day .n {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--umber);
+    letter-spacing: -.025em;
+  }
+  .big-phone.cal .ring .day .p {
+    font-family: "Geist Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .big-phone.cal .actv {
+    background: var(--umber);
+    color: var(--bone);
+    padding: 14px 16px;
+    width: 100%;
+  }
+  .big-phone.cal .actv .k {
+    font-family: "Geist Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .big-phone.cal .actv .v {
+    font-family: "Newsreader", serif;
+    font-size: 16px;
+    color: var(--bone);
+    line-height: 1.3;
+    font-weight: 400;
+  }
+  .big-phone.cal .actv .v em { font-style: italic; font-weight: 500; color: var(--berry); }
+
+  /* Pact phone */
+  .big-phone.pact .pl { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .big-phone.pact .pi {
+    padding: 10px 12px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--umber);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+  .big-phone.pact .pi.on {
+    background: var(--umber);
+    color: var(--bone);
+    border-color: var(--umber);
+  }
+  .big-phone.pact .pi .ck {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    flex-shrink: 0;
+  }
+  .big-phone.pact .pi.on .ck {
+    background: var(--berry);
+    border-color: var(--berry);
+    position: relative;
+  }
+  .big-phone.pact .pi.on .ck::after {
+    content: ""; position: absolute;
+    left: 4px; top: 2px;
+    width: 4px; height: 7px;
+    border: 1.8px solid var(--bone);
+    border-top: 0; border-left: 0;
+    transform: rotate(45deg);
+  }
+  .big-phone.pact .confirm {
+    background: var(--berry);
+    color: var(--paper);
+    padding: 10px;
+    text-align: center;
+    font-family: "Geist Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Impact phone */
+  .big-phone.imp .il { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .big-phone.imp .ir {
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .big-phone.imp .ir .nm {
+    font-family: "Newsreader", serif;
+    font-size: 13px;
+    color: var(--umber);
+    font-weight: 500;
+    line-height: 1.15;
+  }
+  .big-phone.imp .ir .nm em { font-style: italic; color: var(--berry-deep); }
+  .big-phone.imp .ir .vv {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--sage-deep);
+    line-height: 1;
+    letter-spacing: -.015em;
+  }
+  .big-phone.imp .audit {
+    margin-top: 6px;
+    background: var(--sage-deep);
+    color: var(--bone);
+    padding: 8px 10px;
+    text-align: center;
+    font-family: "Geist Mono", monospace;
+    font-size: 8px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* privacy band */
+  .privacy-band {
+    background: var(--umber);
+    color: var(--bone);
+    padding: 80px 36px;
+  }
+  @media (max-width: 800px) { .privacy-band { padding: 50px 20px; } }
+  .privacy-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: .9fr 1.1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  @media (max-width: 800px) { .privacy-inner { grid-template-columns: 1fr; gap: 30px; } }
+  .privacy-inner .lock {
+    width: 110px; height: 110px;
+    border: 1px solid var(--berry);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 70px;
+    color: var(--berry);
+    letter-spacing: -.04em;
+    line-height: 1;
+  }
+  .privacy-inner h2 {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 60px);
+    line-height: .96;
+    letter-spacing: -.025em;
+    color: var(--bone);
+  }
+  .privacy-inner h2 em { font-style: italic; font-weight: 500; color: var(--berry); }
+  .privacy-inner p {
+    font-family: "Newsreader", serif;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--bone);
+    opacity: .82;
+    margin-top: 20px;
+    max-width: 50ch;
+    font-weight: 400;
+  }
+
+  /* small print under hero */
+  .qr-row {
+    display: flex; gap: 24px; align-items: center; margin-top: 36px;
+    padding-top: 28px; border-top: 1px solid var(--rule);
+    flex-wrap: wrap;
+  }
+  .qr-row .qr {
+    width: 90px; height: 90px;
+    background:
+      linear-gradient(0deg, var(--umber) 50%, transparent 50%) 0 0/8px 8px,
+      linear-gradient(90deg, var(--umber) 50%, transparent 50%) 0 0/8px 8px,
+      var(--paper);
+    border: 6px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--umber);
+    flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  .qr-row .qr-copy {
+    font-family: "Newsreader", serif;
+    font-size: 15px;
+    color: var(--umber-2);
+    line-height: 1.4;
+    max-width: 28ch;
+    font-weight: 400;
+  }
+  .qr-row .qr-copy b {
+    font-family: "Geist Mono", monospace;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--berry-deep);
+    display: block;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker">
+  <span><span class="dot"></span>Free UK shipping over £35 · Halal-certified · Made in UK</span>
+  <span>£1 + 10% per pouch → her chosen cause</span>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="links">
+    <a href="product.html">Shop</a>
+    <a href="pact.html">The Pact</a>
+    <a href="app.html" class="on">The App</a>
+    <a href="quarterly.html">The Quarterly</a>
+  </div>
+  <a href="index.html" class="brand"><div class="her">Her</div><div class="body">Body</div></a>
+  <div class="right">
+    <a href="about.html">About</a>
+    <div class="bag" data-bag>Bag <span class="count" data-bag-count>0</span></div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="app-hero">
+  <div class="app-hero-grid">
+    <div>
+      <div class="eyebrow">No. 02 · The App · iOS · Android</div>
+      <h1>
+        A formula<br>
+        that <em>knows</em><br>
+        her back.
+      </h1>
+      <p class="lede">
+        Not a marketing surface. The <em>personal layer</em> of the product. The Mirror watches her change. The Calendar matches her cycle. The Pact hands her the keys. Impact shows what her pound did.
+      </p>
+      <div class="store-badges">
+        <a href="#" class="store-badge">
+          <span class="glyph">∆</span>
+          <span class="copy"><span class="a">Download on</span><span class="b">App Store</span></span>
+        </a>
+        <a href="#" class="store-badge">
+          <span class="glyph">▶</span>
+          <span class="copy"><span class="a">Get it on</span><span class="b">Google Play</span></span>
+        </a>
+      </div>
+      <div class="qr-row">
+        <div class="qr" aria-hidden="true"></div>
+        <div class="qr-copy"><b>Scan to install</b>iPhone or Android · the same app · the same Pact, in her hand.</div>
+      </div>
+    </div>
+    <div>
+      <div class="big-phone">
+        <div class="notch"></div>
+        <div class="ms">
+          <div class="tb"><span>The Mirror</span><span>WK 12 · MAY 26</span></div>
+          <div class="h"><em>How she's</em><br>changing.</div>
+          <div class="face">
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+            <div class="sil"></div>
+            <div class="scan"></div>
+          </div>
+          <div class="met">
+            <div class="m"><span class="l">Lustre</span><span class="r">+18%</span></div>
+            <div class="m"><span class="l">Firmness</span><span class="r">+11%</span></div>
+            <div class="m"><span class="l">Evenness</span><span class="r">+9%</span></div>
+            <div class="m"><span class="l">Undereye</span><span class="r">+14%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE MIRROR ============ -->
+<section>
+  <div class="max">
+    <div class="feat-block flip">
+      <div class="text">
+        <span class="num">i · The Mirror</span>
+        <h2>A weekly selfie. <em>The long, honest line.</em></h2>
+        <p class="body">Once a week, in the same light, the phone reads firmness, lustre, evenness and undereye. Eight weeks in, she sees a line — not ours, hers. <em>Read on her phone, kept on her phone.</em></p>
+        <div class="row">
+          <div><div class="k">i · Read</div><div class="v">on the phone</div><div class="l">Apple Neural Engine · TensorFlow Lite on Android</div></div>
+          <div><div class="k">ii · Sent</div><div class="v">never</div><div class="l">No image, no embedding, ever leaves the device</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="big-phone">
+          <div class="notch"></div>
+          <div class="ms">
+            <div class="tb"><span>The Mirror</span><span>WK 12</span></div>
+            <div class="h"><em>How she's</em><br>changing.</div>
+            <div class="face">
+              <div class="corner tl"></div><div class="corner tr"></div>
+              <div class="corner bl"></div><div class="corner br"></div>
+              <div class="sil"></div>
+              <div class="scan"></div>
+            </div>
+            <div class="met">
+              <div class="m"><span class="l">Lustre</span><span class="r">+18%</span></div>
+              <div class="m"><span class="l">Firmness</span><span class="r">+11%</span></div>
+              <div class="m"><span class="l">Evenness</span><span class="r">+9%</span></div>
+              <div class="m"><span class="l">Undereye</span><span class="r">+14%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE CALENDAR ============ -->
+<section style="background: var(--paper)">
+  <div class="max">
+    <div class="feat-block">
+      <div class="text">
+        <span class="num">ii · The Calendar</span>
+        <h2>A calendar that <em>listens to her cycle.</em></h2>
+        <p class="body">She tells the app her day. It tells her which of her nutrients is doing the most work for her today — <em>and why.</em> No more pamphlets. The formula speaks.</p>
+        <div class="row">
+          <div><div class="k">i · Today</div><div class="v">Day 14</div><div class="l">Ovulatory · creatine + B6 leading</div></div>
+          <div><div class="k">ii · Tomorrow</div><div class="v">Day 15</div><div class="l">Inositol + cranberry holding the line</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="big-phone cal">
+          <div class="notch"></div>
+          <div class="ms">
+            <div class="tb"><span>The Calendar</span><span>MAY 26</span></div>
+            <div class="h"><em>Day 14 ·</em><br>ovulatory.</div>
+            <div class="ring-wrap">
+              <div class="ring">
+                <svg viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(42,30,21,.12)" stroke-width="6"/>
+                  <circle cx="100" cy="100" r="92" fill="none" stroke="#EF4A6B" stroke-width="6" stroke-dasharray="578" stroke-dashoffset="318" stroke-linecap="round"/>
+                </svg>
+                <div class="day"><div class="n">14</div><div class="p">of 28</div></div>
+              </div>
+              <div class="actv">
+                <div class="k">Today's lead nutrient</div>
+                <div class="v"><em>Creatine</em> + <em>B6</em> — energy, ovulation support, mood.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE PACT ============ -->
+<section>
+  <div class="max">
+    <div class="feat-block flip">
+      <div class="text">
+        <span class="num">iii · The Pact</span>
+        <h2>The keys to <em>her pound.</em></h2>
+        <p class="body">Each month she chooses where the £1 goes. Same eight partners — Shaukat Khanum, Edhi, Pakistan flood relief, Girls' education and four more. <em>Audited. Zero-tolerance on corruption. Receipts published quarterly.</em></p>
+        <div class="row">
+          <div><div class="k">i · Per pouch</div><div class="v">£1</div><div class="l">Leaves before profit is calculated</div></div>
+          <div><div class="k">ii · Of profit</div><div class="v">10%</div><div class="l">Audited annually · PKF Littlejohn</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="big-phone pact">
+          <div class="notch"></div>
+          <div class="ms">
+            <div class="tb"><span>The Pact</span><span>MAY 26</span></div>
+            <div class="h">Choose her<br><em>cause.</em></div>
+            <div class="pl">
+              <div class="pi"><span>Shaukat Khanum</span><span class="ck"></span></div>
+              <div class="pi"><span>Edhi Foundation</span><span class="ck"></span></div>
+              <div class="pi on"><span>Pakistan flood relief</span><span class="ck"></span></div>
+              <div class="pi"><span>Girls' education</span><span class="ck"></span></div>
+              <div class="pi"><span>Survivors of violence</span><span class="ck"></span></div>
+              <div class="pi"><span>Period poverty</span><span class="ck"></span></div>
+              <div class="pi"><span>Maternal health</span><span class="ck"></span></div>
+              <div class="pi"><span>Refugee women</span><span class="ck"></span></div>
+            </div>
+            <div class="confirm">£14 this month · confirmed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ IMPACT ============ -->
+<section style="background: var(--paper)">
+  <div class="max">
+    <div class="feat-block">
+      <div class="text">
+        <span class="num">iv · Impact</span>
+        <h2>What her pound <em>actually did.</em></h2>
+        <p class="body">A live ledger. Treatments at Shaukat Khanum. Shelter nights at Edhi. Mothers reached by Pakistan flood relief. Scholars sent. <em>Real outcomes, signed quarterly.</em></p>
+        <div class="row">
+          <div><div class="k">i · Q1 2026</div><div class="v">£18,420</div><div class="l">Across 8 partners · receipt published</div></div>
+          <div><div class="k">ii · Audit</div><div class="v">0 findings</div><div class="l">PKF Littlejohn · zero-tolerance</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="big-phone imp">
+          <div class="notch"></div>
+          <div class="ms">
+            <div class="tb"><span>Impact</span><span>Q1 · 2026</span></div>
+            <div class="h">What her<br><em>pound did.</em></div>
+            <div class="il">
+              <div class="ir"><span class="nm">Shaukat Khanum<br><em>cancer treatments</em></span><span class="vv">+12 cycles</span></div>
+              <div class="ir"><span class="nm">Edhi Foundation<br><em>shelter nights</em></span><span class="vv">+184</span></div>
+              <div class="ir"><span class="nm">Pakistan flood<br><em>women reached</em></span><span class="vv">+76</span></div>
+              <div class="ir"><span class="nm">Girls' education<br><em>scholars</em></span><span class="vv">+9</span></div>
+              <div class="ir"><span class="nm">UK refuge<br><em>helpline calls</em></span><span class="vv">+41</span></div>
+            </div>
+            <div class="audit">Audited · Zero-tolerance · Q1 signed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRIVACY ============ -->
+<section class="privacy-band">
+  <div class="privacy-inner">
+    <div class="lock">k</div>
+    <div>
+      <h2>What the phone reads, <em>it reads on her phone.</em></h2>
+      <p>The selfie never leaves the device. There is no facial-recognition account, no embedding stored on a server, no ad targeting against her face. The brand is built so the only person who ever sees her change is her.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section style="background: var(--berry); border-bottom: 0; padding: 90px 36px; text-align: center">
+  <div class="max">
+    <div class="mono" style="color: var(--paper); margin-bottom: 14px; opacity: .85">Ready when she is</div>
+    <h2 style="font-family: 'Newsreader', serif; font-weight: 400; font-size: clamp(40px, 6vw, 80px); line-height: .92; letter-spacing: -.028em; color: var(--paper); max-width: 18ch; margin: 0 auto">
+      The pouch arrives. <em style="font-style: italic; font-weight: 500; color: var(--lemon)">The app waits inside.</em>
+    </h2>
+    <div style="display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap">
+      <a href="product.html" class="btn" style="background: var(--paper); border-color: var(--paper); color: var(--berry-deep)">Order The Daily <span class="arr">→</span></a>
+      <a href="pact.html" class="btn" style="background: transparent; border-color: var(--paper); color: var(--paper)">Read The Pact</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="fgrid">
+    <div>
+      <h2><em>Her</em>Body</h2>
+      <p class="lede">A halal beauty-supplement house from London. One pouch. One pact. Worldwide.</p>
+    </div>
+    <div>
+      <h5>Shop</h5>
+      <ul>
+        <li><a href="product.html"><em>The Daily</em> · No. 01</a></li>
+        <li><a href="#">The Calm · No. 02 · soon</a></li>
+        <li><a href="#">The Cycle · No. 03 · soon</a></li>
+        <li><a href="#">Gift cards</a></li>
+        <li><a href="#">Subscribe &amp; save</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>The Pact</h5>
+      <ul>
+        <li><a href="pact.html">How it works</a></li>
+        <li><a href="pact.html">The 8 partners</a></li>
+        <li><a href="#">Audit reports</a></li>
+        <li><a href="#">Impact ledger</a></li>
+        <li><a href="#">Apply as a partner</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>House</h5>
+      <ul>
+        <li><a href="about.html">Our story</a></li>
+        <li><a href="quarterly.html">The Quarterly</a></li>
+        <li><a href="app.html">The App</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>HerBody Ltd · Companies House 26 / 14 821</span>
+    <span>Halal Authority · GB 18 / 2026</span>
+    <span>© 2026 · London · MMXXVI</span>
+    <span><a href="#" style="opacity: 1">herbody.co</a></span>
+  </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>
