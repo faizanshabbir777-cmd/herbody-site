@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="HerBody">
+  <!-- Left cell: paper background -->
+  <rect x="0" y="0" width="16" height="32" fill="#F8F4EB"/>
+  <!-- Right cell: umber background -->
+  <rect x="16" y="0" width="16" height="32" fill="#2A1E15"/>
+  <!-- "H" italic serif in umber on the giving half -->
+  <text x="8" y="16" fill="#2A1E15"
+        font-family="Newsreader, Georgia, serif" font-size="20" font-weight="500"
+        font-style="italic" text-anchor="middle" dominant-baseline="central">H</text>
+  <!-- "B" bold serif in bone on the enhancing half -->
+  <text x="24" y="16" fill="#F2ECE0"
+        font-family="Newsreader, Georgia, serif" font-size="20" font-weight="700"
+        text-anchor="middle" dominant-baseline="central">B</text>
+  <!-- 1px umber border around the whole square -->
+  <rect x="0.5" y="0.5" width="31" height="31" fill="none" stroke="#2A1E15" stroke-width="1"/>
+</svg>

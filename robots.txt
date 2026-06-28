@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://faizanshabbir777-cmd.github.io/herbody-site/sitemap.xml
