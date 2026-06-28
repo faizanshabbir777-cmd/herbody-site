@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/live-site-launch-dk7xgv
   workflow_dispatch:
 
 permissions:
