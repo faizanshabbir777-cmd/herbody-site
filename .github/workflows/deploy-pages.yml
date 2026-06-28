@@ -1,4 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy site to GitHub Pages
+
+# Publishes the static HerBody site so it can be shared at a public URL.
+# The github-pages environment only permits deployments from the default
+# branch, so this runs on main (and on demand) — not on feature branches.
 
 on:
   push:
@@ -6,11 +10,13 @@ on:
       - main
   workflow_dispatch:
 
+# Permissions required by the official Pages deploy actions.
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow one concurrent deployment; don't cancel an in-progress publish.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -28,12 +34,14 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
+          # Turn Pages on automatically the first time this runs.
           enablement: true
 
-      - name: Upload artifact
+      - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          # The whole repo root is the static site (plain HTML/CSS/JS).
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
