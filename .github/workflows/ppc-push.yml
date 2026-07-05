@@ -1,0 +1,51 @@
+name: ppc-push
+# Pushes PAUSED campaign drafts to ad platforms. Deliberately heavy-gated:
+#  1) manual dispatch only, 2) GitHub environment "ads-production" (set a required
+#  reviewer on it in repo Settings → Environments), 3) approvals/ADS_LAUNCH_APPROVAL.json
+#  must exist (committed by the human), 4) all campaigns land PAUSED regardless.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel to push (google/meta/tiktok/all)"
+        default: "google"
+jobs:
+  push-drafts:
+    runs-on: ubuntu-latest
+    environment: ads-production
+    timeout-minutes: 15
+    env:
+      ADS_AUTOMATION_MODE: draft_only
+      MAX_DAILY_BUDGET_GBP: "25"
+      GOOGLE_ADS_DEVELOPER_TOKEN: ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+      GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+      GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+      GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+      GOOGLE_ADS_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_CUSTOMER_ID }}
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_AD_ACCOUNT_ID: ${{ secrets.META_AD_ACCOUNT_ID }}
+      TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+      TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard — human approval file must exist
+        run: |
+          if [ ! -f approvals/ADS_LAUNCH_APPROVAL.json ]; then
+            echo "::error::approvals/ADS_LAUNCH_APPROVAL.json not found. Copy the .example, fill it in, commit it. Campaigns stay in the repo as drafts."
+            exit 1
+          fi
+          cat approvals/ADS_LAUNCH_APPROVAL.json
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Push paused drafts / regenerate import files
+        run: |
+          echo "Channel: ${{ github.event.inputs.channel }}"
+          echo "No live-activation code path exists in this repo by design."
+          echo "Google: use the Ads Editor CSVs in data/ppc-export/ (regenerated daily by the fleet)."
+          echo "Meta/TikTok API draft-push scripts are a documented follow-up once tokens are approved — see SETUP.md."
+      - name: Upload latest Ads Editor CSVs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-ads-editor-csv
+          path: data/ppc-export/*.csv
+          if-no-files-found: warn

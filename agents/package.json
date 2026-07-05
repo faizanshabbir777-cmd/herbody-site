@@ -1,0 +1,12 @@
+{
+  "name": "herbody-agents",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": { "@anthropic-ai/sdk": "^0.39.0" },
+  "scripts": {
+    "fleet": "node metrics.js && node tiktok.js && node social.js && node ppc.js && node master.js",
+    "weekly": "node master.js --weekly",
+    "publish": "node publish.js"
+  }
+}

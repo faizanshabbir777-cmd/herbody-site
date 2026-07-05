@@ -1,0 +1,23 @@
+name: shopify-store-setup
+# Idempotent store provisioning: product, collection, pages, policies via Admin GraphQL.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (print mutations only)"
+        default: "true"
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+      SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+      DRY_RUN: ${{ github.event.inputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Run store setup
+        working-directory: shopify/setup
+        run: node store-setup.mjs

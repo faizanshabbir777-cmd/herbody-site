@@ -1,0 +1,71 @@
+name: agent-fleet
+# Daily marketing fleet: metrics → OmniFlash TikTok → social → PPC → MASTER brief → one commit.
+on:
+  schedule:
+    - cron: "17 5 * * *"   # 05:17 UTC daily (off-peak minute; cron may drift — runs are idempotent)
+  workflow_dispatch: {}
+concurrency:
+  group: repo-writer
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  fleet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+      SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+      TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+      TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_AD_ACCOUNT_ID: ${{ secrets.META_AD_ACCOUNT_ID }}
+      GOOGLE_ADS_DEVELOPER_TOKEN: ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+      GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+      GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+      GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+      GOOGLE_ADS_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_CUSTOMER_ID }}
+      MAX_DAILY_BUDGET_GBP: "25"
+      ADS_AUTOMATION_MODE: draft_only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: agents/package-lock.json
+      - name: Install agent deps
+        working-directory: agents
+        run: npm ci || npm install
+      - name: Guard — Anthropic key present
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is required for the agent fleet"; exit 1; fi
+      - name: Metrics
+        working-directory: agents
+        run: node metrics.js
+      - name: OmniFlash (TikTok)
+        working-directory: agents
+        run: node tiktok.js
+      - name: Social
+        working-directory: agents
+        run: node social.js
+      - name: PPC
+        working-directory: agents
+        run: node ppc.js
+      - name: Master (daily brief)
+        working-directory: agents
+        run: node master.js
+      - name: Commit state (single commit)
+        run: |
+          git config user.name "herbody-fleet[bot]"
+          git config user.email "fleet@herbody.local"
+          git add data/
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "fleet: daily run $(date -u +%F) [bot]"
+          for i in 1 2 3; do
+            git pull --rebase origin ${GITHUB_REF_NAME} && git push && exit 0
+            sleep $((RANDOM % 5 + 2))
+          done
+          exit 1
