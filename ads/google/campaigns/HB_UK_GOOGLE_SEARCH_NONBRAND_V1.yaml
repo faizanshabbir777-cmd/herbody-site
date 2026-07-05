@@ -1,0 +1,115 @@
+# HerBody — Google Search non-brand v1 · DRAFT, built PAUSED.
+# Live only when the human approval file (approvals/) lists this campaign.
+# TARGETING NOTE: keywords are product-category terms only. We do NOT bid on
+# condition terms (pcos, hormones, bloating, hair loss etc.) — that is
+# sensitive-health targeting and problem-calling by keyword. Negatives enforce this.
+# RSA limits respected: headlines <= 30 chars, descriptions <= 90 chars.
+
+campaign:
+  name: HB_UK_GOOGLE_SEARCH_NONBRAND_V1
+  platform: google
+  status: PAUSED
+  objective: SEARCH_CONVERSIONS
+  network: search_only
+  daily_budget_gbp: 10
+  bidding: MAXIMIZE_CLICKS        # cold start; move to conversions once data exists
+  geo: United Kingdom
+  language: en
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen
+  utm_base: utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1
+
+campaign_negative_keywords:
+  # commercial hygiene
+  - { text: "free",      match_type: PHRASE }
+  - { text: "cheap",     match_type: PHRASE }
+  - { text: "amazon",    match_type: PHRASE }
+  - { text: "ebay",      match_type: PHRASE }
+  - { text: "jobs",      match_type: PHRASE }
+  # audience fit
+  - { text: "for men",   match_type: PHRASE }
+  - { text: "mens",      match_type: PHRASE }
+  # sensitive-health / condition terms — HARD RULE, never remove
+  - { text: "pcos",           match_type: PHRASE }
+  - { text: "hormone",        match_type: PHRASE }
+  - { text: "hormones",       match_type: PHRASE }
+  - { text: "bloating",       match_type: PHRASE }
+  - { text: "hair loss",      match_type: PHRASE }
+  - { text: "pregnancy",      match_type: PHRASE }
+  - { text: "pregnant",       match_type: PHRASE }
+  - { text: "breastfeeding",  match_type: PHRASE }
+  - { text: "fertility",      match_type: PHRASE }
+  - { text: "menopause",      match_type: PHRASE }
+  - { text: "weight loss",    match_type: PHRASE }
+  - { text: "side effects",   match_type: PHRASE }
+  # minors
+  - { text: "for kids",  match_type: PHRASE }
+  - { text: "teen",      match_type: PHRASE }
+
+sitelinks:
+  - { text: "See The Full Label",   final_url: "https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen", desc1: "13 actives, every dose", desc2: "printed on the front" }
+  - { text: "Batch Testing & COA",  final_url: "https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen#quality", desc1: "Third-party tested", desc2: "Certificate per lot" }
+  - { text: "The Pledge",           final_url: "https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen#pledge", desc1: "20% of profits, audited", desc2: "You choose the cause" }
+  - { text: "Subscribe & Save 15%", final_url: "https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen", desc1: "£33.99 · 21 servings", desc2: "From £1.62 a day" }
+
+shared_rsa: &nonbrand_rsa
+  path1: creatine-collagen
+  path2: for-women
+  headlines:              # all <= 30 chars
+    - "Creatine + Collagen For Women"
+    - "5g + 5g + A Multivitamin"
+    - "The Studied 5g Dose"
+    - "One Scoop. 13 Actives."
+    - "HerBody No.01 — The Daily"
+    - "From £1.62 A Day Subscribed"
+    - "Halal Certified · HMC"
+    - "Batch Tested — COA Per Lot"
+    - "Made In A UK GMP Facility"
+    - "Strawberry Lemonade Flavour"
+    - "21 Servings Per Pouch"
+    - "30-Day Flavour Guarantee"
+    - "Subscribe & Save 15%"
+    - "Nothing Hidden Nothing Vague"
+    - "Good For You. Good For Her."
+  descriptions:           # all <= 90 chars
+    - "5g Creapure® creatine, 5g Verisol® collagen and a complete multivitamin in one scoop."
+    - "Halal certified, batch tested, made in the UK. Nothing hidden, nothing vague."
+    - "£39.99 one-time or £33.99 subscribed — from £1.62 a day. 30-day flavour guarantee."
+    - "20% of profits, audited, fund refuge, care and crisis support. You choose the cause."
+  compliance_status: PASS
+
+ad_groups:
+  - name: HB_NB_CREATINE_WOMEN
+    status: PAUSED
+    keywords:
+      - { text: "creatine for women",        match_type: EXACT }
+      - { text: "creatine for women",        match_type: PHRASE }
+      - { text: "best creatine for women",   match_type: EXACT }
+      - { text: "creatine for women uk",     match_type: EXACT }
+      - { text: "womens creatine",           match_type: PHRASE }
+    rsa:
+      <<: *nonbrand_rsa
+      final_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1&utm_content=rsa_creatinewomen01&utm_term={keyword}
+
+  - name: HB_NB_CREATINE_COLLAGEN
+    status: PAUSED
+    keywords:
+      - { text: "creatine and collagen",              match_type: EXACT }
+      - { text: "creatine and collagen",              match_type: PHRASE }
+      - { text: "creatine collagen supplement",       match_type: EXACT }
+      - { text: "collagen and creatine together",     match_type: PHRASE }
+      - { text: "creatine collagen multivitamin",     match_type: EXACT }
+    rsa:
+      <<: *nonbrand_rsa
+      final_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1&utm_content=rsa_creatinecollagen01&utm_term={keyword}
+
+  - name: HB_NB_HALAL
+    status: PAUSED
+    keywords:
+      - { text: "halal creatine",                match_type: EXACT }
+      - { text: "halal creatine",                match_type: PHRASE }
+      - { text: "halal collagen",                match_type: EXACT }
+      - { text: "halal collagen uk",             match_type: PHRASE }
+      - { text: "halal supplements for women",   match_type: EXACT }
+    rsa:
+      <<: *nonbrand_rsa
+      final_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1&utm_content=rsa_halal01&utm_term={keyword}

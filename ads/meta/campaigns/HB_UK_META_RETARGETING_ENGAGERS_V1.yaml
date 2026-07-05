@@ -1,0 +1,128 @@
+# HerBody — Meta retargeting v1 · DRAFT, built PAUSED.
+#
+# ACTIVATION RULES (all must hold before this campaign is even considered for launch):
+#   1. Meta Pixel + Conversions API installed, purchase events verified for >= 7 days.
+#   2. The custom audiences below actually EXIST and have minimum matched size
+#      (Meta enforces ~100/1,000 depending on type) — do not launch against empty seeds.
+#   3. Audiences are engagement/traffic-based ONLY. NEVER build or use audiences from
+#      sensitive-health signals, condition keywords, pregnancy status, or body-image
+#      interests — neither as inclusion, exclusion (beyond purchasers), nor lookalike seed.
+#   4. Human approval file in approvals/ lists this campaign by name.
+#
+# Channel budget rule: Meta total across ALL campaigns <= £25/day.
+
+campaign:
+  name: HB_UK_META_RETARGETING_ENGAGERS_V1
+  platform: meta
+  status: PAUSED
+  objective: OUTCOME_SALES
+  daily_budget_gbp: 5
+  special_ad_categories: []
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen
+  utm_base: utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1
+
+ad_sets:
+  - name: HB_UK_META_RTG_ADSET_ENGAGERS30_V1
+    status: PAUSED
+    optimization_goal: OFFSITE_CONVERSIONS
+    billing_event: IMPRESSIONS
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [facebook_feed, instagram_feed, instagram_reels, instagram_stories]
+      custom_audiences:
+        - "IG/FB engagers 30d (page/profile/ad engagement)"   # create in Ads Manager first
+      excluded_custom_audiences:
+        - "Purchasers 180d"
+    ads:
+      - name: HB_META_RTG_CT05_COA
+        status: PAUSED
+        primary_text: >-
+          Your pouch carries a batch code like HB-26·0417. Every code maps to a
+          third-party certificate of analysis. Tested for purity — every single
+          batch. Ask us for yours, any time.
+        headline: Tested. Every single batch.
+        description: Made in a GMP-certified UK facility
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1&utm_content=edu_coa01
+        utm: { content: edu_coa01 }
+        compliance_status: PASS
+      - name: HB_META_RTG_CT25_PPD
+        status: PAUSED
+        primary_text: >-
+          Per-day is the honest way to price a daily. Subscribed, The Daily is
+          £33.99 for 21 servings — from £1.62 a day. Pause or cancel any time.
+          30-day flavour guarantee.
+        headline: From £1.62 a day
+        description: "£33.99 ÷ 21 servings — the maths shown"
+        cta: SUBSCRIBE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1&utm_content=ppd_maths01
+        utm: { content: ppd_maths01 }
+        compliance_status: PASS
+      - name: HB_META_RTG_CT32_GUARANTEE
+        status: PAUSED
+        primary_text: >-
+          Strawberry lemonade, naturally flavoured, no added sugar. Taste is
+          personal, so the guarantee isn't: 30 days, and if you hate the flavour
+          we refund the pouch.
+        headline: 30-day flavour guarantee
+        description: No added sugar · 21 servings
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1&utm_content=flav_guarantee01
+        utm: { content: flav_guarantee01 }
+        compliance_status: PASS
+
+  - name: HB_UK_META_RTG_ADSET_SITEVISITORS14_V1
+    status: PAUSED
+    optimization_goal: OFFSITE_CONVERSIONS
+    billing_event: IMPRESSIONS
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [facebook_feed, instagram_feed, instagram_stories]
+      custom_audiences:
+        - "Website visitors 14d (pixel — all pages)"          # requires pixel live first
+      excluded_custom_audiences:
+        - "Purchasers 180d"
+      # NOTE: audience is behavioural (visited our site) — permitted.
+      # No health-condition inference is stored or used.
+    ads:
+      - name: HB_META_RTG_CT13_TRUSTSTACK
+        status: PAUSED
+        primary_text: >-
+          Halal certified (HMC GB18/2026). Made in a GMP-certified UK facility.
+          Third-party batch tested with a COA per lot. 30-day flavour guarantee.
+          Ships from London. That's the whole trust story — no adjectives required.
+        headline: Nothing hidden, nothing vague
+        description: The studied dose, documented
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1&utm_content=halal_truststack01
+        utm: { content: halal_truststack01 }
+        compliance_status: PASS
+      - name: HB_META_RTG_CT17_21MORNINGS
+        status: PAUSED
+        primary_text: >-
+          The Daily is designed to disappear into your morning: one scoop, ten
+          seconds, strawberry lemonade, done. 21 servings a pouch. Ritual over
+          perfection.
+        headline: 21 servings. 21 mornings.
+        description: Start your ritual
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1&utm_content=rit_21mornings01
+        utm: { content: rit_21mornings01 }
+        compliance_status: PASS
+      - name: HB_META_RTG_CT27_NOTIMER
+        status: PAUSED
+        primary_text: >-
+          It'll still be £1.62 a day tomorrow. We don't do fake timers or "only 3
+          left" — just the studied doses at an honest price, whenever you're ready.
+        headline: Honest price. No timer.
+        description: £33.99 subscribed · save 15%
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_retargeting_engagers_v1&utm_content=ppd_notimer01
+        utm: { content: ppd_notimer01 }
+        compliance_status: PASS

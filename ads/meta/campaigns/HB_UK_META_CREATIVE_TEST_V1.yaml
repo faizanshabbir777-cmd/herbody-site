@@ -1,0 +1,90 @@
+# HerBody — Meta creative test v1 · DRAFT, built PAUSED.
+# Purpose: clean A/B of angles (education vs value vs ritual vs pledge) at low spend
+# before scaling winners into HB_UK_META_PROSPECTING_THEDAILY_V1.
+# Method: one ad set, ABO, 3–5 ads, no early edits for 7 days; judge on CTR + CPA.
+# Channel budget rule: Meta total across ALL campaigns <= £25/day (15 + 5 + 5 = 25).
+
+campaign:
+  name: HB_UK_META_CREATIVE_TEST_V1
+  platform: meta
+  status: PAUSED
+  objective: OUTCOME_TRAFFIC     # cheap signal for creative sorting; sales campaign scales winners
+  daily_budget_gbp: 5
+  special_ad_categories: []
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen
+  utm_base: utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_creative_test_v1
+
+ad_sets:
+  - name: HB_UK_META_CT_ADSET_ANGLES_V1
+    status: PAUSED
+    optimization_goal: LINK_CLICKS
+    billing_event: IMPRESSIONS
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [instagram_reels, instagram_feed, facebook_feed]
+      # Broad only — creative test needs unbiased delivery. No sensitive segments, ever.
+    ads:
+      - name: HB_META_CT_A_EDU_CLAIM
+        status: PAUSED
+        primary_text: >-
+          Creatine "increases physical performance in successive bursts of
+          short-term, high-intensity exercise." That's the authorised GB register
+          claim, word for word — and the only performance promise you'll ever hear
+          from us. The Daily carries the full studied 5g.
+        headline: Evidence over hype
+        description: 5g Creapure® · 5g Verisol® · 100% NRV
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_creative_test_v1&utm_content=edu_claim01
+        utm: { content: edu_claim01 }
+        compliance_status: PASS
+      - name: HB_META_CT_B_VAL_MULTIVIT
+        status: PAUSED
+        primary_text: >-
+          Everyone talks about the 5g + 5g. Around it: biotin 5000µg (contributes
+          to the maintenance of normal hair), methylfolate, B6 as P-5-P, chromium,
+          vitamin C (contributes to normal collagen formation), vegan D3. A complete
+          multivitamin, already in the scoop.
+        headline: The multivitamin's included
+        description: 13 actives · one scoop
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_creative_test_v1&utm_content=val_multivit01
+        utm: { content: val_multivit01 }
+        compliance_status: PASS
+      - name: HB_META_CT_C_RIT_RESTDAY
+        status: PAUSED
+        primary_text: >-
+          Creatine works by consistency, not occasion. Same scoop on the days you
+          train and the days you don't. 21 servings — 21 mornings.
+        headline: Training days and rest days
+        description: Strawberry lemonade · no added sugar
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_creative_test_v1&utm_content=rit_restday01
+        utm: { content: rit_restday01 }
+        compliance_status: PASS
+      - name: HB_META_CT_D_PLEDGE_CHOICE
+        status: PAUSED
+        primary_text: >-
+          Two tokens land in your app with every pouch. Allocate them across eight
+          vetted causes — all on one, or spread. An audited pledge you can actually
+          steer. 20% of profits, audited annually.
+        headline: Your tokens. Your choice.
+        description: Good for you. Good for her.
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_creative_test_v1&utm_content=pledge_choice01
+        utm: { content: pledge_choice01 }
+        compliance_status: PASS
+      - name: HB_META_CT_E_HALAL_CERT
+        status: PAUSED
+        primary_text: >-
+          Bovine collagen means certification matters. The Daily is halal certified
+          under HMC protocol GB18/2026 — including source-of-slaughter certification.
+          Documented and checkable, not a vibe.
+        headline: Halal certified · HMC GB18/2026
+        description: Made in the UK · batch tested
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_creative_test_v1&utm_content=halal_cert01
+        utm: { content: halal_cert01 }
+        compliance_status: PASS

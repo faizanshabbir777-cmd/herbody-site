@@ -1,0 +1,97 @@
+# HerBody — TikTok Spark Ads prep v1 · DRAFT, built PAUSED.
+#
+# This is a SHELL campaign: Spark Ads promote creators' authorised organic posts.
+# It cannot launch until, per marketing/SPARK_ADS_CHECKLIST.md:
+#   1. Signed creator brief + usage rights on file (marketing/CREATOR_BRIEF.md).
+#   2. Spark authorisation VIDEO CODE received, logged in data/briefs/, unexpired (>= 60 days).
+#   3. Post carries #ad + paid-partnership toggle (ASA/CMA disclosure).
+#   4. Video re-checked at ad stage: creator voice only, zero testimonial framing (DMCC),
+#      claims within GB NHC authorised wording, no problem-calling, no urgency.
+#   5. Pixel + Events API verified; human approval file lists this campaign.
+# Placeholders {{SPARK_CODE_*}} are filled by the human at launch, never invented.
+#
+# Channel budget rule: TikTok total across ALL campaigns <= £25/day (15 + 5 + 5 = 25).
+
+campaign:
+  name: HB_UK_TT_SPARKADS_PREP_V1
+  platform: tiktok
+  status: PAUSED
+  objective: WEBSITE_CONVERSIONS
+  daily_budget_gbp: 5
+  special_ad_categories: []
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok
+  utm_base: utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_sparkads_prep_v1
+
+ad_groups:
+  - name: HB_UK_TT_SPARK_ADGROUP_EDU_V1
+    status: PAUSED
+    optimization_goal: COMPLETE_PAYMENT
+    billing_event: OCPM
+    identity: SPARK_ADS            # deliver via creator's authorised post
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [tiktok]
+      # Broad; no sensitive-health targeting — ever.
+    ads:
+      - name: HB_TT_SPARK_EDU01_GYMBROS
+        status: PAUSED
+        spark_video_code: "{{SPARK_CODE_EDU01}}"   # from creator, script basis UGC EDU01
+        primary_text: >-
+          Creatine isn't just for gym bros — the studied dose, explained in 25
+          seconds. #ad
+        headline: Not just for gym bros
+        description: 5g + 5g + a complete multivitamin
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_sparkads_prep_v1&utm_content=spark_edu01
+        utm: { content: spark_edu01 }
+        compliance_status: NEEDS_REVIEW   # cannot PASS until the actual creator video is reviewed
+      - name: HB_TT_SPARK_OBJ02_GENTLE
+        status: PAUSED
+        spark_video_code: "{{SPARK_CODE_OBJ02}}"   # script basis UGC OBJ02 (bloating handled honestly)
+        primary_text: >-
+          The question everyone asks about creatine — answered without promises.
+          No loading phase, half-scoop first week. #ad
+        headline: The honest version
+        description: The gentle way to start
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_sparkads_prep_v1&utm_content=spark_obj02
+        utm: { content: spark_obj02 }
+        compliance_status: NEEDS_REVIEW
+
+  - name: HB_UK_TT_SPARK_ADGROUP_RITUAL_V1
+    status: PAUSED
+    optimization_goal: COMPLETE_PAYMENT
+    billing_event: OCPM
+    identity: SPARK_ADS
+    targeting:
+      countries: [GB]
+      age_min: 22
+      age_max: 38
+      genders: [female]
+      placements: [tiktok]
+    ads:
+      - name: HB_TT_SPARK_RIT01_10SEC
+        status: PAUSED
+        spark_video_code: "{{SPARK_CODE_RIT01}}"   # script basis UGC RIT01
+        primary_text: >-
+          Ten seconds. That's the whole routine. #ad
+        headline: Start your ritual
+        description: 21 servings · from £1.62/day subscribed
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_sparkads_prep_v1&utm_content=spark_rit01
+        utm: { content: spark_rit01 }
+        compliance_status: NEEDS_REVIEW
+      - name: HB_TT_SPARK_ING02_HALAL
+        status: PAUSED
+        spark_video_code: "{{SPARK_CODE_ING02}}"   # script basis UGC ING02
+        primary_text: >-
+          Halal collagen, certified properly — HMC protocol GB18/2026, explained. #ad
+        headline: Certified, not "halal-friendly"
+        description: Source-of-slaughter certified
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_sparkads_prep_v1&utm_content=spark_ing02
+        utm: { content: spark_ing02 }
+        compliance_status: NEEDS_REVIEW

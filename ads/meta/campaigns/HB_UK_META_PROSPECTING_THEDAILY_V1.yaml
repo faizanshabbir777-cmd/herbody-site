@@ -1,0 +1,128 @@
+# HerBody — Meta prospecting v1 · DRAFT, built PAUSED.
+# Goes live ONLY when a human approval file exists (approvals/) listing this campaign.
+# Copy source: ads/CREATIVE_TESTING_MATRIX.md · claims: ads/compliance/ad-claims-matrix.csv
+# Channel budget rule: Meta total across ALL campaigns <= £25/day.
+
+campaign:
+  name: HB_UK_META_PROSPECTING_THEDAILY_V1
+  platform: meta
+  status: PAUSED
+  objective: OUTCOME_SALES
+  daily_budget_gbp: 15
+  special_ad_categories: []          # supplements are NOT a special ad category; list stays empty
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen
+  utm_base: utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1
+
+ad_sets:
+  - name: HB_UK_META_PROS_ADSET_BROAD_V1
+    status: PAUSED
+    optimization_goal: OFFSITE_CONVERSIONS   # purchase event
+    billing_event: IMPRESSIONS
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [facebook_feed, instagram_feed, instagram_reels, instagram_stories]
+      # HARD RULE: no interest/behaviour segments touching health conditions,
+      # body insecurity, pregnancy, or any sensitive attribute. Broad only.
+    ads:
+      - name: HB_META_PROS_CT01_EDU_DOSE
+        status: PAUSED
+        primary_text: >-
+          Most blends hide the maths. The Daily prints it: 5g Creapure® creatine +
+          5g Verisol® collagen + a complete multivitamin at 100% NRV. One 14g scoop,
+          strawberry lemonade. Halal certified, batch tested, made in the UK.
+        headline: 5g + 5g + a complete multivitamin
+        description: 21 servings · 30-day flavour guarantee
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=edu_dose01
+        utm: { content: edu_dose01 }
+        compliance_status: PASS
+      - name: HB_META_PROS_CT06_VAL_MATHS
+        status: PAUSED
+        primary_text: >-
+          Creatine, Verisol® collagen, a women's multivitamin, inositol, biotin,
+          cranberry, dandelion — bought separately, roughly £130.* In The Daily:
+          one £39.99 pouch, £33.99 subscribed. *Comparable separates at typical UK
+          retail — prices checked at time of publication.
+        headline: ~£130 of separates. One pouch.
+        description: Doses printed. Nothing hidden.
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=val_maths01
+        utm: { content: val_maths01 }
+        compliance_status: PASS
+      - name: HB_META_PROS_CT21_PLEDGE
+        status: PAUSED
+        primary_text: >-
+          20% of HerBody's profits — audited annually — fund refuge, care and crisis
+          support for women. Every pouch earns 2 charity tokens in the app, and you
+          choose the cause. Good for you. Good for her.
+        headline: Good for you. Good for her.
+        description: The strength you build helps build hers.
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=pledge_twojobs01
+        utm: { content: pledge_twojobs01 }
+        compliance_status: PASS
+      - name: HB_META_PROS_CT30_SAFETY_HONEST
+        status: PAUSED
+        primary_text: >-
+          "Is creatine safe for women?" Creatine monohydrate is one of the most
+          researched supplements in existence, studied at daily doses like our 5g.
+          It's still not for everyone: not suitable if pregnant or breastfeeding;
+          ask your GP if you take medication. Honest answers are the brand.
+        headline: The honest answer
+        description: The studied 5g · batch tested
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=myth_safety01
+        utm: { content: myth_safety01 }
+        compliance_status: PASS
+
+  - name: HB_UK_META_PROS_ADSET_CORE2238_V1
+    status: PAUSED
+    optimization_goal: OFFSITE_CONVERSIONS
+    billing_event: IMPRESSIONS
+    targeting:
+      countries: [GB]
+      age_min: 22
+      age_max: 38          # creative-aligned core audience within the approved 18–54 envelope
+      genders: [female]
+      placements: [instagram_reels, instagram_stories, instagram_feed]
+      # Broad within demo; interests limited to non-sensitive fitness/wellness-activity
+      # categories if ever added — NEVER health conditions or body-image segments.
+    ads:
+      - name: HB_META_PROS_CT14_RITUAL
+        status: PAUSED
+        primary_text: >-
+          Scoop 14g, 200ml cold water, shake 10 seconds. Strawberry lemonade before
+          the day starts asking things of you. Training days and rest days — same scoop.
+        headline: Start your ritual
+        description: From £1.62 a day, subscribed
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=rit_10sec01
+        utm: { content: rit_10sec01 }
+        compliance_status: PASS
+      - name: HB_META_PROS_CT18_GENTLE
+        status: PAUSED
+        primary_text: >-
+          No loading phase. Your first week is a half scoop (7g); day 8 onwards,
+          the full 14g. A gentle runway into a daily ritual — with a free
+          day-by-day plan included.
+        headline: Week one: half scoop
+        description: The gentle way to start
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=gentle_halfscoop01
+        utm: { content: gentle_halfscoop01 }
+        compliance_status: PASS
+      - name: HB_META_PROS_CT10_ONESHELF
+        status: PAUSED
+        primary_text: >-
+          Six supplements. One scoop. Creatine, collagen, multivitamin, inositol,
+          biotin and the botanicals — the shelf, condensed into a single 14g
+          strawberry-lemonade scoop. Doses printed. Nothing hidden, nothing vague.
+        headline: The shelf, in one scoop
+        description: Halal certified · batch tested
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=val_oneshelf01
+        utm: { content: val_oneshelf01 }
+        compliance_status: PASS

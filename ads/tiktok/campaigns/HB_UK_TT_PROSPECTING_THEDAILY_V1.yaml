@@ -1,0 +1,123 @@
+# HerBody — TikTok prospecting v1 · DRAFT, built PAUSED.
+# Live only when the human approval file (approvals/) lists this campaign.
+# Copy source: ads/CREATIVE_TESTING_MATRIX.md · scripts: marketing/UGC_SCRIPT_BANK.md
+# Channel budget rule: TikTok total across ALL campaigns <= £25/day.
+
+campaign:
+  name: HB_UK_TT_PROSPECTING_THEDAILY_V1
+  platform: tiktok
+  status: PAUSED
+  objective: WEBSITE_CONVERSIONS
+  daily_budget_gbp: 15
+  special_ad_categories: []
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok
+  utm_base: utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1
+
+ad_groups:
+  - name: HB_UK_TT_PROS_ADGROUP_BROAD_V1
+    status: PAUSED
+    optimization_goal: COMPLETE_PAYMENT
+    billing_event: OCPM
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [tiktok]
+      # Broad delivery. HARD RULE: no sensitive-health interest categories,
+      # no condition-adjacent hashtag targeting, no body-image segments.
+    ads:
+      - name: HB_TT_PROS_CT28_GYMBROS
+        status: PAUSED
+        primary_text: >-
+          Creatine isn't just for gym bros. One of the deepest research bases in
+          sports nutrition — and most women's supplements skip it entirely. We put
+          the studied 5g at the centre.
+        headline: Not just for gym bros
+        description: 5g + 5g + a complete multivitamin
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=myth_gymbros01
+        utm: { content: myth_gymbros01 }
+        compliance_status: PASS
+      - name: HB_TT_PROS_CT14_RITUAL
+        status: PAUSED
+        primary_text: >-
+          Scoop 14g, 200ml cold water, shake 10 seconds. Strawberry lemonade before
+          the day starts asking things of you.
+        headline: Start your ritual
+        description: 21 servings · from £1.62/day subscribed
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=rit_10sec01
+        utm: { content: rit_10sec01 }
+        compliance_status: PASS
+      - name: HB_TT_PROS_CT07_TALLY
+        status: PAUSED
+        primary_text: >-
+          Seven products, one scoop, the receipts on screen. Roughly £130 of
+          comparable separates at typical UK retail* — one £39.99 pouch.
+          *Prices checked at time of publication.
+        headline: The maths of one scoop
+        description: Doses printed, nothing hidden
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=val_tally01
+        utm: { content: val_tally01 }
+        compliance_status: PASS
+      - name: HB_TT_PROS_CT29_NOLOADING
+        status: PAUSED
+        primary_text: >-
+          Old advice: 20g a day for a week. The research: a steady 3–5g daily gets
+          there — it just takes weeks. The Daily is 5g, daily, done.
+        headline: No loading. Just 5g.
+        description: The studied dose
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=myth_loading01
+        utm: { content: myth_loading01 }
+        compliance_status: PASS
+
+  - name: HB_UK_TT_PROS_ADGROUP_CORE2238_V1
+    status: PAUSED
+    optimization_goal: COMPLETE_PAYMENT
+    billing_event: OCPM
+    targeting:
+      countries: [GB]
+      age_min: 22
+      age_max: 38          # creative-aligned core within approved 18–54 envelope
+      genders: [female]
+      placements: [tiktok]
+    ads:
+      - name: HB_TT_PROS_CT19_GENTLE_HONEST
+        status: PAUSED
+        primary_text: >-
+          Some people report feeling puffy starting creatine — usually with 20g
+          loading doses. The Daily is the studied 5g, no loading, half-scoop first
+          week. We won't promise you'll feel nothing; we promise the dose, the form
+          and a gentle start.
+        headline: The honest version
+        description: Week one: half scoop
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=gentle_honest01
+        utm: { content: gentle_honest01 }
+        compliance_status: PASS   # wording locked — never edit toward a "no bloating" promise
+      - name: HB_TT_PROS_CT24_PLEDGE_SHARED
+        status: PAUSED
+        primary_text: >-
+          One scoop for your morning. Two tokens for her corner. 20% of profits,
+          audited, fund refuge, care and crisis support for women — and you choose
+          the cause. That's HerBody.
+        headline: Strength, shared
+        description: Good for you. Good for her.
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=pledge_shared01
+        utm: { content: pledge_shared01 }
+        compliance_status: PASS
+      - name: HB_TT_PROS_CT16_KETTLE
+        status: PAUSED
+        primary_text: >-
+          While the kettle boils: scoop, shake, done — before the tea's even brewed.
+          The easiest habit is the one that hides inside another.
+        headline: The kettle rule
+        description: Free first-7-days plan included
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=rit_kettle01
+        utm: { content: rit_kettle01 }
+        compliance_status: PASS

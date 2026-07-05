@@ -1,0 +1,121 @@
+# HerBody — TikTok retargeting v1 · DRAFT, built PAUSED.
+#
+# ACTIVATION RULES (all must hold first):
+#   1. TikTok Pixel + Events API live via Shopify app, CompletePayment verified >= 7 days.
+#   2. Custom audiences below EXIST and meet TikTok's 1,000-user minimum before launch.
+#   3. Audiences are engagement/traffic-based ONLY — video viewers, profile engagers,
+#      site visitors. NEVER sensitive-health signals, condition keywords, pregnancy
+#      status or body-image segments, as inclusion, exclusion or lookalike seed.
+#   4. Human approval file in approvals/ lists this campaign by name.
+#
+# Channel budget rule: TikTok total across ALL campaigns <= £25/day.
+
+campaign:
+  name: HB_UK_TT_RETARGETING_ENGAGERS_V1
+  platform: tiktok
+  status: PAUSED
+  objective: WEBSITE_CONVERSIONS
+  daily_budget_gbp: 5
+  special_ad_categories: []
+  landing_page: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok
+  utm_base: utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1
+
+ad_groups:
+  - name: HB_UK_TT_RTG_ADGROUP_ENGAGERS28_V1
+    status: PAUSED
+    optimization_goal: COMPLETE_PAYMENT
+    billing_event: OCPM
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [tiktok]
+      custom_audiences:
+        - "Video viewers 6s+ / 28d"          # create in TikTok Ads Manager first
+        - "Profile + ad engagers 28d"
+      excluded_custom_audiences:
+        - "Purchasers 180d"
+    ads:
+      - name: HB_TT_RTG_CT26_PERMORNING
+        status: PAUSED
+        primary_text: >-
+          £39.99 sounds like a lot until you do it per morning. 21 servings a
+          pouch. £1.62 a day subscribed.
+        headline: Do it per morning
+        description: Pause or cancel any time
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1&utm_content=ppd_permorning01
+        utm: { content: ppd_permorning01 }
+        compliance_status: PASS
+      - name: HB_TT_RTG_CT04_13ACTIVES
+        status: PAUSED
+        primary_text: >-
+          Every dose in the scoop, read to camera in 30 seconds. If a brand won't
+          read you its label, ask why.
+        headline: Nothing hidden, nothing vague
+        description: 13 actives · every dose printed
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1&utm_content=edu_13actives01
+        utm: { content: edu_13actives01 }
+        compliance_status: PASS
+      - name: HB_TT_RTG_CT32_GUARANTEE
+        status: PAUSED
+        primary_text: >-
+          Strawberry lemonade, no added sugar. Taste is personal, so the guarantee
+          isn't: 30 days — hate the flavour, we refund the pouch.
+        headline: 30-day flavour guarantee
+        description: Ships from London
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1&utm_content=flav_guarantee01
+        utm: { content: flav_guarantee01 }
+        compliance_status: PASS
+
+  - name: HB_UK_TT_RTG_ADGROUP_SITEVISITORS14_V1
+    status: PAUSED
+    optimization_goal: COMPLETE_PAYMENT
+    billing_event: OCPM
+    targeting:
+      countries: [GB]
+      age_min: 18
+      age_max: 54
+      genders: [female]
+      placements: [tiktok]
+      custom_audiences:
+        - "Website visitors 14d (pixel)"     # requires pixel live first
+      excluded_custom_audiences:
+        - "Purchasers 180d"
+    ads:
+      - name: HB_TT_RTG_CT12_HALAL
+        status: PAUSED
+        primary_text: >-
+          Source-of-slaughter certified bovine collagen, HMC protocol GB18/2026.
+          Certification is a document — here's ours.
+        headline: Specific beats vague
+        description: Halal certified · batch tested
+        cta: SHOP_NOW
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1&utm_content=halal_specific01
+        utm: { content: halal_specific01 }
+        compliance_status: PASS
+      - name: HB_TT_RTG_CT31_BRAIN_HONEST
+        status: PAUSED
+        primary_text: >-
+          The cognition research on creatine is interesting — and early. So we
+          don't claim it. When the register catches up, our label will too.
+        headline: Interesting ≠ proven
+        description: Evidence over hype
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1&utm_content=myth_brain01
+        utm: { content: myth_brain01 }
+        compliance_status: PASS
+      - name: HB_TT_RTG_CT22_DIGNITY
+        status: PAUSED
+        primary_text: >-
+          No tragic music, no faces used for clicks. Just the mechanism: 20% of
+          profits, audited, steered by your tokens. Solidarity, not saviour.
+        headline: Dignity is the brief
+        description: You choose the cause
+        cta: LEARN_MORE
+        destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_retargeting_engagers_v1&utm_content=pledge_dignity01
+        utm: { content: pledge_dignity01 }
+        compliance_status: PASS

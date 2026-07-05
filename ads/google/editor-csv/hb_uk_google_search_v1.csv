@@ -1,0 +1,54 @@
+﻿Campaign,Campaign Daily Budget,Campaign Status,Ad Group,Ad Group Status,Keyword,Match Type,Final URL,Path 1,Path 2,Headline 1,Headline 2,Headline 3,Headline 4,Headline 5,Headline 6,Headline 7,Headline 8,Headline 9,Headline 10,Headline 11,Headline 12,Headline 13,Headline 14,Headline 15,Description 1,Description 2,Description 3,Description 4,Status
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,herbody,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,herbody,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,her body supplement,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,herbody the daily,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,herbody creatine,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,herbody collagen,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,jobs,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,careers,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,free,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,amazon,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,ebay,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,reviews,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,,,discount code,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_BRAND_V1,10.00,Paused,HB_BRAND_CORE,Paused,,,https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_brand_v1&utm_content=rsa_brand01&utm_term={keyword},the-daily,official,HerBody — Official Site,HerBody No.01 — The Daily,The Studied Dose,Creatine + Collagen For Women,5g + 5g + A Multivitamin,One Scoop. 13 Actives.,From £1.62 A Day Subscribed,Halal Certified · HMC,Batch Tested — COA Per Lot,Made In A UK GMP Facility,Strawberry Lemonade Flavour,21 Servings Per Pouch,30-Day Flavour Guarantee,Subscribe & Save 15%,Good For You. Good For Her.,"5g Creapure® creatine, 5g Verisol® collagen and a complete multivitamin in one scoop.","Halal certified, batch tested, made in the UK. Nothing hidden, nothing vague.",£39.99 one-time or £33.99 subscribed — from £1.62 a day. 30-day flavour guarantee.,"20% of profits, audited, fund refuge, care and crisis support. You choose the cause.",Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_WOMEN,Paused,creatine for women,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_WOMEN,Paused,creatine for women,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_WOMEN,Paused,best creatine for women,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_WOMEN,Paused,creatine for women uk,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_WOMEN,Paused,womens creatine,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_COLLAGEN,Paused,creatine and collagen,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_COLLAGEN,Paused,creatine and collagen,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_COLLAGEN,Paused,creatine collagen supplement,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_COLLAGEN,Paused,collagen and creatine together,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_COLLAGEN,Paused,creatine collagen multivitamin,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_HALAL,Paused,halal creatine,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_HALAL,Paused,halal creatine,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_HALAL,Paused,halal collagen,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_HALAL,Paused,halal collagen uk,Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_HALAL,Paused,halal supplements for women,Exact,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,free,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,cheap,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,amazon,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,ebay,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,jobs,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,for men,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,mens,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,pcos,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,hormone,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,hormones,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,bloating,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,hair loss,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,pregnancy,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,pregnant,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,breastfeeding,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,fertility,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,menopause,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,weight loss,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,side effects,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,for kids,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,,,teen,Campaign Negative Phrase,,,,,,,,,,,,,,,,,,,,,,,Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_WOMEN,Paused,,,https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1&utm_content=rsa_creatinewomen01&utm_term={keyword},creatine-collagen,for-women,HerBody No.01 — The Daily,The Studied 5g Dose,Nothing Hidden Nothing Vague,Creatine + Collagen For Women,5g + 5g + A Multivitamin,One Scoop. 13 Actives.,From £1.62 A Day Subscribed,Halal Certified · HMC,Batch Tested — COA Per Lot,Made In A UK GMP Facility,Strawberry Lemonade Flavour,21 Servings Per Pouch,30-Day Flavour Guarantee,Subscribe & Save 15%,Good For You. Good For Her.,"5g Creapure® creatine, 5g Verisol® collagen and a complete multivitamin in one scoop.","Halal certified, batch tested, made in the UK. Nothing hidden, nothing vague.",£39.99 one-time or £33.99 subscribed — from £1.62 a day. 30-day flavour guarantee.,"20% of profits, audited, fund refuge, care and crisis support. You choose the cause.",Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_CREATINE_COLLAGEN,Paused,,,https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1&utm_content=rsa_creatinecollagen01&utm_term={keyword},creatine-collagen,for-women,HerBody No.01 — The Daily,The Studied 5g Dose,Nothing Hidden Nothing Vague,Creatine + Collagen For Women,5g + 5g + A Multivitamin,One Scoop. 13 Actives.,From £1.62 A Day Subscribed,Halal Certified · HMC,Batch Tested — COA Per Lot,Made In A UK GMP Facility,Strawberry Lemonade Flavour,21 Servings Per Pouch,30-Day Flavour Guarantee,Subscribe & Save 15%,Good For You. Good For Her.,"5g Creapure® creatine, 5g Verisol® collagen and a complete multivitamin in one scoop.","Halal certified, batch tested, made in the UK. Nothing hidden, nothing vague.",£39.99 one-time or £33.99 subscribed — from £1.62 a day. 30-day flavour guarantee.,"20% of profits, audited, fund refuge, care and crisis support. You choose the cause.",Paused
+HB_UK_GOOGLE_SEARCH_NONBRAND_V1,10.00,Paused,HB_NB_HALAL,Paused,,,https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=google&utm_medium=cpc&utm_campaign=hb_uk_google_search_nonbrand_v1&utm_content=rsa_halal01&utm_term={keyword},creatine-collagen,for-women,HerBody No.01 — The Daily,The Studied 5g Dose,Nothing Hidden Nothing Vague,Creatine + Collagen For Women,5g + 5g + A Multivitamin,One Scoop. 13 Actives.,From £1.62 A Day Subscribed,Halal Certified · HMC,Batch Tested — COA Per Lot,Made In A UK GMP Facility,Strawberry Lemonade Flavour,21 Servings Per Pouch,30-Day Flavour Guarantee,Subscribe & Save 15%,Good For You. Good For Her.,"5g Creapure® creatine, 5g Verisol® collagen and a complete multivitamin in one scoop.","Halal certified, batch tested, made in the UK. Nothing hidden, nothing vague.",£39.99 one-time or £33.99 subscribed — from £1.62 a day. 30-day flavour guarantee.,"20% of profits, audited, fund refuge, care and crisis support. You choose the cause.",Paused
