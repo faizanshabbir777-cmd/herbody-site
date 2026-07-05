@@ -108,7 +108,7 @@ ad_sets:
           No loading phase. Your first week is a half scoop (7g); day 8 onwards,
           the full 14g. A gentle runway into a daily ritual — with a free
           day-by-day plan included.
-        headline: Week one: half scoop
+        headline: "Week one: half scoop"
         description: The gentle way to start
         cta: LEARN_MORE
         destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen?utm_source=meta&utm_medium=paid&utm_campaign=hb_uk_meta_prospecting_thedaily_v1&utm_content=gentle_halfscoop01

@@ -93,7 +93,7 @@ ad_groups:
           week. We won't promise you'll feel nothing; we promise the dose, the form
           and a gentle start.
         headline: The honest version
-        description: Week one: half scoop
+        description: "Week one: half scoop"
         cta: LEARN_MORE
         destination_url: https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok?utm_source=tiktok&utm_medium=paid&utm_campaign=hb_uk_tt_prospecting_thedaily_v1&utm_content=gentle_honest01
         utm: { content: gentle_honest01 }

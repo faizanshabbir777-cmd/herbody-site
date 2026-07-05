@@ -1,0 +1,29 @@
+{
+  "_comment": "EXAMPLE ONLY — this template is committed for reference. The real file (ADS_LAUNCH_APPROVAL.json) must ONLY ever be created and committed by the human founder, never by an agent. See ads/compliance/README.md. Until the real file exists, every campaign stays PAUSED.",
+  "approved_by": "FOUNDER_FULL_NAME",
+  "approval_date": "2026-07-05",
+  "ads_automation_mode": "live_approved",
+  "approved_channels": ["meta", "tiktok", "google"],
+  "max_daily_budget_gbp": 25,
+  "approved_campaigns": [
+    "HB_UK_META_PROSPECTING_THEDAILY_V1",
+    "HB_UK_META_CREATIVE_TEST_V1",
+    "HB_UK_TT_PROSPECTING_THEDAILY_V1",
+    "HB_UK_GOOGLE_SEARCH_BRAND_V1",
+    "HB_UK_GOOGLE_SEARCH_NONBRAND_V1"
+  ],
+  "_comment_retargeting": "Retargeting and Spark campaigns intentionally absent from this example — they are only added once pixel/audiences exist (retargeting) and final creator videos are re-reviewed (Spark).",
+  "approved_landing_pages": [
+    "https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen",
+    "https://{{SHOPIFY_STORE_DOMAIN}}/pages/tiktok"
+  ],
+  "approved_creatives": [
+    "CT-01", "CT-02", "CT-03", "CT-04", "CT-05", "CT-06", "CT-07", "CT-08",
+    "CT-10", "CT-11", "CT-12", "CT-13", "CT-14", "CT-15", "CT-16", "CT-17",
+    "CT-18", "CT-19", "CT-21", "CT-22", "CT-23", "CT-24", "CT-25", "CT-26",
+    "CT-27", "CT-28", "CT-29", "CT-30", "CT-31", "CT-32",
+    "CP01", "CP02", "CP03", "CP04", "CP05", "CP06", "CP07", "CP08", "CP09", "CP10",
+    "CP11", "CP12", "CP13", "CP14", "CP15", "CP16", "CP17", "CP18", "CP19", "CP20"
+  ],
+  "acknowledgement": "I approve these campaigns to go live and understand they may spend real money."
+}
