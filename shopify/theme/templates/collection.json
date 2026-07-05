@@ -1,0 +1,8 @@
+{
+  "sections": {
+    "main": { "type": "main-collection" },
+    "trust": { "type": "trust-bar" },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["main", "trust", "capture"]
+}

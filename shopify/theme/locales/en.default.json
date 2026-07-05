@@ -1,0 +1,206 @@
+{
+  "general": {
+    "meta": {
+      "tags": "Tagged \"{{ tags }}\"",
+      "page": "Page {{ page }}"
+    },
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "close": "Close",
+      "menu": "Menu"
+    },
+    "continue_shopping": "Continue shopping",
+    "breadcrumbs": {
+      "label": "Breadcrumbs",
+      "home": "Home"
+    },
+    "404": {
+      "title": "This page wandered off.",
+      "subtitle": "The page you're after doesn't exist — but the good stuff is one tap away.",
+      "link": "Back to HerBody"
+    },
+    "consent": {
+      "heading": "A quiet word about cookies",
+      "text": "We'd like to use analytics and marketing cookies to understand what's working. Nothing loads until you say yes, and 'essential only' is a perfectly good answer.",
+      "accept": "Accept",
+      "decline": "Essential only"
+    },
+    "newsletter": {
+      "label": "Email address",
+      "placeholder": "Your email",
+      "submit": "Send me the plan",
+      "success": "Lovely — you're in. Check your inbox for the plan and your code.",
+      "error": "Hmm, that email didn't work — mind trying again?",
+      "privacy": "Email only. No noise, unsubscribe whenever."
+    },
+    "contact": {
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "send": "Send message",
+      "success": "Thank you — we'll reply within two working days.",
+      "error": "Something needs fixing below — please check and resend."
+    },
+    "disclaimer": {
+      "food_supplement": "Food supplements should not be used as a substitute for a varied, balanced diet and a healthy lifestyle.",
+      "caution": "For healthy adults. Not suitable if pregnant or breastfeeding. Consult your GP if taking medication or managing a condition."
+    }
+  },
+  "sections": {
+    "header": {
+      "nav_shop": "Shop",
+      "nav_science": "Science",
+      "nav_pact": "The Pact",
+      "nav_app": "The App",
+      "nav_faq": "FAQ",
+      "cart": "Bag",
+      "cart_label": "Open bag"
+    },
+    "footer": {
+      "tagline": "The strength you build helps build hers.",
+      "col_shop": "Shop",
+      "col_help": "Help",
+      "col_legal": "Legal",
+      "link_product": "The Daily · No.01",
+      "link_contact": "Contact",
+      "link_shipping": "Shipping",
+      "link_returns": "Returns & refunds",
+      "link_privacy": "Privacy",
+      "link_terms": "Terms",
+      "link_disclaimer": "Supplement disclaimer",
+      "company_line": "HerBody Ltd · London EC1"
+    },
+    "hero": {
+      "per_day_html": "from {{ price }} a day",
+      "cta_primary": "Make it yours",
+      "cta_subscribe": "Subscribe & save 15%",
+      "cta_fallback": "Start your ritual",
+      "image_placeholder": "Product photography drops in here",
+      "readout_label": "Product readout",
+      "readout_title": "What's in one scoop",
+      "readout_per": "per 14g",
+      "batch_example": "Batch HB-26·0417",
+      "batch_tested": "Tested every batch"
+    },
+    "trust": {
+      "defaults": "5g Creatine | 5g Verisol® Collagen | Complete Multivitamin | Halal GB18 | Made in UK | Batch Tested | 21 Servings"
+    },
+    "bundle": {
+      "purchase_type": "Purchase type",
+      "subscribe": "Subscribe & save",
+      "one_time": "One-time",
+      "one_time_note": "Single order · 21 servings",
+      "one_pouch": "1 pouch",
+      "n_pouches": "{{ count }} pouches",
+      "servings": "servings",
+      "cancel_note": "pause or cancel anytime"
+    },
+    "math": {
+      "separately": "Bought separately, per month",
+      "footnote": "Typical UK retail prices, rounded — verify before publishing. Ingredient-for-ingredient at comparable doses; sources on request.",
+      "one_pouch": "One pouch of The Daily",
+      "everything_in_one": "Everything above, one scoop",
+      "scrawl": "same doses, one pouch"
+    },
+    "compare": {
+      "criterion": "Criterion"
+    },
+    "science": {
+      "panel_title": "The full panel · per 14g scoop · 13 actives, every one disclosed",
+      "panel_nrv": "100% NRV where stated",
+      "claims_note": "Claim wording note: nutrition and health claims on this page follow the wording authorised on the GB nutrition and health claims register. Botanical entries reflect traditional use only and are not efficacy claims. Food supplements should not be used as a substitute for a varied, balanced diet and a healthy lifestyle."
+    },
+    "ramp": {
+      "day1": "Day 1",
+      "day7": "Day 7",
+      "day8": "Day 8 · full scoop",
+      "day14": "Day 14",
+      "phase1_label": "Days 1–7",
+      "phase1_note": "Half scoop · the gentle start",
+      "phase2_label": "Day 8 onwards",
+      "phase2_note": "Full scoop · the studied amount"
+    },
+    "pledge": {
+      "stamp_big": "Halal",
+      "stamp_small": "made with love",
+      "token_1": "Refuge",
+      "token_2": "Care",
+      "token_3": "Crisis support"
+    },
+    "app": {
+      "card1_k": "01 · Skin Score",
+      "card2_k": "02 · Charity tokens",
+      "go": "Meet the app",
+      "choose": "Choose a cause"
+    },
+    "reviews": {
+      "placeholder_scrawl": "watch this space",
+      "placeholder": "Reviews coming soon — we only publish verified reviews from real customers, and we'd rather show you nothing than something invented.",
+      "verification_note": "Every review shown is from a verified purchase, quoted with permission.",
+      "verified": "Verified purchase",
+      "stars_label": "{{ rating }} out of 5 stars"
+    },
+    "sticky": {
+      "servings": "21 servings"
+    },
+    "ugc": {
+      "placeholder": "Creator video drops in here"
+    },
+    "offer": {
+      "total_label": "One pouch · 21 mornings",
+      "total_detail": "free UK shipping · 30-day flavour guarantee"
+    },
+    "facts": {
+      "eyebrow": "Supplement facts",
+      "heading_html": "Every dose,<br><em>printed</em>.",
+      "lede": "Per 14g scoop · 21 servings per 300g pouch. This is the locked v14 panel — the same numbers on the pouch, the site and the certificate.",
+      "col_active": "Active",
+      "col_dose": "Per scoop",
+      "col_form": "Form / source",
+      "group_lead": "The lead pair",
+      "group_support": "Studied support",
+      "group_multi": "Complete multivitamin · 100% NRV",
+      "traditional": "Traditional-use botanical",
+      "note": "NRV = Nutrient Reference Value. Botanical entries reflect traditional use only. Third-party tested — COA per lot; check your batch code against the certificate. Food supplements should not be used as a substitute for a varied, balanced diet and a healthy lifestyle."
+    },
+    "collection": {
+      "empty_scrawl": "nothing here yet",
+      "empty": "No products in this collection yet — check back soon.",
+      "pagination": "Pagination",
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to bag",
+      "adding": "Adding…",
+      "added": "Added to your bag",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "quantity": "Quantity",
+      "from": "From",
+      "per_day": "a day",
+      "gallery_thumb": "View image {{ index }}"
+    }
+  },
+  "cart": {
+    "general": {
+      "title": "Your bag",
+      "empty": "Your bag is empty.",
+      "empty_scrawl": "nothing in here yet!",
+      "subtotal": "Subtotal",
+      "checkout": "Checkout",
+      "update": "Update bag",
+      "remove": "Remove",
+      "view_cart": "View bag",
+      "quantity": "Quantity",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity",
+      "shipping_note": "Free UK shipping · taxes included where applicable, calculated at checkout.",
+      "tokens": "Every pouch earns 2 charity tokens in the app — you choose the cause.",
+      "error": "Something went wrong — please try again.",
+      "free": "Free"
+    }
+  }
+}

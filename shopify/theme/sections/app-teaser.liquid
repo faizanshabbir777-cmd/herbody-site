@@ -1,0 +1,54 @@
+{%- comment -%}
+  Black label block: the companion app — Skin Score + charity tokens.
+{%- endcomment -%}
+<section class="sys ink-block">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="appteaser">
+      <div class="at-card">
+        <div class="at-k">{{ 'sections.app.card1_k' | t }}</div>
+        <h3>{{ section.settings.card1_title }}</h3>
+        <p>{{ section.settings.card1_body }}</p>
+        <div class="at-foot">
+          <div class="at-stat">{{ section.settings.card1_stat }}<small>{{ section.settings.card1_stat_label }}</small></div>
+          {%- if section.settings.app_url != blank -%}<a class="at-go" href="{{ section.settings.app_url }}">{{ 'sections.app.go' | t }} &rarr;</a>{%- endif -%}
+        </div>
+      </div>
+      <div class="at-card">
+        <div class="at-k">{{ 'sections.app.card2_k' | t }}</div>
+        <h3>{{ section.settings.card2_title }}</h3>
+        <p>{{ section.settings.card2_body }}</p>
+        <div class="at-foot">
+          <div class="at-tokens" aria-hidden="true"><i></i><i></i><i class="off"></i><i class="off"></i></div>
+          {%- if section.settings.app_url != blank -%}<a class="at-go" href="{{ section.settings.app_url }}">{{ 'sections.app.choose' | t }} &rarr;</a>{%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "App teaser",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The companion app" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Proof you can<br><em>watch</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "The Daily comes with the HerBody app, and it does two quiet things: it tracks your skin over the weeks you scoop, and it lets you send your share of the pledge to the cause you choose." },
+    { "type": "text", "id": "card1_title", "label": "Card 1 title", "default": "Skin Score" },
+    { "type": "textarea", "id": "card1_body", "label": "Card 1 body", "default": "A daily selfie, read into one simple elasticity score — your own record of the weeks, alongside collagen 5g, hyaluronic acid 100mg and biotin 5,000µg. Your data, your face, your call." },
+    { "type": "text", "id": "card1_stat", "label": "Card 1 stat", "default": "1×" },
+    { "type": "text", "id": "card1_stat_label", "label": "Card 1 stat label", "default": "selfie a day — that's it" },
+    { "type": "text", "id": "card2_title", "label": "Card 2 title", "default": "Charity tokens" },
+    { "type": "textarea", "id": "card2_body", "label": "Card 2 body", "default": "Every pouch drops 2 tokens in your wallet. Send your share of the audited 20% pledge to refuge, care or crisis support — you choose the cause." },
+    { "type": "url", "id": "app_url", "label": "App page link" }
+  ],
+  "presets": [{ "name": "App teaser" }]
+}
+{% endschema %}

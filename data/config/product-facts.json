@@ -1,0 +1,103 @@
+{
+  "brand": "HerBody",
+  "legal_entity": "HerBody Ltd",
+  "market": "GB",
+  "currency": "GBP",
+  "city": "London",
+  "established": 2026,
+  "product": {
+    "sku": "HB-DAILY-300",
+    "handle": "the-daily-creatine-collagen",
+    "catalog_number": "No.01",
+    "name": "The Daily",
+    "full_title": "HerBody No.01 — The Daily · Creatine + Collagen for Women",
+    "type": "Powdered daily supplement (creatine + collagen + multivitamin)",
+    "flavour": "Strawberry Lemonade",
+    "flavour_notes": "Naturally flavoured · no added sugar",
+    "pouch_size_g": 300,
+    "scoop_g": 14,
+    "servings": 21,
+    "price_gbp_onetime": 39.99,
+    "price_gbp_subscribe": 33.99,
+    "subscribe_discount_pct": 15,
+    "price_per_day_gbp_subscribed": 1.62,
+    "price_per_day_gbp_onetime": 1.9,
+    "price_per_day_headline": "from £1.62 a day",
+    "batch_code_example": "HB-26·0417",
+    "guarantee": "30-day flavour guarantee — hate it, we refund the pouch",
+    "shipping": "Ships from London, UK"
+  },
+  "formula_locked_v14": {
+    "note": "SINGLE SOURCE OF TRUTH — per 14g scoop. Never invent or alter values. Headline: 2 lead actives + 11 supporting compounds = 13 actives. Shorthand: 5g + 5g + a complete multivitamin.",
+    "lead_pair": [
+      { "name": "Creatine monohydrate", "brand": "Creapure®", "dose": "5000mg", "role": "strength · energy · cognition" },
+      { "name": "Verisol® bioactive collagen peptides", "dose": "5000mg", "role": "hair · skin · nails" }
+    ],
+    "clinical_actives": [
+      { "name": "Myo + D-chiro inositol 40:1", "dose": "500mg", "role": "hormonal balance · PCOS support" },
+      { "name": "Dandelion root extract", "dose": "250mg", "role": "fluid balance · de-bloat (traditional use framing ONLY)" },
+      { "name": "Hyaluronic acid (sodium hyaluronate)", "dose": "100mg", "role": "skin hydration" },
+      { "name": "Cranberry PAC extract", "dose": "36mg PAC", "role": "urinary tract · antioxidant (traditional use framing ONLY)" }
+    ],
+    "multivitamin_100_nrv": [
+      { "name": "Biotin (B7)", "dose": "5000µg" },
+      { "name": "L-methylfolate (B9)", "dose": "400µg" },
+      { "name": "Vitamin B6 as P-5-P", "dose": "10mg" },
+      { "name": "Chromium picolinate", "dose": "200µg" },
+      { "name": "Vitamin C", "dose": "80mg" },
+      { "name": "Vitamin D3 (vegan)", "dose": "25µg" },
+      { "name": "Vitamins A · E · K2 + full B-complex", "dose": "100% NRV" }
+    ]
+  },
+  "certifications_text_claims_only": [
+    "Halal certified · HMC protocol GB18/2026 (bovine collagen source-of-slaughter certified)",
+    "Made in a GMP-certified UK facility",
+    "Third-party batch tested · COA per lot"
+  ],
+  "pledge": {
+    "model": "20% of profits, audited annually",
+    "recipients": "women's health and education charities — refuge, care and crisis support",
+    "mechanism": "Every pouch earns 2 charity tokens in the companion app; the customer chooses the cause",
+    "framing_rule": "Solidarity not saviour. Dignity not trauma. Never guilt."
+  },
+  "app": {
+    "name": "HerBody companion app",
+    "pillars": [
+      "Skin Score — daily selfie tracks skin/elasticity over weeks (reflects collagen 5g · HA 100mg · biotin 5000µg)",
+      "Charity tokens — 2 per pouch, customer allocates to her chosen cause"
+    ]
+  },
+  "onboarding": "First 7 days: half scoop (7g). Day 8+: full 14g scoop. The gentle way to start.",
+  "how_to": ["Scoop 14g", "Shake with 200ml cold water for 10 seconds", "Drink every morning — training days and rest days"],
+  "the_math_gbp": {
+    "note": "What The Daily replaces if bought separately (UK retail, verify prices before publishing)",
+    "items": [
+      { "item": "Creatine 5g daily", "separate_price": 20 },
+      { "item": "Verisol collagen", "separate_price": 35 },
+      { "item": "Women's multivitamin", "separate_price": 15 },
+      { "item": "Inositol 40:1", "separate_price": 25 },
+      { "item": "Biotin 5000µg", "separate_price": 10 },
+      { "item": "Cranberry", "separate_price": 15 },
+      { "item": "Dandelion", "separate_price": 10 }
+    ],
+    "separate_total": 130,
+    "herbody_price": 39.99
+  },
+  "urls": {
+    "site": "https://faizanshabbir777-cmd.github.io/herbody-site/",
+    "store_domain_placeholder": "SHOPIFY_STORE_DOMAIN",
+    "instagram": "TODO_VERIFY",
+    "tiktok": "TODO_VERIFY"
+  },
+  "audience": {
+    "primary": "UK women 22–38, label-readers, training or wellness-active, values-driven",
+    "positioning": "Clinical AND kind — the studied dose, from one woman to another"
+  },
+  "verification_flags": {
+    "reviews_exist": false,
+    "reviews_note": "NO customer reviews exist yet. DMCC Act 2024: publishing fake/unverifiable reviews is a banned practice. Reviews module stays DISABLED until verified reviews exist on a verifiable platform.",
+    "charity_partners_signed": false,
+    "charity_note": "Partners not yet signed — use 'vetted partners across eight causes', never name unsigned partners as confirmed.",
+    "founder_public": false
+  }
+}

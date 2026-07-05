@@ -1,0 +1,23 @@
+{
+  "current": {
+    "color_ground": "#ECE7DC",
+    "color_ground_raised": "#F3F0E9",
+    "color_card": "#FBF9F3",
+    "color_text": "#191A1C",
+    "color_label_block": "#0C0C0E",
+    "color_accent": "#ED2078",
+    "color_accent_hover": "#FF4F9C",
+    "color_accent_deep": "#B00E5C",
+    "color_rose": "#E87BAE",
+    "color_rose_soft": "#F4A8CC",
+    "announcement_text": "Good for you. Good for her. | 5g + 5g + a complete multivitamin | Tested for purity — every single batch | Halal certified · Made in UK | From £1.62 a day",
+    "show_reviews": false,
+    "show_email_capture": true,
+    "shipping_line": "Ships free UK, 1–2 days, from London",
+    "guarantee_line": "30-day flavour guarantee — hate it, we refund the pouch",
+    "contact_email": "hello@herbody.co.uk",
+    "ga4_id": "",
+    "meta_pixel_id": "",
+    "tiktok_pixel_id": ""
+  }
+}

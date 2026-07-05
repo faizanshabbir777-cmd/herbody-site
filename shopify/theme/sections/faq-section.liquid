@@ -1,0 +1,123 @@
+<section class="sys" id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="faq">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'question' -%}
+          <details {{ block.shopify_attributes }} {% if forloop.first and section.settings.open_first %}open{% endif %}>
+            <summary>{{ block.settings.question }}</summary>
+            <div class="fa-body">{{ block.settings.answer }}</div>
+          </details>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{%- render 'faq-schema', section: section -%}
+
+{% schema %}
+{
+  "name": "FAQ",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Questions" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Asked, <em>answered</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "The things smart label-readers actually ask us." },
+    { "type": "checkbox", "id": "open_first", "label": "Open first question by default", "default": false }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "What's in The Daily?" },
+        { "type": "richtext", "id": "answer", "label": "Answer", "default": "<p>5g creatine + 5g Verisol® collagen + a complete multivitamin. One scoop.</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ",
+      "blocks": [
+        {
+          "type": "question",
+          "settings": {
+            "question": "What exactly is in The Daily?",
+            "answer": "<p>13 actives in one 14g scoop: 5g creatine monohydrate (Creapure®), 5g Verisol® bioactive collagen peptides, myo + D-chiro inositol 40:1 (500mg), dandelion root (250mg), hyaluronic acid (100mg), cranberry PAC (36mg), and a complete multivitamin at 100% NRV — biotin 5,000µg, L-methylfolate 400µg, B6 as P-5-P, chromium, vitamin C, vegan D3, plus vitamins A · E · K2 and a full B-complex. Every dose is printed on the label. Nothing hidden, nothing vague.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Is it really halal certified?",
+            "answer": "<p>Yes — certified under HMC protocol GB18/2026, including source-of-slaughter certification for the bovine collagen. That last part matters: most collagen brands can't tell you how the animal was slaughtered. We can, and the certificate is available on request.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Is creatine safe for women?",
+            "answer": "<p>Creatine monohydrate is one of the most-studied supplement ingredients there is, and 5g a day is the amount used across that research — in women as well as men. The authorised claim is specific: creatine increases physical performance in successive bursts of short-term, high-intensity exercise. It's a food supplement for healthy adults; if you take medication or manage a condition, check with your GP first.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Will it make me bulky?",
+            "answer": "<p>No supplement changes your body shape on its own — that's training and time, on your terms. Creatine at the studied 5g supports performance in short, high-intensity efforts; what you build with that is entirely up to you.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Can I take it while pregnant or breastfeeding?",
+            "answer": "<p>No. The Daily is for healthy adults and is not suitable if you are pregnant or breastfeeding. If you're taking medication or managing a condition, please consult your GP before starting any supplement.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "How do I take it?",
+            "answer": "<p>One level 14g scoop, shaken with 200ml of cold water for 10 seconds, every morning — training days and rest days. New to it? Start with a half scoop (7g) for your first 7 days: the gentle way to start.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "What does it taste like?",
+            "answer": "<p>Strawberry lemonade — naturally flavoured, no added sugar. And if you hate it, our 30-day flavour guarantee means we refund the pouch. That simple.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "When will I notice anything?",
+            "answer": "<p>Honestly: it depends on the ingredient and on you, and no brand can promise you a date. Creatine's performance effect builds as your stores saturate over the first weeks of daily use; collagen studies typically run eight weeks or more. The one thing every study shares is daily consistency — which is why we built The Daily around one simple morning ritual.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Where does the 20% actually go?",
+            "answer": "<p>20% of profits — audited annually — goes to refuge, care and crisis support for women, through vetted partners across eight causes. Every pouch earns 2 charity tokens in the HerBody app, and you choose where your share lands. We publish the audit; we don't do guilt, and we don't do hero stories.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "What about shipping and returns?",
+            "answer": "<p>Free UK shipping, 1–2 days, from London. If the flavour isn't for you, tell us within 30 days and we refund the pouch — no return postage, no questions. Subscriptions can be paused or cancelled anytime.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

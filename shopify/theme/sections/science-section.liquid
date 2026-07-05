@@ -1,0 +1,85 @@
+{%- comment -%}
+  The formula, mapped. Lead pair + supporting actives from product-facts.
+  GB-NHC-safe wording ONLY:
+  · creatine — authorised performance claim phrasing
+  · biotin / vitamin C — authorised hair/skin/collagen-formation claims
+  · botanicals (dandelion, cranberry) — traditional-use framing only
+  · inositol — "studied in PCOS research" is the ceiling; no outcome promises
+{%- endcomment -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}
+        {%- if section.settings.scrawl != blank -%}
+          <span class="scrawl blood" style="display:block;margin-top:14px;font-size:23px">{{ section.settings.scrawl }}</span>
+        {%- endif -%}
+      </div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    {%- comment -%} Lead pair {%- endcomment -%}
+    <div class="benefits" style="margin-top:0">
+      <div class="benefit">
+        <div class="bk">Lead active 01 · 5,000mg</div>
+        <h3>Creatine monohydrate <span class="hot">(Creapure&reg;)</span></h3>
+        <p>The studied daily amount, as pure monohydrate. Creatine <b>increases physical performance in successive bursts of short-term, high-intensity exercise</b> — the authorised claim, word for word, because that's what the evidence supports. Strength on your terms; training days and rest days.</p>
+      </div>
+      <div class="benefit">
+        <div class="bk">Lead active 02 · 5,000mg</div>
+        <h3>Verisol&reg; bioactive collagen peptides</h3>
+        <p>The full 5g of the branded, studied peptide — not a sprinkle for the label. In the same scoop, <b>biotin contributes to the maintenance of normal hair and normal skin</b>, and <b>vitamin C contributes to normal collagen formation</b> for the normal function of skin.</p>
+      </div>
+    </div>
+
+    {%- comment -%} Supporting actives — fixed panel from product-facts v14 {%- endcomment -%}
+    <div class="formula-strip">
+      <div class="fs-head"><span>{{ 'sections.science.panel_title' | t }}</span><span>{{ 'sections.science.panel_nrv' | t }}</span></div>
+      <div class="fs-tags">
+        <span class="fs-lead"><b>Creatine monohydrate</b> &middot; 5g</span>
+        <span class="fs-lead"><b>Verisol&reg; collagen</b> &middot; 5g</span>
+        <span><b>Inositol</b> 40:1 &middot; 500mg</span>
+        <span><b>Dandelion root</b> &middot; 250mg</span>
+        <span><b>Hyaluronic acid</b> &middot; 100mg</span>
+        <span><b>Cranberry PAC</b> &middot; 36mg</span>
+        <span><b>Biotin</b> &middot; 5,000&micro;g</span>
+        <span><b>L-methylfolate</b> &middot; 400&micro;g</span>
+        <span><b>Vitamin B6</b> P-5-P &middot; 10mg</span>
+        <span><b>Chromium</b> &middot; 200&micro;g</span>
+        <span><b>Vitamin C</b> &middot; 80mg</span>
+        <span><b>Vitamin D3</b> &middot; 25&micro;g</span>
+        <span><b>Vitamins A &middot; E &middot; K2 + B-complex</b> &middot; 100% NRV</span>
+      </div>
+    </div>
+
+    <div class="benefits" style="margin-top:18px">
+      <div class="benefit">
+        <div class="bk">Studied support · 500mg</div>
+        <h3>Myo + D-chiro inositol 40:1</h3>
+        <p>The 40:1 ratio used across the research, at 500mg per scoop. Inositol has been <b>studied in PCOS research</b> — we'll leave the claims there and let you read the studies yourself.</p>
+      </div>
+      <div class="benefit">
+        <div class="bk">Traditional botanicals</div>
+        <h3>Dandelion root &amp; cranberry PAC</h3>
+        <p><b>Dandelion root</b> (250mg) is <b>traditionally used to support the body's normal fluid balance</b>. <b>Cranberry</b> (36mg PAC) is <b>traditionally used to support urinary tract comfort</b>. Traditional use — stated as exactly that, nothing more.</p>
+      </div>
+    </div>
+
+    <p class="buy-disclaimer" style="max-width:72ch">{{ 'sections.science.claims_note' | t }}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Science section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "What's inside" },
+    { "type": "text", "id": "scrawl", "label": "Handwritten note", "default": "every dose printed" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Nothing hidden,<br>nothing <em>vague</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "13 actives in one 14g scoop: two lead actives at the studied amount, eleven supporting compounds, every single one disclosed on the label — with the claim wording kept exactly where UK law puts it." }
+  ],
+  "presets": [{ "name": "Science section" }]
+}
+{% endschema %}

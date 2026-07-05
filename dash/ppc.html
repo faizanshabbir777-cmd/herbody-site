@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>HerBody Ops · PPC</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060507'/%3E%3Cpath d='M16 6c.7 7 5.8 12 13 13-7.2 1-12.3 6-13 13-.7-7-5.8-12-13-13 7.2-1 12.3-6 13-13Z' fill='%23ED2078'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Shantell+Sans:wght@500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dash.css">
+</head>
+<body>
+
+<header class="hb-header">
+  <a class="hb-wordmark" href="index.html">HER<span class="spark">✦</span>BODY<small>Operations</small></a>
+  <nav class="hb-nav" aria-label="Dashboard">
+    <a href="index.html">Overview</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="ppc.html" aria-current="page">PPC</a>
+    <a href="approvals.html">Approvals</a>
+  </nav>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Paid media <span class="spark">✦</span></h1>
+      <p class="page-sub">Campaign drafts, spend so far, and the guard rails that keep the budget honest.</p>
+    </div>
+    <span class="hand-note">nothing spends without you ✦</span>
+  </div>
+
+  <section class="section" aria-label="Budget guard" style="margin-top:0">
+    <div class="section-head"><span class="spark">✦</span><h2>Budget guard</h2></div>
+    <div class="grid-2">
+      <div class="guard-card">
+        <h3><span class="spark">✦</span> Guard rails</h3>
+        <div class="guard-rows" id="guard-rows">
+          <div class="guard-row"><span class="k">Loading…</span><span class="v"></span></div>
+        </div>
+      </div>
+      <div class="kill-box">
+        <h3>Kill switch — if spend ever looks wrong</h3>
+        <ol>
+          <li><b>Fastest:</b> pause the campaigns directly in the platform UI (Google Ads / Meta Ads Manager / TikTok Ads). Drafts created by the fleet start paused; nothing runs that you haven't approved.</li>
+          <li>Set <code>max_daily_budget_gbp</code> to <code>0</code> in <code>data/config/budgets.json</code> and commit — agents read it before every run and will draft nothing new.</li>
+          <li>Disable the <code>agent-fleet</code> workflow on the repo's Actions tab to stop all agent runs entirely.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Campaign drafts">
+    <div class="section-head"><span class="spark">✦</span><h2>Campaign drafts</h2></div>
+    <div id="campaigns"><div class="skeleton">Loading…</div></div>
+  </section>
+
+  <section class="section" aria-label="Spend">
+    <div class="section-head"><span class="spark">✦</span><h2>Spend &amp; performance</h2></div>
+    <div id="spend-metrics"><div class="skeleton">Loading…</div></div>
+  </section>
+
+  <section class="section" aria-label="Campaign files in the repo">
+    <div class="section-head"><span class="spark">✦</span><h2>Campaign files in the repo</h2></div>
+    <p class="page-sub" style="margin-bottom:12px">The source of truth: campaign YAML per platform, plus Google Ads Editor CSVs for one-click import. Approved specs get exported here by the PPC agent.</p>
+    <div class="repo-links" id="repo-links"><div class="skeleton">Loading…</div></div>
+  </section>
+
+  <div class="spark-sep">✦ ✦ ✦</div>
+  <p class="footnote">All campaigns are drafted in <b>draft_only</b> mode — they reach a platform only after approval, and never above the daily cap.</p>
+</main>
+
+<script src="dash.js"></script>
+<script>initPPC();</script>
+</body>
+</html>

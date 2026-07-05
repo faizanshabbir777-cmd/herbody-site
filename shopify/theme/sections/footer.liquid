@@ -1,0 +1,129 @@
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        HER<span class="bd">BODY</span><span class="pip" aria-hidden="true"></span>
+        <p>{{ section.settings.blurb }}</p>
+        <span class="foot-tag">{{ 'sections.footer.tagline' | t }}</span>
+      </div>
+
+      {%- assign has_columns = false -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'link_column' -%}{%- assign has_columns = true -%}{%- endif -%}
+      {%- endfor -%}
+
+      {%- if has_columns -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'link_column' -%}
+            <div class="foot-col" {{ block.shopify_attributes }}>
+              <h5>{{ block.settings.heading }}</h5>
+              <ul>
+                {%- for link in block.settings.menu.links -%}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- else -%}
+        <div class="foot-col">
+          <h5>{{ 'sections.footer.col_shop' | t }}</h5>
+          <ul>
+            <li><a href="/products/the-daily-creatine-collagen">{{ 'sections.footer.link_product' | t }}</a></li>
+            <li><a href="/pages/science">{{ 'sections.header.nav_science' | t }}</a></li>
+            <li><a href="/pages/pact">{{ 'sections.header.nav_pact' | t }}</a></li>
+            <li><a href="/pages/app">{{ 'sections.header.nav_app' | t }}</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h5>{{ 'sections.footer.col_help' | t }}</h5>
+          <ul>
+            <li><a href="/pages/faq">{{ 'sections.header.nav_faq' | t }}</a></li>
+            <li><a href="/pages/contact">{{ 'sections.footer.link_contact' | t }}</a></li>
+            <li><a href="/pages/shipping">{{ 'sections.footer.link_shipping' | t }}</a></li>
+            <li><a href="/pages/returns">{{ 'sections.footer.link_returns' | t }}</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h5>{{ 'sections.footer.col_legal' | t }}</h5>
+          <ul>
+            <li><a href="/pages/privacy">{{ 'sections.footer.link_privacy' | t }}</a></li>
+            <li><a href="/pages/terms">{{ 'sections.footer.link_terms' | t }}</a></li>
+            <li><a href="/pages/supplement-disclaimer">{{ 'sections.footer.link_disclaimer' | t }}</a></li>
+            {%- if settings.social_instagram != blank -%}<li><a href="{{ settings.social_instagram }}" rel="noopener" target="_blank">Instagram</a></li>{%- endif -%}
+            {%- if settings.social_tiktok != blank -%}<li><a href="{{ settings.social_tiktok }}" rel="noopener" target="_blank">TikTok</a></li>{%- endif -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- comment -%} footer-legal block: mandatory food-supplement + caution lines {%- endcomment -%}
+  <div class="foot-legal">
+    {%- assign legal_rendered = false -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'legal' -%}
+        {%- assign legal_rendered = true -%}
+        <div {{ block.shopify_attributes }}>
+          <p>{{ 'general.disclaimer.food_supplement' | t }}</p>
+          <p>{{ 'general.disclaimer.caution' | t }}</p>
+          {%- if block.settings.extra_note != blank -%}<p>{{ block.settings.extra_note }}</p>{%- endif -%}
+          <p class="company-line">
+            <span>&copy; {{ 'now' | date: '%Y' }} {{ 'sections.footer.company_line' | t }}</span>
+            <span>
+              <a href="/pages/privacy">{{ 'sections.footer.link_privacy' | t }}</a>
+              <a href="/pages/terms">{{ 'sections.footer.link_terms' | t }}</a>
+            </span>
+          </p>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+    {%- unless legal_rendered -%}
+      <p>{{ 'general.disclaimer.food_supplement' | t }}</p>
+      <p>{{ 'general.disclaimer.caution' | t }}</p>
+      <p class="company-line">
+        <span>&copy; {{ 'now' | date: '%Y' }} {{ 'sections.footer.company_line' | t }}</span>
+        <span>
+          <a href="/pages/privacy">{{ 'sections.footer.link_privacy' | t }}</a>
+          <a href="/pages/terms">{{ 'sections.footer.link_terms' | t }}</a>
+        </span>
+      </p>
+    {%- endunless -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "blurb",
+      "label": "Brand blurb",
+      "default": "A London supplement house for women. One honest scoop — 5g creatine, 5g Verisol® collagen and a complete multivitamin — and 20% of profits to refuge, care and crisis support for women."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link_column",
+      "name": "Link column",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Explore" },
+        { "type": "link_list", "id": "menu", "label": "Menu" }
+      ]
+    },
+    {
+      "type": "legal",
+      "name": "Footer legal",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Renders the mandatory food-supplement statement, the pregnancy/health caution and the company line. The statutory wording itself is fixed in the theme locale."
+        },
+        { "type": "text", "id": "extra_note", "label": "Extra note (optional)" }
+      ]
+    }
+  ]
+}
+{% endschema %}

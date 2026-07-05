@@ -8,6 +8,20 @@ on:
   push:
     branches:
       - main
+    # Path-filtered so agent/theme/doc commits don't trigger needless rebuilds.
+    # The Pages artifact includes the whole repo root (site + /dash + /data).
+    paths:
+      - "*.html"
+      - "*.css"
+      - "*.js"
+      - "*.png"
+      - "*.svg"
+      - "*.xml"
+      - "*.txt"
+      - "*.webmanifest"
+      - ".nojekyll"
+      - "dash/**"
+      - "data/**"
   workflow_dispatch:
 
 # Permissions required by the official Pages deploy actions.

@@ -1,0 +1,14 @@
+{%- comment -%}
+  Verified-review card markup — built for the future, referenced ONLY
+  inside the gated reviews section (settings.show_reviews, default OFF).
+  DMCC Act 2024: only publish reviews that are genuine, verified and
+  verifiable. Params: rating, body, author, meta, verified (boolean)
+{%- endcomment -%}
+<article class="review">
+  {%- render 'rating-stars', rating: rating -%}
+  <blockquote>{{ body }}</blockquote>
+  <div class="rv-by">{{ author }}{% if meta != blank %}<small>{{ meta }}</small>{% endif %}</div>
+  {%- if verified -%}
+    <span class="rv-verified">{{ 'sections.reviews.verified' | t }}</span>
+  {%- endif -%}
+</article>

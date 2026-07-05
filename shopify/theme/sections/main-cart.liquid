@@ -1,0 +1,63 @@
+<section class="page-hero-sub">
+  <div class="wrap">
+    <h1 class="page-h1">{{ 'cart.general.title' | t }}</h1>
+  </div>
+</section>
+
+<section class="sys">
+  <div class="wrap" style="max-width:820px">
+    {%- if cart.item_count == 0 -%}
+      <div class="cart-empty">
+        <span class="scrawl">{{ 'cart.general.empty_scrawl' | t }}</span>
+        <p>{{ 'cart.general.empty' | t }}</p>
+        <p style="margin-top:20px"><a class="btn btn-primary" href="{{ routes.all_products_collection_url }}">{{ 'general.continue_shopping' | t }}</a></p>
+      </div>
+    {%- else -%}
+      <form action="{{ routes.cart_url }}" method="post" novalidate>
+        {%- for item in cart.items -%}
+          <div class="cart-line">
+            <a class="thumb" href="{{ item.url }}">
+              {%- if item.image -%}
+                <img src="{{ item.image | image_url: width: 128 }}" alt="{{ item.image.alt | escape }}" width="64" height="72" loading="lazy">
+              {%- else -%}
+                <span class="pip" aria-hidden="true"></span>
+              {%- endif -%}
+            </a>
+            <div>
+              <a class="nm" href="{{ item.url }}">{{ item.product.title }}</a>
+              {%- if item.selling_plan_allocation -%}
+                <span class="plan">{{ item.selling_plan_allocation.selling_plan.name }}</span>
+              {%- endif -%}
+              <div class="qty" style="margin-top:8px">
+                <a class="btn-ghost" style="border:0;padding:8px 12px;text-decoration:none" href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.general.decrease' | t }}">&minus;</a>
+                <input type="number" name="updates[]" value="{{ item.quantity }}" min="0" aria-label="{{ 'cart.general.quantity' | t }}">
+                <a class="btn-ghost" style="border:0;padding:8px 12px;text-decoration:none" href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.general.increase' | t }}">+</a>
+              </div>
+            </div>
+            <div>
+              <div class="lp tabular">{{ item.final_line_price | money }}</div>
+              <a class="rm" style="text-align:right" href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity=0">{{ 'cart.general.remove' | t }}</a>
+            </div>
+          </div>
+        {%- endfor -%}
+
+        <div class="cart-summary">
+          <div class="cart-tokens">{% render 'sparkle', style: 'pip' %} {{ 'cart.general.tokens' | t }}</div>
+          <div class="srow"><span>{{ 'cart.general.subtotal' | t }}</span><span>{{ cart.total_price | money }}</span></div>
+          <p class="snote">{{ 'cart.general.shipping_note' | t }}</p>
+          <div class="buy-actions">
+            <button type="submit" name="update" class="btn btn-ghost">{{ 'cart.general.update' | t }}</button>
+            <button type="submit" name="checkout" class="btn btn-primary" data-checkout-button>{{ 'cart.general.checkout' | t }} <span class="arr">&rarr;</span></button>
+          </div>
+        </div>
+      </form>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart",
+  "settings": []
+}
+{% endschema %}

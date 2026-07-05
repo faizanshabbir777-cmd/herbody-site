@@ -1,0 +1,32 @@
+{%- liquid
+  assign social_urls = ''
+  if settings.social_instagram != blank
+    assign social_urls = social_urls | append: settings.social_instagram | append: ','
+  endif
+  if settings.social_tiktok != blank
+    assign social_urls = social_urls | append: settings.social_tiktok | append: ','
+  endif
+  if settings.social_youtube != blank
+    assign social_urls = social_urls | append: settings.social_youtube | append: ','
+  endif
+  assign socials = social_urls | split: ','
+-%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "HerBody",
+  "legalName": "HerBody Ltd",
+  "url": {{ shop.url | append: routes.root_url | json }},
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "London",
+    "addressCountry": "GB"
+  }{% if socials.size > 0 %},
+  "sameAs": [
+    {%- for url in socials -%}
+      {{ url | json }}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]{% endif %}
+}
+</script>

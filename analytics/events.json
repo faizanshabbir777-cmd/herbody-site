@@ -1,0 +1,105 @@
+{
+  "$schema_note": "HerBody event schema. Maps canonical theme events to each platform's event name and required params. Consent-gated: no platform call before opt-in (TRACKING_PLAN.md §6). IDs are placeholders until accounts exist (ASSUMPTIONS.md §3).",
+  "version": "1.0.0",
+  "currency": "GBP",
+  "ids": {
+    "ga4_measurement_id": "GA4_MEASUREMENT_ID",
+    "meta_pixel_id": "META_PIXEL_ID",
+    "tiktok_pixel_id": "TIKTOK_PIXEL_ID"
+  },
+  "item_defaults": {
+    "item_id": "HB-DAILY-300",
+    "item_name": "No.01 The Daily",
+    "item_brand": "HerBody",
+    "item_category": "Supplements",
+    "price_onetime": 39.99,
+    "price_subscribe": 33.99
+  },
+  "consent": {
+    "gate": "shopify_customer_privacy_or_site_banner",
+    "categories_required": { "analytics": ["ga4"], "marketing": ["meta", "tiktok"] },
+    "default_state": "denied",
+    "google_consent_mode_v2": {
+      "ad_storage": "denied",
+      "analytics_storage": "denied",
+      "ad_user_data": "denied",
+      "ad_personalization": "denied"
+    }
+  },
+  "dedup": {
+    "strategy": "shared_event_id_browser_and_server",
+    "purchase_event_id_source": "shopify_order_id",
+    "other_event_id_source": "uuidv4_minted_client_side"
+  },
+  "events": [
+    {
+      "canonical": "page_view",
+      "source": "shopify:page_viewed | site:DOMContentLoaded",
+      "ga4": { "name": "page_view", "params": ["page_location", "page_title"] },
+      "meta": { "name": "PageView", "params": [] },
+      "tiktok": { "name": "Pageview", "params": [] }
+    },
+    {
+      "canonical": "view_item",
+      "source": "shopify:product_viewed",
+      "ga4": { "name": "view_item", "params": ["currency", "value", "items"] },
+      "meta": { "name": "ViewContent", "params": ["content_ids", "content_type", "content_name", "value", "currency"] },
+      "tiktok": { "name": "ViewContent", "params": ["content_id", "content_type", "content_name", "value", "currency"] }
+    },
+    {
+      "canonical": "add_to_cart",
+      "source": "shopify:product_added_to_cart",
+      "notes": "items[].item_variant distinguishes one-time vs subscribe; value = 39.99 or 33.99 accordingly",
+      "ga4": { "name": "add_to_cart", "params": ["currency", "value", "items"] },
+      "meta": { "name": "AddToCart", "params": ["content_ids", "content_type", "value", "currency"] },
+      "tiktok": { "name": "AddToCart", "params": ["content_id", "content_type", "value", "currency"] }
+    },
+    {
+      "canonical": "begin_checkout",
+      "source": "shopify:checkout_started",
+      "ga4": { "name": "begin_checkout", "params": ["currency", "value", "items", "coupon"] },
+      "meta": { "name": "InitiateCheckout", "params": ["content_ids", "value", "currency", "num_items"] },
+      "tiktok": { "name": "InitiateCheckout", "params": ["content_id", "value", "currency"] }
+    },
+    {
+      "canonical": "purchase",
+      "source": "shopify:checkout_completed",
+      "notes": "event_id = Shopify order ID on all platforms; server-side phase-2 events reuse it for dedup",
+      "ga4": { "name": "purchase", "params": ["transaction_id", "currency", "value", "tax", "shipping", "items"] },
+      "meta": { "name": "Purchase", "params": ["content_ids", "content_type", "value", "currency", "event_id"] },
+      "tiktok": { "name": "CompletePayment", "params": ["content_id", "value", "currency", "event_id"] }
+    },
+    {
+      "canonical": "sign_up",
+      "source": "shopify:account_created | site:app_waitlist_submit",
+      "ga4": { "name": "sign_up", "params": ["method"] },
+      "meta": { "name": "CompleteRegistration", "params": ["status"] },
+      "tiktok": { "name": "CompleteRegistration", "params": [] }
+    },
+    {
+      "canonical": "generate_lead",
+      "source": "theme:email_capture_submit",
+      "notes": "lead_source: footer | welcome_offer | quiz. Email itself goes to Klaviyo (consented), never into analytics params",
+      "ga4": { "name": "generate_lead", "params": ["lead_source"] },
+      "meta": { "name": "Lead", "params": ["content_name"] },
+      "tiktok": { "name": "SubmitForm", "params": ["content_name"] }
+    },
+    {
+      "canonical": "select_subscription_plan",
+      "source": "theme:selling_plan_selected",
+      "notes": "Custom event, GA4 only — measures subscribe-toggle engagement pre-cart",
+      "ga4": { "name": "select_item", "params": ["item_list_name", "items"] },
+      "meta": null,
+      "tiktok": null
+    }
+  ],
+  "banned": {
+    "note": "Never implement without a documented decision reversal",
+    "events": [
+      "any event firing pre-consent",
+      "server-only conversion events lacking shared event_id",
+      "enhanced conversions / advanced matching with unhashed PII",
+      "review_submitted (reviews module disabled — Decision D6)"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": { "type": "main-page" },
+    "pledge": { "type": "pledge-band" },
+    "app": { "type": "app-teaser", "settings": { "app_url": "/pages/app" } },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["main", "pledge", "app", "capture"]
+}

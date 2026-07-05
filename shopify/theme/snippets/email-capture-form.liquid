@@ -1,0 +1,27 @@
+{%- comment -%}
+  Newsletter capture — Shopify customer form (POSTs to /contact#contact_form)
+  tagging the contact "newsletter". Email only.
+  Params: form_id (unique per placement)
+{%- endcomment -%}
+{%- assign capture_form_id = form_id | default: 'hb-capture' -%}
+{% form 'customer', id: capture_form_id, class: 'wl-form' %}
+  <input type="hidden" name="contact[tags]" value="newsletter">
+  <label class="visually-hidden" for="{{ capture_form_id }}-email">{{ 'general.newsletter.label' | t }}</label>
+  <input
+    id="{{ capture_form_id }}-email"
+    type="email"
+    name="contact[email]"
+    value="{{ form.email }}"
+    placeholder="{{ 'general.newsletter.placeholder' | t }}"
+    autocomplete="email"
+    autocapitalize="off"
+    autocorrect="off"
+    required
+  >
+  <button type="submit" class="btn btn-primary">{{ 'general.newsletter.submit' | t }}</button>
+  {%- if form.posted_successfully? -%}
+    <p class="wl-msg ok" role="status">{{ 'general.newsletter.success' | t }}</p>
+  {%- elsif form.errors -%}
+    <p class="wl-msg err" role="alert">{{ 'general.newsletter.error' | t }}</p>
+  {%- endif -%}
+{% endform %}

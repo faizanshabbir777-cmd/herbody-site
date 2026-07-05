@@ -1,0 +1,54 @@
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="howto">
+      {%- assign numerals = 'i|ii|iii' | split: '|' -%}
+      {%- for block in section.blocks limit: 3 -%}
+        <div class="howto-step" {{ block.shopify_attributes }}>
+          <div class="hs-ix">{{ numerals[forloop.index0] }}</div>
+          <h4>{{ block.settings.title }}</h4>
+          <p>{{ block.settings.body }}</p>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "How to use",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The ritual" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Scoop. Shake.<br><em>Drink</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "Thirty seconds, every morning. That's the whole ritual — consistency is the ingredient we can't put in the pouch." }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "limit": 3,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Scoop" },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "One level 14g scoop." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "How to use",
+      "blocks": [
+        { "type": "step", "settings": { "title": "Scoop 14g", "body": "One level scoop — 5g creatine, 5g Verisol® collagen and the complete multivitamin, all in." } },
+        { "type": "step", "settings": { "title": "Shake with 200ml", "body": "Cold water, 10 seconds. It turns the softest pink — strawberry lemonade, naturally flavoured, no added sugar." } },
+        { "type": "step", "settings": { "title": "Drink every morning", "body": "Training days and rest days. The dose works by showing up daily — same as you." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

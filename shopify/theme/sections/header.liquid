@@ -1,0 +1,67 @@
+<nav class="site-nav" data-header>
+  <div class="nav-in">
+    <a class="brand" href="{{ routes.root_url }}" aria-label="{{ shop.name }}">
+      HER<span class="bd">BODY</span><span class="pip" aria-hidden="true"></span>
+    </a>
+
+    <div class="nav-links" id="NavLinks" data-nav-links>
+      {%- if section.settings.menu != blank -%}
+        {%- for link in section.settings.menu.links -%}
+          <a href="{{ link.url }}"{% if link.current %} class="active" aria-current="page"{% endif %}>{{ link.title }}</a>
+        {%- endfor -%}
+      {%- else -%}
+        {%- comment -%} Fallback nav until a menu is assigned in the editor {%- endcomment -%}
+        <a href="/products/the-daily-creatine-collagen">{{ 'sections.header.nav_shop' | t }}</a>
+        <a href="/pages/science">{{ 'sections.header.nav_science' | t }}</a>
+        <a href="/pages/pact">{{ 'sections.header.nav_pact' | t }}</a>
+        <a href="/pages/app">{{ 'sections.header.nav_app' | t }}</a>
+        <a href="/pages/faq">{{ 'sections.header.nav_faq' | t }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="nav-cta">
+      {%- if section.settings.show_cta -%}
+        <a class="btn btn-primary" href="{{ section.settings.cta_link | default: '/products/the-daily-creatine-collagen' }}">{{ section.settings.cta_label }}</a>
+      {%- endif -%}
+      <button type="button" class="cart-btn" data-cart-open aria-label="{{ 'sections.header.cart_label' | t }}">
+        {% render 'icon-cart' %}
+        <span>{{ 'sections.header.cart' | t }}</span>
+        <span class="cc tabular" data-cart-count {% if cart.item_count == 0 %}hidden{% endif %}>{{ cart.item_count }}</span>
+      </button>
+      <button type="button" class="nav-burger" data-nav-toggle aria-expanded="false" aria-controls="NavLinks" aria-label="{{ 'general.accessibility.menu' | t }}">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Navigation menu",
+      "info": "If empty, the default HerBody nav (Shop · Science · The Pact · The App · FAQ) renders."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "label": "Show pink CTA button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Make it yours"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    }
+  ]
+}
+{% endschema %}

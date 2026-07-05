@@ -1,0 +1,10 @@
+{%- comment -%}
+  HerBody signature ✦ sparkle glyph.
+  Usage: {% render 'sparkle' %} → text glyph
+         {% render 'sparkle', style: 'pip' %} → masked SVG pip (block colour)
+{%- endcomment -%}
+{%- if style == 'pip' -%}
+  <span class="pip" aria-hidden="true"></span>
+{%- else -%}
+  <span class="sparkle" aria-hidden="true">&#10022;</span>
+{%- endif -%}

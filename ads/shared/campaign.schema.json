@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://herbody.example/schemas/campaign.schema.json",
+  "title": "HerBody paid-ads campaign file (PLN)",
+  "description": "Shape of the YAML campaign files under ads/{meta,tiktok,google}/campaigns/. All campaigns are authored PAUSED and may only go live when a human approval file in approvals/ lists the campaign name. Budgets are GBP; channel cap is 25/day across all campaigns on a platform.",
+  "type": "object",
+  "required": ["campaign"],
+  "properties": {
+    "campaign": {
+      "type": "object",
+      "required": ["name", "platform", "status", "objective", "daily_budget_gbp", "landing_page", "utm_base"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^HB_UK_[A-Z0-9_]+_V[0-9]+$" },
+        "platform": { "enum": ["meta", "tiktok", "google"] },
+        "status": { "enum": ["PAUSED", "ACTIVE"], "description": "Authored as PAUSED. ACTIVE only ever set by a human after approval." },
+        "objective": { "type": "string" },
+        "daily_budget_gbp": { "type": "number", "exclusiveMinimum": 0, "maximum": 25 },
+        "special_ad_categories": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "landing_page": { "type": "string", "format": "uri-reference" },
+        "utm_base": { "type": "string", "pattern": "^utm_source=[a-z0-9_]+&utm_medium=[a-z0-9_]+&utm_campaign=hb_uk_[a-z0-9_]+$" },
+        "network": { "type": "string" },
+        "bidding": { "type": "string" },
+        "geo": { "type": "string" },
+        "language": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "ad_sets": { "$ref": "#/$defs/adSetList", "description": "Meta naming." },
+    "ad_groups": { "$ref": "#/$defs/adSetList", "description": "TikTok/Google naming." },
+    "campaign_negative_keywords": { "type": "array", "items": { "$ref": "#/$defs/keyword" } },
+    "sitelinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "final_url"],
+        "properties": {
+          "text": { "type": "string", "maxLength": 25 },
+          "final_url": { "type": "string" },
+          "desc1": { "type": "string", "maxLength": 35 },
+          "desc2": { "type": "string", "maxLength": 35 }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "adSetList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "enum": ["PAUSED", "ACTIVE"] },
+          "optimization_goal": { "type": "string" },
+          "billing_event": { "type": "string" },
+          "identity": { "type": "string", "description": "e.g. SPARK_ADS for TikTok creator-authorised delivery." },
+          "targeting": { "$ref": "#/$defs/targeting" },
+          "keywords": { "type": "array", "items": { "$ref": "#/$defs/keyword" } },
+          "rsa": { "$ref": "#/$defs/rsa" },
+          "ads": { "type": "array", "items": { "$ref": "#/$defs/ad" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "targeting": {
+      "type": "object",
+      "required": ["countries"],
+      "properties": {
+        "countries": { "type": "array", "items": { "const": "GB" }, "minItems": 1, "description": "UK only." },
+        "age_min": { "type": "integer", "minimum": 18, "description": "Never below 18." },
+        "age_max": { "type": "integer", "maximum": 54 },
+        "genders": { "type": "array", "items": { "enum": ["female", "male", "all"] } },
+        "placements": { "type": "array", "items": { "type": "string" } },
+        "custom_audiences": { "type": "array", "items": { "type": "string" }, "description": "Engagement/traffic-based only. NEVER sensitive-health, pregnancy, condition or body-image audiences, as inclusion, exclusion or lookalike seed." },
+        "excluded_custom_audiences": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "keyword": {
+      "type": "object",
+      "required": ["text", "match_type"],
+      "properties": {
+        "text": { "type": "string" },
+        "match_type": { "enum": ["EXACT", "PHRASE", "BROAD", "Exact", "Phrase", "Broad"] }
+      }
+    },
+    "rsa": {
+      "type": "object",
+      "required": ["final_url", "headlines", "descriptions"],
+      "properties": {
+        "final_url": { "type": "string" },
+        "path1": { "type": "string", "maxLength": 15 },
+        "path2": { "type": "string", "maxLength": 15 },
+        "headlines": { "type": "array", "minItems": 3, "maxItems": 15, "items": { "type": "string", "maxLength": 30 } },
+        "descriptions": { "type": "array", "minItems": 2, "maxItems": 4, "items": { "type": "string", "maxLength": 90 } },
+        "compliance_status": { "$ref": "#/$defs/complianceStatus" }
+      }
+    },
+    "ad": {
+      "type": "object",
+      "required": ["name", "status", "destination_url", "compliance_status"],
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "enum": ["PAUSED", "ACTIVE"] },
+        "primary_text": { "type": "string" },
+        "headline": { "type": "string" },
+        "description": { "type": "string" },
+        "cta": { "type": "string" },
+        "spark_video_code": { "type": "string", "description": "TikTok Spark Ads only — filled by a human from the creator's authorisation, never invented." },
+        "destination_url": { "type": "string", "pattern": "utm_source=.+utm_campaign=hb_uk_" },
+        "utm": {
+          "type": "object",
+          "properties": { "content": { "type": "string", "pattern": "^[a-z0-9_]+$" }, "term": { "type": "string" } }
+        },
+        "compliance_status": { "$ref": "#/$defs/complianceStatus" }
+      },
+      "additionalProperties": true
+    },
+    "complianceStatus": {
+      "enum": ["PASS", "NEEDS_REVIEW", "REJECTED"],
+      "description": "Self-assessed by the drafting agent; final call is the human's. NEEDS_REVIEW ads must not be enabled."
+    }
+  }
+}

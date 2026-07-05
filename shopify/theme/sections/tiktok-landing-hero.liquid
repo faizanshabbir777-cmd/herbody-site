@@ -1,0 +1,80 @@
+{%- comment -%}
+  Fast mobile landing for TikTok traffic: hook, 3 proof bullets, product,
+  CTA, guarantee. No urgency/scarcity mechanics — DMCC/CAP compliant.
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product
+  assign variant = product.selected_or_first_available_variant
+-%}
+<section class="tt-hero">
+  <div class="wrap">
+    <div class="tt-in">
+      <h1 class="tt-hook">{{ section.settings.hook }}</h1>
+
+      <ul class="tt-proof">
+        {%- for block in section.blocks limit: 3 -%}
+          <li {{ block.shopify_attributes }}><span class="pip" aria-hidden="true"></span>{{ block.settings.text }}</li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if product.featured_image -%}
+        <img src="{{ product.featured_image | image_url: width: 640 }}"
+          width="320" height="{{ 320 | divided_by: product.featured_image.aspect_ratio | round }}"
+          alt="{{ product.featured_image.alt | default: product.title | escape }}"
+          style="margin:0 auto;max-width:320px" loading="eager" fetchpriority="high">
+      {%- else -%}
+        <div class="hero-pouch-ph" style="max-width:300px;aspect-ratio:.8/1">
+          <span class="pip" aria-hidden="true"></span>
+          <span class="mono">{{ 'sections.hero.image_placeholder' | t }}</span>
+        </div>
+      {%- endif -%}
+
+      <div style="margin-top:26px;display:grid;gap:10px;max-width:380px;margin-left:auto;margin-right:auto">
+        {%- if product != blank and variant != blank -%}
+          <a class="btn btn-primary" href="{{ product.url }}" style="padding:17px 26px;font-size:15px">
+            {{ 'sections.hero.cta_primary' | t }} &middot; {{ variant.price | money }} <span class="arr">&rarr;</span>
+          </a>
+        {%- else -%}
+          <a class="btn btn-primary" href="{{ routes.all_products_collection_url }}">{{ 'sections.hero.cta_fallback' | t }}</a>
+        {%- endif -%}
+      </div>
+
+      <p class="tt-guarantee">{{ settings.guarantee_line }} &middot; {{ settings.shipping_line }}</p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "TikTok landing hero",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Product" },
+    {
+      "type": "textarea",
+      "id": "hook",
+      "label": "Hook headline (HTML allowed)",
+      "default": "Your creatine, collagen &amp; multi.<br><em>One</em> scoop. Actually halal."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "bullet",
+      "name": "Proof bullet",
+      "limit": 3,
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "5g + 5g + a complete multivitamin — every dose on the label" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "TikTok landing hero",
+      "blocks": [
+        { "type": "bullet", "settings": { "text": "5g creatine + 5g Verisol® collagen — the studied amounts, disclosed" } },
+        { "type": "bullet", "settings": { "text": "Halal certified (HMC GB18) · made in UK · tested every batch" } },
+        { "type": "bullet", "settings": { "text": "20% of profits to refuge, care and crisis support — you pick the cause" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

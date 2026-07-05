@@ -1,0 +1,14 @@
+{
+  "name": "herbody-store-setup",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Idempotent HerBody Shopify store provisioning (Admin GraphQL API 2025-07, zero dependencies).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "setup": "node store-setup.mjs",
+    "dry-run": "DRY_RUN=true node store-setup.mjs"
+  }
+}

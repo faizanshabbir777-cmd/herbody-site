@@ -1,0 +1,125 @@
+{%- comment -%}
+  Black label-block hero. Prices always come from the product object.
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product
+  assign variant = product.selected_or_first_available_variant
+  assign sub_price = blank
+  if variant and variant.selling_plan_allocations.size > 0
+    assign sub_price = variant.selling_plan_allocations.first.price
+  endif
+  if sub_price != blank
+    assign per_day = sub_price | divided_by: 21.0 | money
+  elsif variant
+    assign per_day = variant.price | divided_by: 21.0 | money
+  endif
+-%}
+
+{% style %}
+  .hero.ink-block{border-bottom-color:#000}
+  .hero.ink-block .hero-h1{color:#fff}
+  .hero.ink-block .hero-h1 .ln2{color:var(--clay-soft)}
+  .hero.ink-block .hero-sub{color:var(--label-steel)}
+  .hero.ink-block .hero-sub b{color:#fff}
+  .hero.ink-block .hero-eyebrow .tick{background:var(--label-steel-2)}
+  .hero.ink-block .lbl{color:var(--label-steel-2)}
+  .hero.ink-block .hero-perday{font-family:var(--hand);font-weight:600;font-size:clamp(24px,2.8vw,32px);color:var(--clay-soft);display:inline-block;transform:rotate(-2deg);margin-top:18px}
+{% endstyle %}
+
+<section class="hero ink-block">
+  <div class="hero-glow"></div>
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow">
+          <span class="mono hot">{{ section.settings.eyebrow_no }}</span>
+          <span class="tick"></span>
+          <span class="lbl">{{ section.settings.eyebrow_label }}</span>
+        </div>
+        <h1 class="hero-h1">{{ section.settings.heading }}</h1>
+        <p class="hero-sub">{{ section.settings.subheading }}</p>
+        {%- if per_day -%}
+          <span class="hero-perday">{{ 'sections.hero.per_day_html' | t: price: per_day }}</span>
+        {%- endif -%}
+        <div class="hero-actions">
+          {%- if product != blank -%}
+            <a href="{{ product.url }}" class="btn btn-primary">
+              {{ 'sections.hero.cta_primary' | t }} &middot; {{ variant.price | money }} <span class="arr">&rarr;</span>
+            </a>
+            {%- if sub_price != blank -%}
+              <a href="{{ product.url }}" class="btn btn-ghost">
+                {{ 'sections.hero.cta_subscribe' | t }} &middot; {{ sub_price | money }}
+              </a>
+            {%- endif -%}
+          {%- else -%}
+            <a href="{{ routes.all_products_collection_url }}" class="btn btn-primary">{{ 'sections.hero.cta_fallback' | t }} <span class="arr">&rarr;</span></a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="hero-vis">
+        {%- if product.featured_image -%}
+          <img class="hero-pouch"
+            src="{{ product.featured_image | image_url: width: 880 }}"
+            srcset="{{ product.featured_image | image_url: width: 440 }} 440w, {{ product.featured_image | image_url: width: 880 }} 880w"
+            sizes="(max-width: 980px) 90vw, 440px"
+            width="440" height="{{ 440 | divided_by: product.featured_image.aspect_ratio | round }}"
+            alt="{{ product.featured_image.alt | default: product.title | escape }}" fetchpriority="high">
+        {%- else -%}
+          <div class="hero-pouch-ph">
+            <span class="pip" aria-hidden="true"></span>
+            <span class="mono">{{ 'sections.hero.image_placeholder' | t }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if product != blank -%}
+          <div class="readout" aria-label="{{ 'sections.hero.readout_label' | t }}">
+            <div class="readout-top">
+              <span class="mono"><span class="dot"></span>{{ 'sections.hero.readout_title' | t }}</span>
+              <span class="mono">{{ 'sections.hero.readout_per' | t }}</span>
+            </div>
+            <div class="readout-body">
+              <div class="readout-name">{{ product.title }}<span>{{ section.settings.readout_sub }}</span></div>
+              <div class="readout-rows">
+                <div class="rrow"><span class="k">Creatine monohydrate (Creapure&reg;)</span><span class="v"><em>5.0</em>g</span></div>
+                <div class="rrow"><span class="k">Verisol&reg; collagen peptides</span><span class="v"><em>5.0</em>g</span></div>
+                <div class="rrow"><span class="k">Actives, every one disclosed</span><span class="v">13</span></div>
+                <div class="rrow"><span class="k">Flavour</span><span class="v" style="font-size:14.5px">Strawberry Lemonade</span></div>
+                <div class="rrow"><span class="k">Servings</span><span class="v">21</span></div>
+              </div>
+            </div>
+            <div class="readout-foot">
+              <span class="batch">{{ 'sections.hero.batch_example' | t }}</span>
+              <span class="pass">{{ 'sections.hero.batch_tested' | t }}</span>
+            </div>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero (product)",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Product" },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "No.01" },
+    { "type": "text", "id": "eyebrow_label", "label": "Eyebrow label", "default": "Made for women · London · Halal certified" },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Headline (HTML allowed)",
+      "default": "Built <span class=\"ln2\">for</span> <em>her</em> body."
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "One honest morning scoop — 5g creatine + 5g Verisol® collagen and a complete multivitamin, each at the studied amount. Nothing hidden, nothing vague. Tested for purity, every single batch."
+    },
+    { "type": "text", "id": "readout_sub", "label": "Readout subtitle", "default": "Creatine + Collagen for Women" }
+  ],
+  "presets": [{ "name": "Hero (product)" }]
+}
+{% endschema %}

@@ -1,0 +1,60 @@
+{%- comment -%}
+  Slide-in cart drawer. Server-rendered on first load; theme.js re-renders
+  the line list from /cart.js JSON after add/change.
+{%- endcomment -%}
+<div class="cart-overlay" id="CartOverlay" data-cart-overlay hidden></div>
+<aside class="cart-drawer" id="CartDrawer" data-cart-drawer role="dialog" aria-modal="true" aria-label="{{ 'cart.general.title' | t }}" hidden>
+  <div class="cart-head">
+    <h2 class="ct">{{ 'cart.general.title' | t }} <span class="hot tabular" data-cart-drawer-count>{% if cart.item_count > 0 %}({{ cart.item_count }}){% endif %}</span></h2>
+    <button type="button" class="cx" data-cart-close aria-label="{{ 'general.accessibility.close' | t }}">{% render 'icon-close' %}</button>
+  </div>
+
+  <div class="cart-body" data-cart-lines>
+    {%- if cart.item_count == 0 -%}
+      <div class="cart-empty">
+        <span class="scrawl">{{ 'cart.general.empty_scrawl' | t }}</span>
+        <p>{{ 'cart.general.empty' | t }}</p>
+        <p style="margin-top:18px"><a class="btn btn-primary" href="{{ routes.all_products_collection_url }}">{{ 'general.continue_shopping' | t }}</a></p>
+      </div>
+    {%- else -%}
+      {%- for item in cart.items -%}
+        <div class="cart-line" data-line-key="{{ item.key }}">
+          <div class="thumb">
+            {%- if item.image -%}
+              <img src="{{ item.image | image_url: width: 128 }}" alt="{{ item.image.alt | escape }}" width="64" height="72" loading="lazy">
+            {%- else -%}
+              {% render 'sparkle', style: 'pip' %}
+            {%- endif -%}
+          </div>
+          <div>
+            <a class="nm" href="{{ item.url }}">{{ item.product.title }}</a>
+            {%- if item.selling_plan_allocation -%}
+              <span class="plan">{{ item.selling_plan_allocation.selling_plan.name }}</span>
+            {%- endif -%}
+            <div class="qty" data-line-qty>
+              <button type="button" data-qty-change="-1" aria-label="{{ 'cart.general.decrease' | t }}">&minus;</button>
+              <input type="number" value="{{ item.quantity }}" min="0" aria-label="{{ 'cart.general.quantity' | t }}" data-qty-input>
+              <button type="button" data-qty-change="1" aria-label="{{ 'cart.general.increase' | t }}">+</button>
+            </div>
+          </div>
+          <div>
+            <div class="lp tabular">{{ item.final_line_price | money }}</div>
+            <button type="button" class="rm" data-line-remove>{{ 'cart.general.remove' | t }}</button>
+          </div>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+
+  <div class="cart-foot" data-cart-foot {% if cart.item_count == 0 %}hidden{% endif %}>
+    <div class="cart-tokens">{% render 'sparkle', style: 'pip' %} {{ 'cart.general.tokens' | t }}</div>
+    <div class="cart-summary">
+      <div class="srow"><span>{{ 'cart.general.subtotal' | t }}</span><span data-cart-subtotal>{{ cart.total_price | money }}</span></div>
+      <p class="snote">{{ 'cart.general.shipping_note' | t }}</p>
+    </div>
+    <form action="{{ routes.cart_url }}" method="post">
+      <button type="submit" name="checkout" class="btn btn-primary btn-full" data-checkout-button>{{ 'cart.general.checkout' | t }} <span class="arr">&rarr;</span></button>
+    </form>
+    <p style="text-align:center;margin-top:10px"><a href="{{ routes.cart_url }}" class="mono" style="color:var(--steel-2)">{{ 'cart.general.view_cart' | t }}</a></p>
+  </div>
+</aside>

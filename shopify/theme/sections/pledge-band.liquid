@@ -1,0 +1,45 @@
+{%- comment -%}
+  The pledge — 20% of profits, audited. Solidarity, not saviour.
+  Charity partners are not yet signed: copy says "vetted partners across
+  eight causes" and never names unsigned partners as confirmed.
+{%- endcomment -%}
+<section class="sys kraft">
+  <div class="wrap">
+    <div class="pledge-wrap">
+      <div>
+        <div class="sec-id">{{ section.settings.eyebrow }}</div>
+        <div class="pledge-big" style="margin-top:20px">{{ section.settings.big_figure }}</div>
+        <div class="stamp-round" style="margin-top:26px"><span class="big">{{ 'sections.pledge.stamp_big' | t }}</span><span class="sm">{{ 'sections.pledge.stamp_small' | t }}</span></div>
+      </div>
+      <div class="pledge-copy">
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        <p>{{ section.settings.body }}</p>
+        <p><b>{{ section.settings.mechanism }}</b></p>
+        <div class="pledge-tokens">
+          <span class="tok"><span class="pip" aria-hidden="true"></span>{{ 'sections.pledge.token_1' | t }}</span>
+          <span class="tok"><span class="pip" aria-hidden="true"></span>{{ 'sections.pledge.token_2' | t }}</span>
+          <span class="tok"><span class="pip" aria-hidden="true"></span>{{ 'sections.pledge.token_3' | t }}</span>
+        </div>
+        {%- if section.settings.link_label != blank -%}
+          <p style="margin-top:26px"><a class="btn btn-ghost" href="{{ section.settings.link_url | default: '/pages/pact' }}">{{ section.settings.link_label }}</a></p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Pledge band",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The pact" },
+    { "type": "text", "id": "big_figure", "label": "Big figure (HTML allowed)", "default": "<em>20%</em>" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Good for you.<br>Good for <em>her</em>." },
+    { "type": "textarea", "id": "body", "label": "Body", "default": "20% of our profits — audited annually — fund refuge, care and crisis support for women, through vetted partners across eight causes. Solidarity, not saviour: women lifting women, quietly, in every pouch." },
+    { "type": "textarea", "id": "mechanism", "label": "Mechanism line", "default": "Every pouch earns 2 charity tokens in the HerBody app — and you choose where your share lands." },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "Read the pact" },
+    { "type": "url", "id": "link_url", "label": "Link URL" }
+  ],
+  "presets": [{ "name": "Pledge band" }]
+}
+{% endschema %}

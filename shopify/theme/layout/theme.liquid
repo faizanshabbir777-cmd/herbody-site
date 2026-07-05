@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>
+    {{- page_title -}}
+    {%- if current_tags -%}
+      {%- assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags }}
+    {%- endif -%}
+    {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
+    {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  </title>
+
+  {%- if page_description -%}
+    <meta name="description" content="{{ page_description | escape }}">
+  {%- endif -%}
+
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta name="theme-color" content="{{ settings.color_label_block }}">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230C0C0E'/%3E%3Cpath d='M16 6c.7 7 5.8 12 13 13-7.2 1-12.3 6-13 13-.7-7-5.8-12-13-13 7.2-1 12.3-6 13-13Z' fill='%23ED2078'/%3E%3C/svg%3E">
+
+  {%- comment -%} Open Graph / social {%- endcomment -%}
+  <meta property="og:site_name" content="{{ shop.name }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:title" content="{{ page_title | escape }}">
+  <meta property="og:type" content="{% if request.page_type == 'product' %}product{% else %}website{% endif %}">
+  {%- if page_description -%}
+    <meta property="og:description" content="{{ page_description | escape }}">
+  {%- endif -%}
+  {%- if page_image -%}
+    <meta property="og:image" content="https:{{ page_image | image_url: width: 1200 }}">
+  {%- endif -%}
+  <meta name="twitter:card" content="summary_large_image">
+
+  {%- comment -%} Fonts: Shantell Sans (display) · Hanken Grotesk (functional) · Caveat (scrawl) · Newsreader (serif accent) {%- endcomment -%}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+
+  {{ 'base.css' | asset_url | stylesheet_tag }}
+
+  <style>
+    :root{
+      --ink: {{ settings.color_ground }};
+      --ink-2: {{ settings.color_ground_raised }};
+      --panel: {{ settings.color_card }};
+      --chalk: {{ settings.color_text }};
+      --label: {{ settings.color_label_block }};
+      --blood: {{ settings.color_accent }};
+      --blood-2: {{ settings.color_accent_hover }};
+      --blood-ink: {{ settings.color_accent_deep }};
+      --blood-wash: {{ settings.color_accent | color_modify: 'alpha', 0.13 }};
+      --clay: {{ settings.color_rose }};
+      --clay-soft: {{ settings.color_rose_soft }};
+    }
+  </style>
+
+  {%- render 'organization-schema' -%}
+
+  <script>
+    window.HB = {
+      routes: {
+        cart_add_url: {{ routes.cart_add_url | json }},
+        cart_change_url: {{ routes.cart_change_url | json }},
+        cart_update_url: {{ routes.cart_update_url | json }},
+        cart_url: {{ routes.cart_url | json }},
+        root_url: {{ routes.root_url | json }}
+      },
+      cartCount: {{ cart.item_count | json }},
+      moneyFormat: {{ shop.money_format | json }},
+      tracking: {
+        ga4: {{ settings.ga4_id | json }},
+        metaPixel: {{ settings.meta_pixel_id | json }},
+        tiktokPixel: {{ settings.tiktok_pixel_id | json }}
+      },
+      strings: {
+        adding: {{ 'products.product.adding' | t | json }},
+        added: {{ 'products.product.added' | t | json }},
+        addToCart: {{ 'products.product.add_to_cart' | t | json }},
+        cartError: {{ 'cart.general.error' | t | json }},
+        cartEmpty: {{ 'cart.general.empty' | t | json }},
+        remove: {{ 'cart.general.remove' | t | json }},
+        free: {{ 'cart.general.free' | t | json }}
+      }
+    };
+  </script>
+
+  {{ content_for_header }}
+</head>
+
+<body class="template-{{ request.page_type | handle }}">
+  <a class="skip-link" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+  {% section 'announcement-bar' %}
+  {% section 'header' %}
+
+  <main id="MainContent" role="main" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'footer' %}
+
+  {%- render 'cart-drawer' -%}
+
+  {%- comment -%} UK PECR consent banner — no marketing pixels load until accepted (tracking.js) {%- endcomment -%}
+  <div class="consent" id="hb-consent" role="dialog" aria-modal="false" aria-label="{{ 'general.consent.heading' | t }}" hidden>
+    <p><b>{{ 'general.consent.heading' | t }}</b> — {{ 'general.consent.text' | t }}</p>
+    <div class="row">
+      <button type="button" class="btn btn-primary" data-consent-accept>{{ 'general.consent.accept' | t }}</button>
+      <button type="button" class="btn btn-ghost" data-consent-decline>{{ 'general.consent.decline' | t }}</button>
+    </div>
+  </div>
+
+  <script src="{{ 'theme.js' | asset_url }}" defer></script>
+  <script src="{{ 'tracking.js' | asset_url }}" defer></script>
+</body>
+</html>

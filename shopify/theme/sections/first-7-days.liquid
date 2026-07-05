@@ -1,0 +1,80 @@
+{%- comment -%}
+  First-7-days half-scoop ramp — "The gentle way to start".
+{%- endcomment -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}
+        <span class="scrawl" style="display:block;margin-top:14px;font-size:23px">{{ section.settings.scrawl }}</span>
+      </div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        <p class="sec-lede">{{ section.settings.lede }}</p>
+      </div>
+    </div>
+
+    <div class="ramp">
+      <div class="ramp-chart" aria-hidden="true">
+        <div class="ramp-bars">
+          <div class="rb half"></div><div class="rb half"></div><div class="rb half"></div><div class="rb half"></div><div class="rb half"></div><div class="rb half"></div><div class="rb half"></div>
+          <div class="rb full"></div><div class="rb full"></div><div class="rb full"></div><div class="rb full"></div><div class="rb full"></div><div class="rb full"></div><div class="rb full"></div>
+          <div class="ramp-cut"><span>{{ 'sections.ramp.day8' | t }}</span></div>
+        </div>
+        <div class="ramp-axis"><span>{{ 'sections.ramp.day1' | t }}</span><span>{{ 'sections.ramp.day7' | t }}</span><span>{{ 'sections.ramp.day14' | t }}</span></div>
+        <div class="phase-row">
+          <div class="phase">
+            <div class="pl">{{ 'sections.ramp.phase1_label' | t }}</div>
+            <div class="pd tabular">7g</div>
+            <span class="pn">{{ 'sections.ramp.phase1_note' | t }}</span>
+          </div>
+          <div class="phase lead">
+            <div class="pl">{{ 'sections.ramp.phase2_label' | t }}</div>
+            <div class="pd tabular">14g</div>
+            <span class="pn">{{ 'sections.ramp.phase2_note' | t }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ramp-notes">
+        {%- for block in section.blocks -%}
+          <div class="rn" {{ block.shopify_attributes }}>
+            <div class="rt">{{ block.settings.title }}</div>
+            <p>{{ block.settings.body }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "First 7 days",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The first 7 days" },
+    { "type": "text", "id": "scrawl", "label": "Handwritten note", "default": "ease in, no rush" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "The <em>gentle</em> way<br>to start." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "New to creatine and collagen? Start with a half scoop for your first week. It gives your routine — and your stomach — time to settle in before the full 14g." }
+  ],
+  "blocks": [
+    {
+      "type": "note",
+      "name": "Note",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Days 1–7 · half scoop" },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "7g in 200ml cold water." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "First 7 days",
+      "blocks": [
+        { "type": "note", "settings": { "title": "Days 1–7 · half scoop", "body": "7g in 200ml of cold water, every morning. Half the dose, same ritual — you're building the habit first." } },
+        { "type": "note", "settings": { "title": "Day 8 onwards · full scoop", "body": "Move up to the full 14g scoop. This is the studied daily amount — from here, it's just consistency." } },
+        { "type": "note", "settings": { "title": "Miss a day?", "body": "Just carry on the next morning. No doubling up, no guilt. The ritual works because it's kind." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

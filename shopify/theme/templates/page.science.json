@@ -1,0 +1,53 @@
+{
+  "sections": {
+    "main": { "type": "main-page" },
+    "science": { "type": "science-section" },
+    "benefits": {
+      "type": "benefit-cards",
+      "blocks": {
+        "card1": {
+          "type": "card",
+          "settings": {
+            "index_label": "Lead active 01",
+            "title": "Creatine<br>monohydrate",
+            "dose": "5,000mg · Creapure®",
+            "body": "One of the most-studied supplement ingredients there is. Creatine <b>increases physical performance in successive bursts of short-term, high-intensity exercise<\/b> — strength on your own terms, at the studied daily amount.",
+            "evidence": "Authorised EU\/GB health claim"
+          }
+        },
+        "card2": {
+          "type": "card",
+          "settings": {
+            "index_label": "Lead active 02",
+            "title": "Verisol®<br>collagen peptides",
+            "dose": "5,000mg · bioactive peptides",
+            "body": "The full 5g of Verisol® bioactive collagen peptides — the branded, studied peptide. Alongside it, <b>biotin and vitamin C contribute to the maintenance of normal skin<\/b>, and vitamin C <b>contributes to normal collagen formation<\/b>.",
+            "evidence": "Verisol® · the studied peptide"
+          }
+        },
+        "card3": {
+          "type": "card",
+          "settings": {
+            "index_label": "Support · 11 actives",
+            "title": "The<br>cofactors",
+            "dose": "Inositol · botanicals · 100% NRV multi",
+            "body": "Eleven supporting compounds, every one disclosed: <b>myo + D-chiro inositol 40:1<\/b> (500mg — studied in PCOS research), <b>dandelion root<\/b> and <b>cranberry PAC<\/b> (both traditionally used botanicals), hyaluronic acid, and a complete multivitamin at 100% NRV.",
+            "evidence": "Every dose printed on the label"
+          }
+        }
+      },
+      "block_order": ["card1", "card2", "card3"]
+    },
+    "ramp": {
+      "type": "first-7-days",
+      "blocks": {
+        "n1": { "type": "note", "settings": { "title": "Days 1–7 · half scoop", "body": "7g in 200ml of cold water, every morning. Half the dose, same ritual — you're building the habit first." } },
+        "n2": { "type": "note", "settings": { "title": "Day 8 onwards · full scoop", "body": "Move up to the full 14g scoop. This is the studied daily amount — from here, it's just consistency." } },
+        "n3": { "type": "note", "settings": { "title": "Miss a day?", "body": "Just carry on the next morning. No doubling up, no guilt. The ritual works because it's kind." } }
+      },
+      "block_order": ["n1", "n2", "n3"]
+    },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["main", "science", "benefits", "ramp", "capture"]
+}

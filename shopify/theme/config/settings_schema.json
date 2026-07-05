@@ -1,0 +1,177 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "HerBody Cream v10",
+    "theme_version": "1.0.0",
+    "theme_author": "HerBody Ltd",
+    "theme_documentation_url": "https://github.com/faizanshabbir777-cmd/herbody-site",
+    "theme_support_url": "https://github.com/faizanshabbir777-cmd/herbody-site/issues"
+  },
+  {
+    "name": "Colours",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Cream v10 system: cream ground, near-black label blocks, hot pink brush accent, soft rose secondary."
+      },
+      {
+        "type": "color",
+        "id": "color_ground",
+        "label": "Page ground (cream)",
+        "default": "#ECE7DC"
+      },
+      {
+        "type": "color",
+        "id": "color_ground_raised",
+        "label": "Raised ground",
+        "default": "#F3F0E9"
+      },
+      {
+        "type": "color",
+        "id": "color_card",
+        "label": "Card",
+        "default": "#FBF9F3"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Text (near-black)",
+        "default": "#191A1C"
+      },
+      {
+        "type": "color",
+        "id": "color_label_block",
+        "label": "Label blocks (hero, CTA bands, footer)",
+        "default": "#0C0C0E"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Hot pink accent",
+        "default": "#ED2078"
+      },
+      {
+        "type": "color",
+        "id": "color_accent_hover",
+        "label": "Hot pink hover",
+        "default": "#FF4F9C"
+      },
+      {
+        "type": "color",
+        "id": "color_accent_deep",
+        "label": "Deep pink",
+        "default": "#B00E5C"
+      },
+      {
+        "type": "color",
+        "id": "color_rose",
+        "label": "Soft rose",
+        "default": "#E87BAE"
+      },
+      {
+        "type": "color",
+        "id": "color_rose_soft",
+        "label": "Soft rose light",
+        "default": "#F4A8CC"
+      }
+    ]
+  },
+  {
+    "name": "Announcement",
+    "settings": [
+      {
+        "type": "text",
+        "id": "announcement_text",
+        "label": "Announcement / ticker phrases",
+        "info": "Separate phrases with a pipe |. Rendered as the ✦-separated ticker.",
+        "default": "Good for you. Good for her. | 5g + 5g + a complete multivitamin | Tested for purity — every single batch | Halal certified · Made in UK | From £1.62 a day"
+      }
+    ]
+  },
+  {
+    "name": "Features",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_reviews",
+        "label": "Show customer reviews",
+        "default": false,
+        "info": "KEEP OFF until verified reviews exist on a verifiable platform. Under the UK DMCC Act 2024 publishing fake or unverifiable consumer reviews is a banned practice with CMA enforcement. HerBody currently has zero customer reviews, so the reviews section renders a compliant 'coming soon' placeholder while this is off."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_email_capture",
+        "label": "Show email capture sections",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Product messaging",
+    "settings": [
+      {
+        "type": "text",
+        "id": "shipping_line",
+        "label": "Shipping line (buy box)",
+        "default": "Ships free UK, 1–2 days, from London"
+      },
+      {
+        "type": "text",
+        "id": "guarantee_line",
+        "label": "Guarantee line (under add-to-bag)",
+        "default": "30-day flavour guarantee — hate it, we refund the pouch"
+      }
+    ]
+  },
+  {
+    "name": "Social",
+    "settings": [
+      {
+        "type": "url",
+        "id": "social_instagram",
+        "label": "Instagram URL"
+      },
+      {
+        "type": "url",
+        "id": "social_tiktok",
+        "label": "TikTok URL"
+      },
+      {
+        "type": "url",
+        "id": "social_youtube",
+        "label": "YouTube URL"
+      },
+      {
+        "type": "text",
+        "id": "contact_email",
+        "label": "Contact email",
+        "default": "hello@herbody.co.uk"
+      }
+    ]
+  },
+  {
+    "name": "Tracking & analytics",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "All pixels are consent-gated (UK PECR): nothing loads until the visitor accepts the cookie banner. Leave a field blank to disable that pixel entirely."
+      },
+      {
+        "type": "text",
+        "id": "ga4_id",
+        "label": "Google Analytics 4 measurement ID",
+        "info": "e.g. G-XXXXXXXXXX"
+      },
+      {
+        "type": "text",
+        "id": "meta_pixel_id",
+        "label": "Meta Pixel ID"
+      },
+      {
+        "type": "text",
+        "id": "tiktok_pixel_id",
+        "label": "TikTok Pixel ID"
+      }
+    ]
+  }
+]

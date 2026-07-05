@@ -1,0 +1,71 @@
+{%- comment -%}
+  3-way comparison: HerBody vs typical collagen brand vs pharmacy multi.
+  Generic "typical" columns only — no named competitors.
+{%- endcomment -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="diff">
+      <div class="diff-head cols4">
+        <div>{{ 'sections.compare.criterion' | t }}</div>
+        <div class="us">HER<span style="font-weight:500">BODY</span><span class="pip" aria-hidden="true"></span></div>
+        <div>{{ section.settings.col_b }}</div>
+        <div>{{ section.settings.col_c }}</div>
+      </div>
+      {%- for block in section.blocks -%}
+        <div class="diff-row cols4" {{ block.shopify_attributes }}>
+          <div class="crit">{{ block.settings.criterion }}</div>
+          <div class="us-cell"><span class="tick y">&#10003;</span>{{ block.settings.us }}</div>
+          <div class="them-cell"><span class="tick n">&ndash;</span>{{ block.settings.them_b }}</div>
+          <div class="them-cell"><span class="tick n">&ndash;</span>{{ block.settings.them_c }}</div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Comparison table",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The difference" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Why this,<br>not <em>three</em> tubs." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "We'll make the case on the label and the certificate, not in the marketing. Here's how one scoop of The Daily compares with running a collagen brand and a pharmacy multivitamin side by side." },
+    { "type": "text", "id": "col_b", "label": "Column B name", "default": "Typical collagen brand" },
+    { "type": "text", "id": "col_c", "label": "Column C name", "default": "Pharmacy multivitamin" }
+  ],
+  "blocks": [
+    {
+      "type": "row",
+      "name": "Row",
+      "settings": [
+        { "type": "text", "id": "criterion", "label": "Criterion", "default": "Creatine" },
+        { "type": "text", "id": "us", "label": "HerBody cell", "default": "5g Creapure®" },
+        { "type": "text", "id": "them_b", "label": "Column B cell", "default": "None" },
+        { "type": "text", "id": "them_c", "label": "Column C cell", "default": "None" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comparison table",
+      "blocks": [
+        { "type": "row", "settings": { "criterion": "Creatine", "us": "5g Creapure® — the studied amount", "them_b": "None", "them_c": "None" } },
+        { "type": "row", "settings": { "criterion": "Collagen", "us": "5g Verisol® bioactive peptides", "them_b": "Dose varies, often unbranded", "them_c": "None" } },
+        { "type": "row", "settings": { "criterion": "Multivitamin", "us": "Complete, 100% NRV, methylated", "them_b": "Rarely included", "them_c": "Yes — but nothing else" } },
+        { "type": "row", "settings": { "criterion": "Inositol + botanicals", "us": "500mg 40:1 + cranberry & dandelion", "them_b": "Rarely included", "them_c": "Rarely included" } },
+        { "type": "row", "settings": { "criterion": "Halal certification", "us": "HMC protocol GB18/2026, source-of-slaughter certified", "them_b": "Rare for bovine collagen", "them_c": "Sometimes" } },
+        { "type": "row", "settings": { "criterion": "Testing", "us": "Third-party COA per batch", "them_b": "Self-declared, if any", "them_c": "Varies" } },
+        { "type": "row", "settings": { "criterion": "The pledge", "us": "20% of profits, audited", "them_b": "None", "them_c": "None" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

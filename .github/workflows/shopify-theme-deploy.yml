@@ -1,0 +1,38 @@
+name: shopify-theme-deploy
+on:
+  push:
+    paths: ["shopify/theme/**"]
+  workflow_dispatch:
+    inputs:
+      publish_live:
+        description: "Also publish the theme live (yes/no)"
+        default: "no"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
+      SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Install Shopify CLI
+        run: npm install -g @shopify/cli@latest
+      - name: Theme check (lint)
+        working-directory: shopify/theme
+        run: shopify theme check || true   # informational on push; hard-fail once theme stabilises
+      - name: Guard — secrets present
+        run: |
+          if [ -z "$SHOPIFY_CLI_THEME_TOKEN" ] || [ -z "$SHOPIFY_FLAG_STORE" ]; then
+            echo "::warning::SHOPIFY_CLI_THEME_TOKEN / SHOPIFY_STORE_DOMAIN not set — skipping deploy (lint only)"
+            echo "SKIP_DEPLOY=1" >> $GITHUB_ENV; fi
+      - name: Push theme (unpublished "HerBody CI" theme)
+        if: env.SKIP_DEPLOY != '1'
+        working-directory: shopify/theme
+        run: shopify theme push --theme "HerBody CI" --unpublished --json || shopify theme push --theme "HerBody CI" --json
+      - name: Publish live
+        if: env.SKIP_DEPLOY != '1' && github.event.inputs.publish_live == 'yes'
+        working-directory: shopify/theme
+        run: shopify theme publish --theme "HerBody CI" --force

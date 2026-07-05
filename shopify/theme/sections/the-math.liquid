@@ -1,0 +1,94 @@
+{%- comment -%}
+  "The math" — what The Daily replaces if bought separately.
+  Line items are editable blocks; totals computed from blocks.
+  Footnote: UK retail prices, verify before publishing.
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product
+  assign variant = product.selected_or_first_available_variant
+  assign separate_total = 0
+  for block in section.blocks
+    assign separate_total = separate_total | plus: block.settings.price_pounds
+  endfor
+-%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="math-grid">
+      <div class="math-table">
+        {%- for block in section.blocks -%}
+          <div class="math-row" {{ block.shopify_attributes }}>
+            <div class="mi">{{ block.settings.item }}</div>
+            <div class="mp tabular">&pound;{{ block.settings.price_pounds }}</div>
+          </div>
+        {%- endfor -%}
+        <div class="math-row total">
+          <div class="mi">{{ 'sections.math.separately' | t }}</div>
+          <div class="mp tabular">~&pound;{{ separate_total }}</div>
+        </div>
+        <div class="math-src">{{ 'sections.math.footnote' | t }}</div>
+      </div>
+
+      <div>
+        <div class="math-card">
+          <div class="mc-lbl">{{ 'sections.math.one_pouch' | t }}</div>
+          <div class="mc-big tabular">
+            {%- if variant != blank -%}<em>{{ variant.price | money }}</em>{%- else -%}<em>&mdash;</em>{%- endif -%}
+          </div>
+          {%- if variant != blank -%}
+            <div class="mc-save">{{ 'sections.math.everything_in_one' | t }}</div>
+          {%- endif -%}
+        </div>
+        <div class="math-vs">{{ 'sections.math.scrawl' | t }}</div>
+        {%- if product != blank -%}
+          <div style="text-align:center">
+            <a class="btn btn-primary" href="{{ product.url }}">{{ 'sections.hero.cta_primary' | t }} &middot; {{ variant.price | money }}</a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "The math",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Product" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The math" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Seven bottles.<br>One <em>scoop</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "Buy the same studied doses as seven separate supplements and the counter maths gets silly. The Daily folds them into one 14g morning scoop." }
+  ],
+  "blocks": [
+    {
+      "type": "line",
+      "name": "Line item",
+      "settings": [
+        { "type": "text", "id": "item", "label": "Item", "default": "Creatine 5g daily" },
+        { "type": "number", "id": "price_pounds", "label": "Typical separate price (£/month)", "default": 20 }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "The math",
+      "blocks": [
+        { "type": "line", "settings": { "item": "Creatine 5g daily", "price_pounds": 20 } },
+        { "type": "line", "settings": { "item": "Verisol® collagen", "price_pounds": 35 } },
+        { "type": "line", "settings": { "item": "Women's multivitamin", "price_pounds": 15 } },
+        { "type": "line", "settings": { "item": "Inositol 40:1", "price_pounds": 25 } },
+        { "type": "line", "settings": { "item": "Biotin 5,000µg", "price_pounds": 10 } },
+        { "type": "line", "settings": { "item": "Cranberry", "price_pounds": 15 } },
+        { "type": "line", "settings": { "item": "Dandelion", "price_pounds": 10 } }
+      ]
+    }
+  ]
+}
+{% endschema %}

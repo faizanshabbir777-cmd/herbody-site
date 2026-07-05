@@ -1,0 +1,69 @@
+{%- comment -%}
+  Creator/brand video slots. Framed as brand content — never as customer
+  testimonials (DMCC). Placeholder tiles render until videos are set.
+{%- endcomment -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="ugc-grid">
+      {%- for block in section.blocks limit: 3 -%}
+        <div class="ugc-slot" {{ block.shopify_attributes }}>
+          {%- if block.settings.video != blank -%}
+            {{ block.settings.video | video_tag: autoplay: false, loop: true, muted: true, controls: true, image_size: '480x' }}
+          {%- else -%}
+            <span class="pip" aria-hidden="true"></span>
+            <span>{{ 'sections.ugc.placeholder' | t }}</span>
+          {%- endif -%}
+          {%- if block.settings.caption != blank -%}<span class="tag">{{ block.settings.caption }}</span>{%- endif -%}
+        </div>
+      {%- endfor -%}
+      {%- if section.blocks.size == 0 -%}
+        {%- for i in (1..3) -%}
+          <div class="ugc-slot">
+            <span class="pip" aria-hidden="true"></span>
+            <span>{{ 'sections.ugc.placeholder' | t }}</span>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "UGC video block",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The ritual, on camera" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Watch it turn <em>pink</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "Made with our creators — how the scoop, the shake and the morning actually look. Creator and brand content, clearly labelled as exactly that." }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video slot",
+      "limit": 3,
+      "settings": [
+        { "type": "video", "id": "video", "label": "Video" },
+        { "type": "text", "id": "caption", "label": "Caption", "default": "the morning scoop" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "UGC video block",
+      "blocks": [
+        { "type": "video", "settings": { "caption": "the morning scoop" } },
+        { "type": "video", "settings": { "caption": "shake it 10 seconds" } },
+        { "type": "video", "settings": { "caption": "strawberry lemonade!" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
