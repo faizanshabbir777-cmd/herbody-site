@@ -1,0 +1,96 @@
+{%- comment -%}
+  "Why this dose" cards. Copy defaults are GB-NHC-safe:
+  creatine claim in authorised phrasing; skin claims hang off biotin /
+  vitamin C / zinc-style authorised nutrients; botanicals traditional-use.
+{%- endcomment -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}
+        {%- if section.settings.scrawl != blank -%}
+          <span class="scrawl blood" style="display:block;margin-top:14px;font-size:23px">{{ section.settings.scrawl }}</span>
+        {%- endif -%}
+      </div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="why-grid">
+      {%- for block in section.blocks -%}
+        <div class="why" {{ block.shopify_attributes }}>
+          <div class="ix">{{ block.settings.index_label }}</div>
+          <h3>{{ block.settings.title }}</h3>
+          <div class="sub tabular">{{ block.settings.dose }}</div>
+          <div class="mech">{{ block.settings.body }}</div>
+          {%- if block.settings.evidence != blank -%}
+            <div class="ev">{{ block.settings.evidence }}</div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Benefit cards",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Why this dose" },
+    { "type": "text", "id": "scrawl", "label": "Handwritten note", "default": "no fairy dust, promise!" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Not a sprinkle.<br>The <em>studied</em> amount." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "Being on the label isn't the same as doing something. Most powders add a fashionable ingredient at a token pinch — enough to name it on the front, not enough to matter. Every active in The Daily is included at a meaningful, studied amount, and every one is disclosed." }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Benefit card",
+      "settings": [
+        { "type": "text", "id": "index_label", "label": "Index label", "default": "Lead active 01" },
+        { "type": "textarea", "id": "title", "label": "Title (HTML allowed)", "default": "Creatine<br>monohydrate" },
+        { "type": "text", "id": "dose", "label": "Dose line", "default": "5,000mg · Creapure®" },
+        { "type": "textarea", "id": "body", "label": "Body (HTML allowed)", "default": "One of the most-studied supplement ingredients there is." },
+        { "type": "text", "id": "evidence", "label": "Evidence line", "default": "The studied amount" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Benefit cards",
+      "blocks": [
+        {
+          "type": "card",
+          "settings": {
+            "index_label": "Lead active 01",
+            "title": "Creatine<br>monohydrate",
+            "dose": "5,000mg · Creapure®",
+            "body": "One of the most-studied supplement ingredients there is. Creatine <b>increases physical performance in successive bursts of short-term, high-intensity exercise</b> — strength on your own terms, at the studied daily amount.",
+            "evidence": "Authorised EU/GB health claim"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "index_label": "Lead active 02",
+            "title": "Verisol®<br>collagen peptides",
+            "dose": "5,000mg · bioactive peptides",
+            "body": "The full 5g of Verisol® bioactive collagen peptides — the branded, studied peptide. Alongside it, <b>biotin and vitamin C contribute to the maintenance of normal skin</b>, and vitamin C <b>contributes to normal collagen formation</b>.",
+            "evidence": "Verisol® · the studied peptide"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "index_label": "Support · 11 actives",
+            "title": "The<br>cofactors",
+            "dose": "Inositol · botanicals · 100% NRV multi",
+            "body": "Eleven supporting compounds, every one disclosed: <b>myo + D-chiro inositol 40:1</b> (500mg — studied in PCOS research), <b>dandelion root</b> and <b>cranberry PAC</b> (both traditionally used botanicals), hyaluronic acid, and a complete multivitamin at 100% NRV.",
+            "evidence": "Every dose printed on the label"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

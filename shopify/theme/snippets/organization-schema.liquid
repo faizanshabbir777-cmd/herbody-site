@@ -1,0 +1,20 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "HerBody",
+  "legalName": "HerBody Ltd",
+  "url": {{ shop.url | append: routes.root_url | json }},
+  "logo": {{ shop.url | append: routes.root_url | json }},
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "London",
+    "addressCountry": "GB"
+  }{% if settings.social_instagram != blank or settings.social_tiktok != blank %},
+  "sameAs": [
+    {%- assign socials = "" | split: "" -%}
+    {%- if settings.social_instagram != blank -%}{{ settings.social_instagram | json }}{%- if settings.social_tiktok != blank -%},{%- endif -%}{%- endif -%}
+    {%- if settings.social_tiktok != blank -%}{{ settings.social_tiktok | json }}{%- endif -%}
+  ]{% endif %}
+}
+</script>

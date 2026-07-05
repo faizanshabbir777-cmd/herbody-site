@@ -1,0 +1,34 @@
+{%- comment -%}
+  ✦-separated handwritten ticker. Phrases come from theme settings
+  (Announcement), pipe-separated. Track is duplicated for a seamless loop.
+{%- endcomment -%}
+{%- if section.settings.enabled and settings.announcement_text != blank -%}
+  {%- assign phrases = settings.announcement_text | split: '|' -%}
+  <div class="announcement" aria-hidden="true" data-announcement>
+    <div class="ticker-track">
+      {%- for repeat in (1..2) -%}
+        {%- for phrase in phrases -%}
+          <span class="ti{% cycle ' ', ' ghost' %}">{{ phrase | strip }}</span>
+        {%- endfor -%}
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Show announcement ticker",
+      "default": true
+    },
+    {
+      "type": "paragraph",
+      "content": "Edit the ticker phrases under Theme settings → Announcement."
+    }
+  ]
+}
+{% endschema %}

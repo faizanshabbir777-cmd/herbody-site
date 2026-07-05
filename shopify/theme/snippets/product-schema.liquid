@@ -1,0 +1,36 @@
+{%- comment -%}
+  Product JSON-LD.
+  DELIBERATELY OMITS aggregateRating and review properties:
+  HerBody has zero customer reviews. Under the UK DMCC Act 2024,
+  publishing fake or unverifiable consumer reviews/ratings is a banned
+  practice (CMA enforcement) — and Google penalises self-serving or
+  fabricated review markup. Add these properties ONLY when verified
+  reviews exist on a verifiable platform.
+{%- endcomment -%}
+{%- assign variant = product.selected_or_first_available_variant -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "url": {{ shop.url | append: product.url | json }},
+  {% if product.featured_image -%}
+  "image": [{{ product.featured_image | image_url: width: 1200 | prepend: "https:" | json }}],
+  {%- endif %}
+  "description": {{ product.description | strip_html | truncatewords: 80 | json }},
+  "sku": {{ variant.sku | json }},
+  "brand": {
+    "@type": "Brand",
+    "name": {{ product.vendor | json }}
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": {{ shop.url | append: product.url | json }},
+    "priceCurrency": {{ cart.currency.iso_code | json }},
+    "price": {{ variant.price | divided_by: 100.0 | json }},
+    "availability": "{% if variant.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": { "@type": "Organization", "name": "HerBody Ltd" }
+  }
+}
+</script>

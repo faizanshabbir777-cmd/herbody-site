@@ -1,0 +1,45 @@
+<div class="trust-bar" style="border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="trust-pills">
+      {%- if section.blocks.size > 0 -%}
+        {%- for block in section.blocks -%}
+          <span class="tp" {{ block.shopify_attributes }}><span class="pip" aria-hidden="true"></span>{{ block.settings.text }}</span>
+        {%- endfor -%}
+      {%- else -%}
+        {%- assign default_pills = 'sections.trust.defaults' | t | split: '|' -%}
+        {%- for pill in default_pills -%}
+          <span class="tp"><span class="pip" aria-hidden="true"></span>{{ pill | strip }}</span>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Trust bar",
+  "blocks": [
+    {
+      "type": "pill",
+      "name": "Pill",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "Made in UK" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust bar",
+      "blocks": [
+        { "type": "pill", "settings": { "text": "5g Creatine" } },
+        { "type": "pill", "settings": { "text": "5g Verisol® Collagen" } },
+        { "type": "pill", "settings": { "text": "Complete Multivitamin" } },
+        { "type": "pill", "settings": { "text": "Halal GB18" } },
+        { "type": "pill", "settings": { "text": "Made in UK" } },
+        { "type": "pill", "settings": { "text": "Batch Tested" } },
+        { "type": "pill", "settings": { "text": "21 Servings" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

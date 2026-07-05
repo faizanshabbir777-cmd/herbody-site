@@ -1,0 +1,110 @@
+{%- comment -%}
+  1 / 2 / 3 pouch selector with subscribe toggle.
+  All prices come from the product object (variant price + selling plan
+  allocation). Nothing hardcoded. Adds to cart via /cart/add.js (theme.js).
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product
+  assign variant = product.selected_or_first_available_variant
+  assign sub_price = blank
+  assign sub_plan_id = blank
+  assign sub_plan_name = blank
+  if variant and variant.selling_plan_allocations.size > 0
+    assign alloc = variant.selling_plan_allocations.first
+    assign sub_price = alloc.price
+    assign sub_plan_id = alloc.selling_plan.id
+    assign sub_plan_name = alloc.selling_plan.name
+  endif
+-%}
+
+{%- if product != blank and variant != blank -%}
+<section class="sys" id="bundle" data-bundle
+  data-variant-id="{{ variant.id }}"
+  data-price-one="{{ variant.price }}"
+  {% if sub_price != blank %}data-price-sub="{{ sub_price }}" data-plan-id="{{ sub_plan_id }}"{% endif %}
+  data-money-format="{{ shop.money_format | escape }}">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.lede != blank -%}<p class="sec-lede">{{ section.settings.lede }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    {%- if sub_price != blank -%}
+      <div class="bundle-toggle" role="group" aria-label="{{ 'sections.bundle.purchase_type' | t }}">
+        <button type="button" data-bundle-mode="sub" aria-pressed="true">
+          {{ 'sections.bundle.subscribe' | t }}
+          {%- assign pct = variant.price | minus: sub_price | times: 100 | divided_by: variant.price -%}
+          <span class="save">&minus;{{ pct }}%</span>
+        </button>
+        <button type="button" data-bundle-mode="one" aria-pressed="false">{{ 'sections.bundle.one_time' | t }}</button>
+      </div>
+    {%- endif -%}
+
+    <div class="bundle-grid">
+      {%- assign quantities = '1|2|3' | split: '|' -%}
+      {%- for q in quantities -%}
+        {%- assign qty = q | plus: 0 -%}
+        {%- assign one_total = variant.price | times: qty -%}
+        {%- if sub_price != blank -%}{%- assign sub_total = sub_price | times: qty -%}{%- endif -%}
+        <button type="button" class="bundle-card" data-bundle-qty="{{ qty }}" aria-pressed="{% if qty == 1 %}true{% else %}false{% endif %}">
+          {%- if qty == 3 and section.settings.badge_text != blank -%}
+            <span class="bb">{{ section.settings.badge_text }}</span>
+          {%- endif -%}
+          <span class="bq">
+            {%- if qty == 1 -%}{{ 'sections.bundle.one_pouch' | t }}{%- else -%}{{ 'sections.bundle.n_pouches' | t: count: qty }}{%- endif -%}
+          </span>
+          <span class="bm tabular">{{ qty | times: 21 }} {{ 'sections.bundle.servings' | t }} &middot; {{ qty | times: 300 }}g</span>
+          <span class="bp tabular">
+            <span data-bundle-price data-one="{{ one_total | money }}" {% if sub_price != blank %}data-sub="{{ sub_total | money }}"{% endif %}>
+              {%- if sub_price != blank -%}{{ sub_total | money }}{%- else -%}{{ one_total | money }}{%- endif -%}
+            </span>
+            {%- if sub_price != blank -%}
+              <small data-bundle-compare {% if sub_price == blank %}hidden{% endif %}>{{ one_total | money }}</small>
+            {%- endif -%}
+          </span>
+          <span class="bd2 tabular">
+            {%- assign servings_total = qty | times: 21 -%}
+            {%- if sub_price != blank -%}
+              {%- assign pd = sub_total | divided_by: servings_total | money -%}
+            {%- else -%}
+              {%- assign pd = one_total | divided_by: servings_total | money -%}
+            {%- endif -%}
+            <span data-bundle-perday
+              data-one="{{ one_total | divided_by: servings_total | money }}"
+              {% if sub_price != blank %}data-sub="{{ sub_total | divided_by: servings_total | money }}"{% endif %}>{{ pd }}</span> {{ 'products.product.per_day' | t }}
+          </span>
+        </button>
+      {%- endfor -%}
+    </div>
+
+    <div class="bundle-cta">
+      <button type="button" class="btn btn-primary" data-bundle-add>
+        {{ 'products.product.add_to_cart' | t }} &middot; <span data-bundle-total class="tabular">
+          {%- if sub_price != blank -%}{{ sub_price | money }}{%- else -%}{{ variant.price | money }}{%- endif -%}
+        </span> <span class="arr">&rarr;</span>
+      </button>
+      <p class="bundle-note">
+        {%- if sub_plan_name != blank -%}<span data-bundle-plan-note>{{ sub_plan_name }} &middot; {{ 'sections.bundle.cancel_note' | t }}</span> &middot; {%- endif -%}
+        {{ settings.guarantee_line }}
+      </p>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Bundle selector",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Product" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Choose your rhythm" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "Start your <em>ritual</em>." },
+    { "type": "textarea", "id": "lede", "label": "Lede", "default": "One pouch is 21 mornings. Stock up for the full ritual, or subscribe and let it arrive before you run out — pause or cancel anytime." },
+    { "type": "text", "id": "badge_text", "label": "3-pouch badge", "default": "Best value ✦ 90-day ritual" }
+  ],
+  "presets": [{ "name": "Bundle selector" }]
+}
+{% endschema %}

@@ -1,0 +1,77 @@
+{%- comment -%}
+  Reviews — ENTIRE section gated behind settings.show_reviews
+  (theme setting, DEFAULT FALSE).
+
+  DMCC Act 2024: publishing fake or unverifiable consumer reviews is a
+  banned practice in the UK (CMA enforcement). HerBody has zero customer
+  reviews today, so while the gate is off this section renders only a
+  truthful "coming soon" placeholder. The verified-review card markup
+  below (review-card snippet) is ready for the day genuine, verifiable
+  reviews exist — do not flip the setting before then.
+{%- endcomment -%}
+<section class="sys" id="reviews">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+      </div>
+    </div>
+
+    {%- if settings.show_reviews -%}
+      {%- if section.blocks.size > 0 -%}
+        <div class="reviews">
+          {%- for block in section.blocks -%}
+            <div {{ block.shopify_attributes }}>
+              {%- render 'review-card',
+                rating: block.settings.rating,
+                body: block.settings.body,
+                author: block.settings.author,
+                meta: block.settings.meta,
+                verified: true
+              -%}
+            </div>
+          {%- endfor -%}
+        </div>
+        <p class="bundle-note" style="margin-top:20px">{{ 'sections.reviews.verification_note' | t }}</p>
+      {%- else -%}
+        <div class="reviews-off">
+          <span class="scrawl">{{ 'sections.reviews.placeholder_scrawl' | t }}</span>
+          <p>{{ 'sections.reviews.placeholder' | t }}</p>
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="reviews-off">
+        <span class="scrawl">{{ 'sections.reviews.placeholder_scrawl' | t }}</span>
+        <p>{{ 'sections.reviews.placeholder' | t }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Reviews",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "⚠ Gated by Theme settings → Features → 'Show customer reviews' (default OFF). UK DMCC Act 2024 bans publishing fake or unverifiable reviews. Only add review blocks for genuine, verified purchases that can be evidenced, then enable the setting."
+    },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Reviews" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "What <em>she's</em><br>saying." }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Verified review",
+      "settings": [
+        { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "body", "label": "Review text (verbatim, with permission)" },
+        { "type": "text", "id": "author", "label": "Reviewer name" },
+        { "type": "text", "id": "meta", "label": "Meta (e.g. verified order number reference)" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Reviews" }]
+}
+{% endschema %}

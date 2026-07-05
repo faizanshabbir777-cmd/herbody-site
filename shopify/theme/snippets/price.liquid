@@ -1,0 +1,36 @@
+{%- comment -%}
+  Selling-plan-aware price renderer.
+  Params:
+    product        — product object (required)
+    use_variant    — if true, price of selected_or_first_available_variant
+    show_from      — if true and product has selling plans / price range, prefix "From"
+    show_per_day   — if true, append price ÷ 21 servings per-day line
+{%- endcomment -%}
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+  assign shown_price = product.price
+  assign shown_compare = product.compare_at_price
+  if use_variant and variant
+    assign shown_price = variant.price
+    assign shown_compare = variant.compare_at_price
+  endif
+  assign sub_price = blank
+  if product.selling_plan_groups.size > 0 and variant.selling_plan_allocations.size > 0
+    assign sub_price = variant.selling_plan_allocations.first.price
+  endif
+-%}
+<span class="price tabular{% if shown_compare > shown_price %} price--sale{% endif %}">
+  {%- if show_from and sub_price != blank and sub_price < shown_price -%}
+    <span class="from">{{ 'products.product.from' | t }}</span>
+    {{ sub_price | money }}
+  {%- else -%}
+    <span class="price__current">{{ shown_price | money }}</span>
+    {%- if shown_compare > shown_price -%}
+      <s class="price__compare">{{ shown_compare | money }}</s>
+    {%- endif -%}
+  {%- endif -%}
+  {%- if show_per_day -%}
+    {%- assign per_day = shown_price | divided_by: 21.0 | money -%}
+    <span class="price__per-day">· {{ per_day }} {{ 'products.product.per_day' | t }}</span>
+  {%- endif -%}
+</span>

@@ -1,0 +1,12 @@
+{%- comment -%}
+  Star rating display. ONLY rendered inside the reviews section, which is
+  gated behind settings.show_reviews (default OFF — DMCC Act 2024: no
+  unverifiable ratings may be published). Never render this elsewhere.
+  Params: rating (1–5 integer)
+{%- endcomment -%}
+{%- assign r = rating | default: 0 | round -%}
+<span class="stars" role="img" aria-label="{{ 'sections.reviews.stars_label' | t: rating: r }}">
+  {%- for i in (1..5) -%}
+    {%- if i <= r -%}&#9733;{%- else -%}&#9734;{%- endif -%}
+  {%- endfor -%}
+</span>
