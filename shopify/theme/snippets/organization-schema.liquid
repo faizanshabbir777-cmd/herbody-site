@@ -1,3 +1,16 @@
+{%- liquid
+  assign social_urls = ''
+  if settings.social_instagram != blank
+    assign social_urls = social_urls | append: settings.social_instagram | append: ','
+  endif
+  if settings.social_tiktok != blank
+    assign social_urls = social_urls | append: settings.social_tiktok | append: ','
+  endif
+  if settings.social_youtube != blank
+    assign social_urls = social_urls | append: settings.social_youtube | append: ','
+  endif
+  assign socials = social_urls | split: ','
+-%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -5,16 +18,15 @@
   "name": "HerBody",
   "legalName": "HerBody Ltd",
   "url": {{ shop.url | append: routes.root_url | json }},
-  "logo": {{ shop.url | append: routes.root_url | json }},
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "London",
     "addressCountry": "GB"
-  }{% if settings.social_instagram != blank or settings.social_tiktok != blank %},
+  }{% if socials.size > 0 %},
   "sameAs": [
-    {%- assign socials = "" | split: "" -%}
-    {%- if settings.social_instagram != blank -%}{{ settings.social_instagram | json }}{%- if settings.social_tiktok != blank -%},{%- endif -%}{%- endif -%}
-    {%- if settings.social_tiktok != blank -%}{{ settings.social_tiktok | json }}{%- endif -%}
+    {%- for url in socials -%}
+      {{ url | json }}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
   ]{% endif %}
 }
 </script>

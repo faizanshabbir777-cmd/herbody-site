@@ -1,0 +1,89 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "b1": {
+          "type": "benefit",
+          "settings": {
+            "kicker": "5g creatine · Creapure®",
+            "title": "Strength on<br>your terms",
+            "body": "The studied 5g daily amount of creatine monohydrate. Creatine <b>increases physical performance in successive bursts of short-term, high-intensity exercise<\/b> — the authorised claim, word for word."
+          }
+        },
+        "b2": {
+          "type": "benefit",
+          "settings": {
+            "kicker": "5g collagen · 100mg hyaluronic acid",
+            "title": "Hair, skin,<br>nails — fed",
+            "body": "The full 5g of Verisol® bioactive collagen peptides, with hyaluronic acid alongside. In the same scoop, <b>biotin contributes to the maintenance of normal hair and normal skin<\/b> and <b>vitamin C contributes to normal collagen formation<\/b>."
+          }
+        },
+        "b3": {
+          "type": "benefit",
+          "settings": {
+            "kicker": "inositol · cranberry · dandelion",
+            "title": "The studied<br>support crew",
+            "body": "<b>Myo + D-chiro inositol 40:1<\/b> at 500mg — studied in PCOS research. <b>Dandelion root<\/b> is traditionally used to support the body's normal fluid balance; <b>cranberry<\/b> is traditionally used to support urinary tract comfort."
+          }
+        },
+        "b4": {
+          "type": "benefit",
+          "settings": {
+            "kicker": "complete multivitamin · 100% NRV",
+            "title": "The bits you're<br>always low on",
+            "body": "Biotin 5,000µg, L-methylfolate 400µg, B6 as P-5-P, chromium, vitamin C, vegan D3 — plus vitamins <b>A · E · K2 and a full B-complex<\/b>, all at 100% NRV, folded into the same scoop."
+          }
+        }
+      },
+      "block_order": ["b1", "b2", "b3", "b4"]
+    },
+    "sticky": { "type": "sticky-atc" },
+    "math": {
+      "type": "the-math",
+      "settings": { "product": "the-daily-creatine-collagen" },
+      "blocks": {
+        "l1": { "type": "line", "settings": { "item": "Creatine 5g daily", "price_pounds": 20 } },
+        "l2": { "type": "line", "settings": { "item": "Verisol® collagen", "price_pounds": 35 } },
+        "l3": { "type": "line", "settings": { "item": "Women's multivitamin", "price_pounds": 15 } },
+        "l4": { "type": "line", "settings": { "item": "Inositol 40:1", "price_pounds": 25 } },
+        "l5": { "type": "line", "settings": { "item": "Biotin 5,000µg", "price_pounds": 10 } },
+        "l6": { "type": "line", "settings": { "item": "Cranberry", "price_pounds": 15 } },
+        "l7": { "type": "line", "settings": { "item": "Dandelion", "price_pounds": 10 } }
+      },
+      "block_order": ["l1", "l2", "l3", "l4", "l5", "l6", "l7"]
+    },
+    "howto": {
+      "type": "how-to-use",
+      "blocks": {
+        "s1": { "type": "step", "settings": { "title": "Scoop 14g", "body": "One level scoop — 5g creatine, 5g Verisol® collagen and the complete multivitamin, all in." } },
+        "s2": { "type": "step", "settings": { "title": "Shake with 200ml", "body": "Cold water, 10 seconds. It turns the softest pink — strawberry lemonade, naturally flavoured, no added sugar." } },
+        "s3": { "type": "step", "settings": { "title": "Drink every morning", "body": "Training days and rest days. The dose works by showing up daily — same as you." } }
+      },
+      "block_order": ["s1", "s2", "s3"]
+    },
+    "ramp": {
+      "type": "first-7-days",
+      "blocks": {
+        "n1": { "type": "note", "settings": { "title": "Days 1–7 · half scoop", "body": "7g in 200ml of cold water, every morning. Half the dose, same ritual — you're building the habit first." } },
+        "n2": { "type": "note", "settings": { "title": "Day 8 onwards · full scoop", "body": "Move up to the full 14g scoop. This is the studied daily amount — from here, it's just consistency." } },
+        "n3": { "type": "note", "settings": { "title": "Miss a day?", "body": "Just carry on the next morning. No doubling up, no guilt. The ritual works because it's kind." } }
+      },
+      "block_order": ["n1", "n2", "n3"]
+    },
+    "reviews": { "type": "reviews-section" },
+    "faq": {
+      "type": "faq-section",
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "Is creatine safe for women?", "answer": "<p>Creatine monohydrate is one of the most-studied supplement ingredients there is, and 5g a day is the amount used across that research — in women as well as men. The authorised claim is specific: creatine increases physical performance in successive bursts of short-term, high-intensity exercise. It's a food supplement for healthy adults; if you take medication or manage a condition, check with your GP first.<\/p>" } },
+        "q2": { "type": "question", "settings": { "question": "Is it really halal certified?", "answer": "<p>Yes — certified under HMC protocol GB18\/2026, including source-of-slaughter certification for the bovine collagen. The certificate is available on request.<\/p>" } },
+        "q3": { "type": "question", "settings": { "question": "Can I take it while pregnant or breastfeeding?", "answer": "<p>No. The Daily is for healthy adults and is not suitable if you are pregnant or breastfeeding. If you're taking medication or managing a condition, please consult your GP before starting any supplement.<\/p>" } },
+        "q4": { "type": "question", "settings": { "question": "What does it taste like?", "answer": "<p>Strawberry lemonade — naturally flavoured, no added sugar. And if you hate it, our 30-day flavour guarantee means we refund the pouch. That simple.<\/p>" } },
+        "q5": { "type": "question", "settings": { "question": "What about shipping and returns?", "answer": "<p>Free UK shipping, 1–2 days, from London. If the flavour isn't for you, tell us within 30 days and we refund the pouch — no return postage, no questions. Subscriptions can be paused or cancelled anytime.<\/p>" } }
+      },
+      "block_order": ["q1", "q2", "q3", "q4", "q5"]
+    },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["main", "sticky", "math", "howto", "ramp", "reviews", "faq", "capture"]
+}

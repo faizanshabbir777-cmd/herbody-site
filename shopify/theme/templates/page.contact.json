@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": { "show_contact_form": true }
+    }
+  },
+  "order": ["main"]
+}

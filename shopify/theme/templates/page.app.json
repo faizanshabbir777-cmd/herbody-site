@@ -1,0 +1,8 @@
+{
+  "sections": {
+    "main": { "type": "main-page" },
+    "app": { "type": "app-teaser" },
+    "pledge": { "type": "pledge-band" }
+  },
+  "order": ["main", "app", "pledge"]
+}

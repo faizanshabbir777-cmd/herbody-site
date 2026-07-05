@@ -1,0 +1,39 @@
+{
+  "sections": {
+    "hero": {
+      "type": "tiktok-landing-hero",
+      "settings": { "product": "the-daily-creatine-collagen" },
+      "blocks": {
+        "p1": { "type": "bullet", "settings": { "text": "5g creatine + 5g Verisol® collagen — the studied amounts, disclosed" } },
+        "p2": { "type": "bullet", "settings": { "text": "Halal certified (HMC GB18) · made in UK · tested every batch" } },
+        "p3": { "type": "bullet", "settings": { "text": "20% of profits to refuge, care and crisis support — you pick the cause" } }
+      },
+      "block_order": ["p1", "p2", "p3"]
+    },
+    "trust": { "type": "trust-bar" },
+    "ugc": {
+      "type": "ugc-video-block",
+      "blocks": {
+        "v1": { "type": "video", "settings": { "caption": "the morning scoop" } },
+        "v2": { "type": "video", "settings": { "caption": "shake it 10 seconds" } },
+        "v3": { "type": "video", "settings": { "caption": "strawberry lemonade!" } }
+      },
+      "block_order": ["v1", "v2", "v3"]
+    },
+    "offer": {
+      "type": "offer-stack",
+      "settings": { "product": "the-daily-creatine-collagen" },
+      "blocks": {
+        "o1": { "type": "row", "settings": { "item": "5g Creapure® creatine", "detail": "the studied daily amount" } },
+        "o2": { "type": "row", "settings": { "item": "5g Verisol® collagen peptides", "detail": "the branded, studied peptide" } },
+        "o3": { "type": "row", "settings": { "item": "Complete multivitamin · 100% NRV", "detail": "biotin 5,000µg · methylfolate · B6 P-5-P" } },
+        "o4": { "type": "row", "settings": { "item": "Inositol 40:1 + botanicals", "detail": "500mg · cranberry PAC · dandelion root" } },
+        "o5": { "type": "row", "settings": { "item": "2 charity tokens per pouch", "detail": "you choose the cause, in the app" } },
+        "o6": { "type": "row", "settings": { "item": "21 servings · strawberry lemonade", "detail": "naturally flavoured · no added sugar" } }
+      },
+      "block_order": ["o1", "o2", "o3", "o4", "o5", "o6"]
+    },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["hero", "trust", "ugc", "offer", "capture"]
+}
