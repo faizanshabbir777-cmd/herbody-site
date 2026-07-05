@@ -68,3 +68,22 @@ herbody-site/
 ---
 
 © HerBody Ltd · London
+
+---
+
+# Growth automation system (added July 2026)
+
+This repo now also contains HerBody's full launch + growth stack alongside the static site:
+
+| Where | What |
+|---|---|
+| `shopify/theme/` + `shopify/setup/` | Complete Shopify OS 2.0 theme (cream v10 brand) + idempotent store provisioning |
+| `agents/` | AI agent fleet (Node 20, runs on GitHub Actions): **MASTER** orchestrator, **OmniFlash** TikTok manager, **Social** (IG/FB/Pinterest), **PPC** manager, metrics collector, publisher |
+| `dash/` | Founder dashboards on GitHub Pages: overview + brief, content calendar, PPC, approval queue |
+| `data/` | The system's database — agent state, drafts queue, approvals, briefs, metrics (committed by Actions) |
+| `ads/`, `marketing/`, `analytics/`, `seo/`, `operations/`, `docs/` | Campaign drafts (all PAUSED), growth packs, tracking plan, compliance suite |
+| `.github/workflows/` | agent-fleet (daily), weekly-strategy, publish-approved, shopify-theme-deploy, shopify-store-setup, ppc-push (gated), Pages deploy |
+
+**Start here → [`SETUP.md`](SETUP.md)** — the zero-to-full-auto guide. Tier 1 is a single secret (`ANTHROPIC_API_KEY`) and gives you the entire drafting fleet.
+
+Safety model: agents draft, humans approve (dashboard), campaigns are always created PAUSED, live ad pushes sit behind a triple gate (environment reviewer + approval file + platform UI). No fake reviews (DMCC), no medical claims (ASA/GB-NHC), no secrets in the repo.
