@@ -1,0 +1,249 @@
+{%- comment -%}
+  Product page: gallery · buy box (selling-plan aware) · benefits ·
+  full supplement-facts panel (doses fixed from product-facts v14) ·
+  guarantee + shipping lines · disclaimer. Sticky ATC observes [data-buybox].
+{%- endcomment -%}
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+  assign sub_alloc = blank
+  if variant.selling_plan_allocations.size > 0
+    assign sub_alloc = variant.selling_plan_allocations.first
+  endif
+-%}
+
+<section class="page-hero"
+  data-product-main
+  data-variant-id="{{ variant.id }}"
+  data-price-one="{{ variant.price }}"
+  {% if sub_alloc != blank %}data-price-sub="{{ sub_alloc.price }}" data-plan-id="{{ sub_alloc.selling_plan.id }}"{% endif %}>
+  <div class="hero-glow"></div>
+  <div class="wrap">
+    <nav class="crumb" aria-label="{{ 'general.breadcrumbs.label' | t }}">
+      <a href="{{ routes.root_url }}">{{ 'general.breadcrumbs.home' | t }}</a><span class="sep">/</span><span class="here">{{ product.title }}</span>
+    </nav>
+
+    <div class="shop">
+      {%- comment -%} gallery {%- endcomment -%}
+      <div>
+        <div class="shop-vis">
+          {%- if product.featured_media -%}
+            <img class="shop-photo" data-main-image
+              src="{{ product.featured_media | image_url: width: 1100 }}"
+              srcset="{{ product.featured_media | image_url: width: 550 }} 550w, {{ product.featured_media | image_url: width: 1100 }} 1100w"
+              sizes="(max-width: 900px) 94vw, 640px"
+              width="640" height="{{ 640 | divided_by: product.featured_media.aspect_ratio | round }}"
+              alt="{{ product.featured_media.alt | default: product.title | escape }}" fetchpriority="high">
+          {%- else -%}
+            <div class="shop-vis-ph">
+              <span class="pip" aria-hidden="true"></span>
+              <span class="mono">{{ 'sections.hero.image_placeholder' | t }}</span>
+            </div>
+          {%- endif -%}
+          <div class="stamp-round" style="position:absolute;top:22px;left:22px;z-index:6"><span class="big">{{ 'sections.pledge.stamp_big' | t }}</span><span class="sm">GB18</span></div>
+        </div>
+        {%- if product.media.size > 1 -%}
+          <div class="buy-trust" style="margin-top:12px" data-gallery-thumbs>
+            {%- for media in product.media limit: 6 -%}
+              {%- if media.media_type == 'image' -%}
+                <button type="button" class="badge" style="padding:4px;line-height:0"
+                  data-thumb-src="{{ media | image_url: width: 1100 }}"
+                  aria-label="{{ 'products.product.gallery_thumb' | t: index: forloop.index }}"
+                  {% if media.id == product.featured_media.id %}aria-current="true"{% endif %}>
+                  <img src="{{ media | image_url: width: 120 }}" width="56" height="56" style="object-fit:cover;border-radius:3px" alt="{{ media.alt | escape }}" loading="lazy">
+                </button>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} buy box {%- endcomment -%}
+      <div class="shop-buy" data-buybox>
+        <div class="buy-eyebrow">
+          <span class="mono hot">{{ section.settings.catalog_no }}</span>
+          <span class="tick" style="width:30px;height:1px;background:var(--steel-3);display:inline-block"></span>
+          <span class="lbl">{{ section.settings.eyebrow_label }}</span>
+        </div>
+
+        <h1 class="buy-h">{{ product.title }}</h1>
+        <span class="buy-flavour">{{ section.settings.flavour_line }}</span>
+        <p class="buy-tagline">{{ section.settings.tagline }}</p>
+
+        <div class="buy-price">
+          <span class="pp" data-price-display>
+            {%- if sub_alloc != blank -%}{{ sub_alloc.price | money }}{%- else -%}{{ variant.price | money }}{%- endif -%}
+          </span>
+          <span class="pc" data-compare-display {% if sub_alloc == blank %}hidden{% endif %}>{{ variant.price | money }}</span>
+          <span class="pd tabular" data-perday-display>
+            21 {{ 'sections.bundle.servings' | t }} &middot;
+            {%- if sub_alloc != blank -%}
+              {{ sub_alloc.price | divided_by: 21.0 | money }}
+            {%- else -%}
+              {{ variant.price | divided_by: 21.0 | money }}
+            {%- endif %} {{ 'products.product.per_day' | t }}
+          </span>
+        </div>
+
+        {% form 'product', product, data-product-form: '' %}
+          <input type="hidden" name="id" value="{{ variant.id }}">
+
+          {%- if sub_alloc != blank -%}
+            <div class="buy-opts" role="radiogroup" aria-label="{{ 'sections.bundle.purchase_type' | t }}">
+              <label class="opt sel" data-opt="sub">
+                <span class="ol">
+                  <input type="radio" name="hb_purchase_mode" value="sub" checked>
+                  <span class="radio" aria-hidden="true"></span>
+                  <span class="on">{{ 'sections.bundle.subscribe' | t }}<small>{{ sub_alloc.selling_plan.name }} &middot; {{ 'sections.bundle.cancel_note' | t }}</small></span>
+                </span>
+                <span>
+                  <span class="op tabular">{{ sub_alloc.price | money }}</span>
+                  {%- assign pct = variant.price | minus: sub_alloc.price | times: 100 | divided_by: variant.price -%}
+                  <span class="save">&minus;{{ pct }}%</span>
+                </span>
+              </label>
+              <label class="opt" data-opt="one">
+                <span class="ol">
+                  <input type="radio" name="hb_purchase_mode" value="one">
+                  <span class="radio" aria-hidden="true"></span>
+                  <span class="on">{{ 'sections.bundle.one_time' | t }}<small>{{ 'sections.bundle.one_time_note' | t }}</small></span>
+                </span>
+                <span class="op tabular">{{ variant.price | money }}</span>
+              </label>
+            </div>
+            <input type="hidden" name="selling_plan" value="{{ sub_alloc.selling_plan.id }}" data-selling-plan-input>
+          {%- endif -%}
+
+          <div class="qty-row">
+            <span class="qlbl">{{ 'products.product.quantity' | t }}</span>
+            <div class="qty" data-product-qty>
+              <button type="button" data-qty-change="-1" aria-label="{{ 'cart.general.decrease' | t }}">&minus;</button>
+              <input type="number" name="quantity" value="1" min="1" aria-label="{{ 'products.product.quantity' | t }}" data-qty-input>
+              <button type="button" data-qty-change="1" aria-label="{{ 'cart.general.increase' | t }}">+</button>
+            </div>
+          </div>
+
+          <div class="buy-actions">
+            <button type="submit" name="add" class="btn btn-primary" data-add-to-cart {% unless variant.available %}disabled{% endunless %}>
+              {%- if variant.available -%}
+                {{ 'products.product.add_to_cart' | t }} &middot; <span data-atc-price class="tabular">
+                  {%- if sub_alloc != blank -%}{{ sub_alloc.price | money }}{%- else -%}{{ variant.price | money }}{%- endif -%}
+                </span> <span class="arr">&rarr;</span>
+              {%- else -%}
+                {{ 'products.product.sold_out' | t }}
+              {%- endif -%}
+            </button>
+            {{ form | payment_button }}
+          </div>
+        {% endform %}
+
+        <div class="buy-assure">
+          <span class="g">{{ settings.guarantee_line }}</span><br>
+          <b>{{ settings.shipping_line }}</b>
+        </div>
+
+        <div class="buy-trust">
+          <span class="badge metal">Verisol&reg; inside</span>
+          <span class="badge">Halal &middot; HMC GB18</span>
+          <span class="badge pass">{{ 'sections.hero.batch_tested' | t }}</span>
+          <span class="badge">Made in UK</span>
+          <span class="badge">+2 charity tokens</span>
+        </div>
+
+        {%- render 'disclaimer' -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%} benefits (blocks, compliant copy set in product.json) {%- endcomment -%}
+{%- if section.blocks.size > 0 -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.benefits_eyebrow }}</div>
+      <div><h2 class="sec-title">{{ section.settings.benefits_heading }}</h2></div>
+    </div>
+    <div class="benefits">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'benefit' -%}
+          <div class="benefit" {{ block.shopify_attributes }}>
+            <div class="bk">{{ block.settings.kicker }}</div>
+            <h3>{{ block.settings.title }}</h3>
+            <p>{{ block.settings.body }}</p>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{%- comment -%} supplement facts — doses are the locked v14 panel {%- endcomment -%}
+<section class="sys" id="supplement-facts">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ 'sections.facts.eyebrow' | t }}</div>
+      <div>
+        <h2 class="sec-title">{{ 'sections.facts.heading_html' | t }}</h2>
+        <p class="sec-lede">{{ 'sections.facts.lede' | t }}</p>
+      </div>
+    </div>
+
+    <div class="spec">
+      <div class="spec-head">
+        <div>{{ 'sections.facts.col_active' | t }}</div>
+        <div>{{ 'sections.facts.col_dose' | t }}</div>
+        <div>{{ 'sections.facts.col_form' | t }}</div>
+      </div>
+      <div class="spec-group">{{ 'sections.facts.group_lead' | t }}</div>
+      <div class="spec-row"><div class="ing">Creatine monohydrate</div><div class="num hot">5,000mg</div><div class="src">Creapure&reg;</div></div>
+      <div class="spec-row"><div class="ing">Verisol&reg; bioactive collagen peptides</div><div class="num hot">5,000mg</div><div class="src">Bovine &middot; halal source-of-slaughter</div></div>
+      <div class="spec-group">{{ 'sections.facts.group_support' | t }}</div>
+      <div class="spec-row"><div class="ing">Myo + D-chiro inositol</div><div class="num">500mg</div><div class="src">40:1 ratio</div></div>
+      <div class="spec-row"><div class="ing">Dandelion root extract</div><div class="num">250mg</div><div class="src">{{ 'sections.facts.traditional' | t }}</div></div>
+      <div class="spec-row"><div class="ing">Hyaluronic acid</div><div class="num">100mg</div><div class="src">Sodium hyaluronate</div></div>
+      <div class="spec-row"><div class="ing">Cranberry extract</div><div class="num">36mg PAC</div><div class="src">{{ 'sections.facts.traditional' | t }}</div></div>
+      <div class="spec-group">{{ 'sections.facts.group_multi' | t }}</div>
+      <div class="spec-row"><div class="ing">Biotin <small>(B7)</small></div><div class="num">5,000&micro;g</div><div class="src">100% NRV+</div></div>
+      <div class="spec-row"><div class="ing">L-methylfolate <small>(B9)</small></div><div class="num">400&micro;g</div><div class="src">Methylated</div></div>
+      <div class="spec-row"><div class="ing">Vitamin B6 <small>as P-5-P</small></div><div class="num">10mg</div><div class="src">Active form</div></div>
+      <div class="spec-row"><div class="ing">Chromium picolinate</div><div class="num">200&micro;g</div><div class="src">Picolinate</div></div>
+      <div class="spec-row"><div class="ing">Vitamin C</div><div class="num">80mg</div><div class="src">100% NRV</div></div>
+      <div class="spec-row"><div class="ing">Vitamin D3</div><div class="num">25&micro;g</div><div class="src">Vegan</div></div>
+      <div class="spec-row"><div class="ing">Vitamins A &middot; E &middot; K2 + full B-complex</div><div class="num">100% NRV</div><div class="src">Complete multivitamin</div></div>
+      <div class="spec-note">{{ 'sections.facts.note' | t }}</div>
+    </div>
+
+    {%- if product.description != blank -%}
+      <div class="rte" style="margin-top:34px">{{ product.description }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{%- render 'product-schema', product: product -%}
+{%- render 'breadcrumb-schema' -%}
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": [
+    { "type": "text", "id": "catalog_no", "label": "Catalogue number", "default": "No.01" },
+    { "type": "text", "id": "eyebrow_label", "label": "Eyebrow label", "default": "Made for women · Tested every batch" },
+    { "type": "text", "id": "flavour_line", "label": "Flavour line", "default": "Strawberry Lemonade — naturally flavoured, no added sugar" },
+    { "type": "textarea", "id": "tagline", "label": "Tagline", "default": "5g creatine + 5g Verisol® collagen peptides + a complete multivitamin — 13 actives, each at the studied amount, in one 14g morning scoop. Halal certified, made in the UK, tested for purity every single batch." },
+    { "type": "text", "id": "benefits_eyebrow", "label": "Benefits eyebrow", "default": "What it does" },
+    { "type": "textarea", "id": "benefits_heading", "label": "Benefits heading (HTML allowed)", "default": "One scoop,<br>on <em>your</em> terms." }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        { "type": "text", "id": "kicker", "label": "Kicker", "default": "5g creatine" },
+        { "type": "textarea", "id": "title", "label": "Title (HTML allowed)", "default": "Strength on your terms" },
+        { "type": "textarea", "id": "body", "label": "Body (HTML allowed)", "default": "The studied 5g daily amount." }
+      ]
+    }
+  ]
+}
+{% endschema %}

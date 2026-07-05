@@ -1,0 +1,35 @@
+{%- comment -%}
+  Mobile sticky add-to-bag bar. Hidden until the buy box scrolls out of
+  view (IntersectionObserver in theme.js watches [data-buybox]).
+  Include on the product template only.
+{%- endcomment -%}
+{%- liquid
+  assign product = product | default: section.settings.product
+  assign variant = product.selected_or_first_available_variant
+-%}
+{%- if product != blank and variant != blank -%}
+<div class="buybar" data-buybar aria-hidden="true">
+  <div>
+    <div class="bb-nm">{{ product.title }}</div>
+    <span class="bb-pr" data-buybar-price>{{ variant.price | money }} &middot; {{ 'sections.sticky.servings' | t }}</span>
+  </div>
+  <button type="button" class="btn btn-primary" data-buybar-add data-variant-id="{{ variant.id }}" {% unless variant.available %}disabled{% endunless %}>
+    {%- if variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
+  </button>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sticky add to bag",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product (leave blank on product pages)",
+      "info": "On the product template this uses the page's product automatically."
+    }
+  ],
+  "presets": [{ "name": "Sticky add to bag" }]
+}
+{% endschema %}

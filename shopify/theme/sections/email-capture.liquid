@@ -1,0 +1,42 @@
+{%- comment -%}
+  Email capture: "Get the First-7-Days Plan + 10% off your first pouch".
+  Email only — Shopify customer form, tag: newsletter.
+  Gated by settings.show_email_capture.
+{%- endcomment -%}
+{%- if settings.show_email_capture -%}
+<section class="sys">
+  <div class="wrap">
+    <div class="capture">
+      <div class="cp-txt">
+        <b>{{ section.settings.heading }}</b>
+        <span>{{ section.settings.subheading }}</span>
+      </div>
+      <div style="flex:1;max-width:460px;min-width:260px">
+        {%- render 'email-capture-form', form_id: section.id -%}
+        <p class="wl-privacy">{{ 'general.newsletter.privacy' | t }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Email capture",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading (HTML allowed)",
+      "default": "Get the First-7-Days Plan + <em>10% off</em> your first pouch"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "The gentle way to start — a one-page plan for your first week, and a code for your first pouch. Email only, unsubscribe whenever."
+    }
+  ],
+  "presets": [{ "name": "Email capture" }]
+}
+{% endschema %}

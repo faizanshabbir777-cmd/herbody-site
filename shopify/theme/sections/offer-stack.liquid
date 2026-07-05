@@ -1,0 +1,71 @@
+{%- comment -%}
+  Offer stack — what one pouch includes. Product price from product
+  object; row "values" are descriptive lines, not fake was-prices.
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product
+  assign variant = product.selected_or_first_available_variant
+-%}
+<section class="sys">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">{{ section.settings.eyebrow }}</div>
+      <div>
+        <h2 class="sec-title">{{ section.settings.heading }}</h2>
+      </div>
+    </div>
+
+    <div class="offer-stack">
+      {%- for block in section.blocks -%}
+        <div class="offer-row" {{ block.shopify_attributes }}>
+          <div class="oi">{{ block.settings.item }}{% if block.settings.detail != blank %}<small>{{ block.settings.detail }}</small>{% endif %}</div>
+          <div class="ov"><span class="pip" aria-hidden="true"></span></div>
+        </div>
+      {%- endfor -%}
+      {%- if product != blank and variant != blank -%}
+        <div class="offer-row total">
+          <div class="oi">{{ 'sections.offer.total_label' | t }}<small>{{ 'sections.offer.total_detail' | t }}</small></div>
+          <div class="ov tabular">{{ variant.price | money }}</div>
+        </div>
+        <a class="btn btn-primary" href="{{ product.url }}" style="justify-content:center;margin-top:8px">
+          {{ 'sections.hero.cta_primary' | t }} &middot; {{ variant.price | money }} <span class="arr">&rarr;</span>
+        </a>
+        <p class="bundle-note">{{ settings.guarantee_line }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Offer stack",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Product" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Everything in the pouch" },
+    { "type": "textarea", "id": "heading", "label": "Heading (HTML allowed)", "default": "One pouch.<br>The <em>whole</em> shelf." }
+  ],
+  "blocks": [
+    {
+      "type": "row",
+      "name": "Included item",
+      "settings": [
+        { "type": "text", "id": "item", "label": "Item", "default": "5g Creapure® creatine" },
+        { "type": "text", "id": "detail", "label": "Detail", "default": "the studied daily amount" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Offer stack",
+      "blocks": [
+        { "type": "row", "settings": { "item": "5g Creapure® creatine", "detail": "the studied daily amount" } },
+        { "type": "row", "settings": { "item": "5g Verisol® collagen peptides", "detail": "the branded, studied peptide" } },
+        { "type": "row", "settings": { "item": "Complete multivitamin · 100% NRV", "detail": "biotin 5,000µg · methylfolate · B6 P-5-P" } },
+        { "type": "row", "settings": { "item": "Inositol 40:1 + botanicals", "detail": "500mg · cranberry PAC · dandelion root" } },
+        { "type": "row", "settings": { "item": "2 charity tokens per pouch", "detail": "you choose the cause, in the app" } },
+        { "type": "row", "settings": { "item": "21 servings · strawberry lemonade", "detail": "naturally flavoured · no added sugar" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
