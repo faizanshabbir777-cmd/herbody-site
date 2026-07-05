@@ -1,0 +1,15 @@
+# GitHub Skill Scout — What We Looked At, What We Took
+
+Honest log of external patterns scouted for this build. Policy: **read for patterns, write our own code**. Nothing was vendored, forked or copy-pasted. See `docs/OPEN_SOURCE_ATTRIBUTION.md` for licence positions and `docs/DEPENDENCY_DECISIONS.md` for what we actually installed.
+
+| Source | What we looked for | What we took | What we did NOT take |
+|---|---|---|---|
+| **Shopify Dawn** (github.com/Shopify/dawn) | Reference architecture for a modern OS 2.0 theme: section/snippet decomposition, JSON templates, no-build-step JS, web-component product form | Structural ideas only: sections-everywhere layout, custom-element pattern for variant/selling-plan pickers, CSS-custom-property theming | **No code.** Dawn's licence does not permit reuse outside the Shopify platform context we'd want, and copying was never needed — our theme in `shopify/theme/` is written from scratch against Shopify's public theme docs |
+| **Shopify Admin GraphQL docs** (shopify.dev) | Orders/products read patterns for the metrics agent; confirmation that selling plans are better created in the Subscriptions app UI for a one-plan store (Decision D8) | Query shapes and API-version pinning convention | No third-party wrapper libraries |
+| **Anthropic API docs** (docs.anthropic.com / platform docs) | Structured outputs for machine-readable drafts; **prompt caching** to pin the stable `brand-voice.md` prefix; token-cost accounting for the daily brief | Request patterns, cache-control breakpoint placement, our own thin client in `agents/lib/` around `@anthropic-ai/sdk` | No agent frameworks (LangChain etc.) — see DEPENDENCY_DECISIONS |
+| **TikTok Content Posting API docs** (developers.tiktok.com) | Direct-post flow, scopes, and the audit rule: **unaudited apps can only post SELF_ONLY visibility** | The constraint itself — it shaped the manual-post bridge in the publisher and morning routine | No sample-app code |
+| **Meta Graph / Marketing API docs** (developers.facebook.com) | Page/IG publishing endpoints; campaign creation with `status=PAUSED`; CAPI event schema + `event_id` dedup | Field names, paused-at-creation pattern, dedup design in `analytics/TRACKING_PLAN.md` | No Meta Business SDK (heavy; plain fetch suffices) |
+| **Google Ads Editor CSV format docs** (support.google.com/google-ads/editor) | Column headers and row semantics for campaigns/ad groups/keywords/RSAs so the PPC agent's CSVs import cleanly, paused | Header sets used by the exporter templates in `data/ppc-export/` | No Google Ads API client (no dev token yet — Decision D5) |
+| **Klaviyo docs** (developers.klaviyo.com) | Events + profiles API shape for future email flows; consent-first list handling | Naming conventions for flows/metrics, planned only | No SDK installed yet — email is post-launch phase |
+
+**Searches that found nothing worth adopting:** "Shopify theme + GB NHC compliance" tooling (doesn't exist — hence our own claims matrix + gate), open-source ASA claim checkers (none maintained), DMCC-review-compliance libraries (none — it's policy, not code).
