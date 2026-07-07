@@ -21,13 +21,25 @@ const landingUrl = spec?.website_product_url || "";
 const winners = (perf.labels || []).filter((l) => l.label === "winner");
 
 // Stop-loss sweep over live ad rows (flag only — pausing needs the publisher/human).
+// Meta insights put conversions inside the `actions` array; TikTok integrated
+// reports nest metrics under `row.metrics` — normalise both before judging.
+function spendConversionsOf(src, row) {
+  const m = row.metrics || row;
+  const spend = parseFloat(m.spend ?? row.spend ?? 0) || 0;
+  let conversions = parseFloat(m.conversion ?? m.conversions ?? row.conversion ?? row.conversions ?? 0) || 0;
+  if (src === "meta" && Array.isArray(row.actions)) {
+    conversions = row.actions
+      .filter((a) => /purchase|complete_payment|conversion/i.test(String(a.action_type || "")))
+      .reduce((s, a) => s + (parseFloat(a.value) || 0), 0);
+  }
+  return { spend, conversions };
+}
 const stopLossFlags = [];
 for (const src of ["tiktok", "meta"]) {
   for (const row of metrics?.[src]?.rows || []) {
-    const spend = parseFloat(row.spend || row.metrics?.spend || 0);
-    const conversions = parseFloat(row.conversion || row.conversions || 0);
+    const { spend, conversions } = spendConversionsOf(src, row);
     const sl = stopLossTriggered(policy, { spendGbp: spend, conversions });
-    if (sl.triggered) stopLossFlags.push({ platform: src, campaign: row.campaign_id || row.campaign_name || "?", ...sl });
+    if (sl.triggered) stopLossFlags.push({ platform: src, campaign: row.campaign_id || row.campaign_name || row.dimensions?.campaign_id || "?", ...sl });
   }
 }
 
@@ -76,8 +88,9 @@ if (drafts.length) {
   });
 }
 writeJson("data/state/paid-growth-latest.json", {
-  updated: nowIso(), winners_considered: winners.length,
-  drafts_created: drafts.length, stop_loss_flags: stopLossFlags,
+  updated: nowIso(), date: today(), winners_considered: winners.length,
+  drafts_created: drafts.length, planned_daily_spend_gbp: fleetSpendPlanned,
+  stop_loss_flags: stopLossFlags,
 });
 
 const mem = loadMemory("paid");

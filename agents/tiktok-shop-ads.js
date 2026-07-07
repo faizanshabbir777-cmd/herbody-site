@@ -37,7 +37,10 @@ const winners = (perf.labels || []).filter(
 );
 
 const drafts = [];
-let planned = 0;
+// Seed the budget counter with what paid-growth already planned TODAY, so both
+// agents share ONE fleet-wide daily cap instead of each starting from zero.
+const paidState = readJson("data/state/paid-growth-latest.json", {});
+let planned = paidState.date === today() ? paidState.planned_daily_spend_gbp || 0 : 0;
 for (const w of winners) {
   const scale = canAutoScale(policy, { proposedDailyBudgetGbp: 10, fleetDailySpendGbp: planned });
   drafts.push({
