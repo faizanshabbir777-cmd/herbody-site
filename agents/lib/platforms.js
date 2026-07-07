@@ -37,6 +37,34 @@ export const shopify = {
     if (body.errors?.length) throw new Error(body.errors[0].message);
     return { available: true, data: body.data };
   },
+  /**
+   * Host a generated media URL on Shopify Files (public CDN) so TikTok/IG APIs can
+   * pull it. fileCreate accepts an external originalSource URL — no bytes touch the
+   * repo. Returns { available, id, url|pending } — CDN URL may lag while Shopify
+   * processes the file; callers keep the provider URL as fallback.
+   */
+  async hostMediaFromUrl(sourceUrl, { alt = "", contentType = "IMAGE" } = {}) {
+    if (!this.available) {
+      const base = env("MEDIA_CDN_BASE_URL");
+      return base
+        ? { available: false, manual: true, note: `upload manually to ${base} and paste the URL into the queue item` }
+        : { available: false };
+    }
+    const m = `mutation($files:[FileCreateInput!]!){ fileCreate(files:$files){ files{ id fileStatus preview{ image{ url } } } userErrors{ message } } }`;
+    const r = await this.gql(m, {
+      files: [{ originalSource: sourceUrl, alt, contentType }],
+    });
+    const errs = r.data?.fileCreate?.userErrors || [];
+    if (errs.length) throw new Error(errs[0].message);
+    const f = r.data?.fileCreate?.files?.[0];
+    audit("shopify", "hostMediaFromUrl", true, f?.id || "");
+    return {
+      available: true,
+      id: f?.id || null,
+      url: f?.preview?.image?.url || null,
+      pending: f?.fileStatus !== "READY",
+    };
+  },
   /** Yesterday+today order rollup for metrics. */
   async orderStats() {
     if (!this.available) return { available: false };
@@ -80,6 +108,34 @@ export const tiktok = {
     });
     audit("tiktok", "post.init", true, body?.data?.publish_id || "");
     return { available: true, id: body?.data?.publish_id, mode: "SELF_ONLY" };
+  },
+  /** Organic video metrics (Display API /v2/video/list/). Read-only; degrades gracefully. */
+  async organicVideoMetrics() {
+    if (!this.postingAvailable) return { available: false };
+    const body = await jfetch(
+      "https://open.tiktokapis.com/v2/video/list/?fields=id,title,create_time,view_count,like_count,comment_count,share_count",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${env("TIKTOK_ACCESS_TOKEN")}` },
+        body: JSON.stringify({ max_count: 20 }),
+      }
+    );
+    const videos = body?.data?.videos || [];
+    audit("tiktok", "organicVideoMetrics", true, `${videos.length} videos`);
+    return {
+      available: true,
+      rows: videos.map((v) => ({
+        post_id: String(v.id),
+        platform: "tiktok",
+        title: v.title || "",
+        published_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
+        views: v.view_count || 0,
+        impressions: v.view_count || 0,
+        likes: v.like_count || 0,
+        comments: v.comment_count || 0,
+        shares: v.share_count || 0,
+      })),
+    };
   },
   async adInsights() {
     if (!this.adsAvailable) return { available: false };
@@ -135,6 +191,29 @@ export const meta = {
     });
     audit("meta", "pagePost", true, body.id);
     return { available: true, id: body.id };
+  },
+  /** Organic IG media metrics (Graph API). Read-only; degrades gracefully. */
+  async igMediaMetrics() {
+    if (!this.igAvailable) return { available: false };
+    const u = `https://graph.facebook.com/${META_V}/${env("META_IG_USER_ID")}/media?` +
+      new URLSearchParams({
+        access_token: env("META_ACCESS_TOKEN"),
+        fields: "id,caption,media_type,like_count,comments_count,timestamp,permalink",
+        limit: "20",
+      });
+    const body = await jfetch(u);
+    const rows = (body?.data || []).map((m) => ({
+      post_id: String(m.id),
+      platform: "instagram",
+      title: String(m.caption || "").slice(0, 80),
+      published_at: m.timestamp || null,
+      likes: m.like_count || 0,
+      comments: m.comments_count || 0,
+      media_type: m.media_type || "",
+      permalink: m.permalink || "",
+    }));
+    audit("meta", "igMediaMetrics", true, `${rows.length} media`);
+    return { available: true, rows };
   },
   async adInsights() {
     if (!this.adsAvailable) return { available: false };
