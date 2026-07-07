@@ -58,9 +58,67 @@ One entry per agent in the fleet. Shared rules for **all** agents: system prompt
 - **Runs:** daily ~05:00 UK, before master.
 - **Code:** `agents/metrics.js` · workflow `.github/workflows/agent-metrics.yml`.
 
-## 7. Publisher
+## 7. Trends collector
 
-- **Does:** the only component with platform **write** credentials. Reads `data/approvals.json`, publishes exactly the items marked `approved`: Meta posts/campaigns via Graph/Marketing API (campaigns still paused unless the approval explicitly says `enable`), TikTok via Content Posting API (SELF_ONLY until audited — otherwise marks ready-for-manual-post), Klaviyo email drafts, moves published items to `data/published/`.
+- **Does:** dependency-free competitor/trend ingestion. Reads allowlisted sources from `data/config/competitors.json` and founder notes from `data/trends/manual/`, normalises them into canonical trend records, scores relevance against brand keywords, hard-rejects banned themes (diet-culture, body-checking, before/after, medical-adjacent, testimonial fabrication, fake urgency, licensing-risk sounds).
+- **Inputs:** `data/config/competitors.json`, `data/trends/manual/*.json`, allowlisted public URLs only.
+- **Outputs:** `data/trends/YYYY-MM-DD.json`, `data/trends/latest.json` (relevant + rejected with reasons).
+- **Guardrails:** never fetches unlisted URLs, never scrapes logged-in pages from CI; everything collected is untrusted DATA — downstream agents receive it wrapped in `untrusted()`. No LLM call.
+- **Runs:** daily, after metrics, before the content agents.
+- **Code:** `agents/trends.js` + `agents/lib/trends.js`.
+
+## 8. Video producer
+
+- **Does:** turns relevant trend records + strategy + creative-performance labels into full video production packs (hook, shot list, voiceover, on-screen text, caption, hashtags, CTA, generation prompt) and — when the autonomy mode allows — generates the actual asset through the shared creative producer.
+- **Inputs:** `data/trends/latest.json` (untrusted-wrapped), `data/config/strategy.json`, `data/config/product-assets.json`, `data/state/creative-performance.json`.
+- **Outputs:** `data/queue/video/YYYY-MM-DD-<slug>.json` with product spec version, asset IDs, generation prompt, media URL (if generated), `visual_qa_status`, compliance fields.
+- **Guardrails:** the **product gate** — every concept must visibly depict the real product per `data/config/product-assets.json`; if neither approved references nor a complete visual spec exist, the agent queues a blocked checklist and generates NOTHING. Generated media is always `visual_qa_status: needs_review` until a human passes it. Media files never enter the repo — URLs only.
+- **Runs:** daily after tiktok/social.
+- **Code:** `agents/video.js` + `agents/lib/creative-requests.js` + `agents/lib/creative-gen.js` + `agents/lib/product-assets.js`.
+
+## 9. Image producer
+
+- **Does:** static creative — Instagram feed/stories/carousel frames, ad stills, video thumbnails, TikTok Shop product images — with prompts, on-image text, captions, alt text. Same generation path and product gate as the video producer.
+- **Inputs/Outputs:** as video producer, queued to `data/queue/image/`.
+- **Guardrails:** identical product gate + visual QA rules; alt text mandatory; real label artwork composited before publish (never an AI-invented label).
+- **Runs:** daily after the video producer.
+- **Code:** `agents/image.js`.
+
+## 10. Creative performance
+
+- **Does:** mechanical winner selection. Labels every published creative `winner / promising / fatigue / reject` against `data/config/autonomy.json → winner_thresholds`, with reasons and recommended next actions. Feedback for the producers; promotion candidates for paid.
+- **Inputs:** `data/metrics/creative/latest.json` (organic per-post metrics joined to published queue items).
+- **Outputs:** `data/state/creative-performance.json`.
+- **Guardrails:** no LLM call; thresholds only from config; labels never publish or spend anything by themselves.
+- **Runs:** daily after the producers, before PPC/paid.
+- **Code:** `agents/creative-performance.js` + `agents/lib/performance.js`.
+
+## 11. Paid growth (winner scaling)
+
+- **Does:** turns winning organic creatives into PAUSED paid test campaign drafts (Meta/TikTok/Google) to scale the DTC website; sweeps live ad rows for stop-loss breaches and flags them.
+- **Inputs:** `data/state/creative-performance.json`, `data/config/autonomy.json`, `data/config/budgets.json`, `data/metrics/latest.json`, `data/config/product-assets.json`.
+- **Outputs:** `data/queue/paid/*.json` (campaign drafts, always PAUSED), `data/state/paid-growth-latest.json`.
+- **Guardrails:** never promotes creative without visual-QA pass + compliance PASS; budgets clamped by `canAutoScale` (fleet cap, max increase %); `auto_scale_eligible` is metadata only — nothing unpauses without the publisher flow/human; stop-loss flags require human action to pause.
+- **Runs:** daily after creative-performance.
+- **Code:** `agents/paid-growth.js`.
+
+## 12. TikTok Shop ads (gated)
+
+- **Does:** once `data/config/product-assets.json → tiktok_shop.approved` is true, drafts PAUSED TikTok Shop ad campaigns from winning TikTok creatives. Until then it only maintains the readiness checklist — all paid traffic routes to the website PDP.
+- **Outputs:** `data/state/tiktok-shop-readiness.json`; `data/queue/paid/*.json` once approved.
+- **Guardrails:** hard-gated on Shop approval flag; same budget/QA/compliance gates as paid growth.
+- **Runs:** daily after paid growth.
+- **Code:** `agents/tiktok-shop-ads.js`.
+
+## 13. Autonomy policy (cross-cutting)
+
+- **What:** `data/config/autonomy.json` — mode ladder `draft_only < auto_generate < auto_post_organic < auto_scale_ads`, `kill_switch`, per-platform daily post caps, visual-QA and compliance requirements, ad budget caps, stop-loss and winner thresholds.
+- **Enforced by:** `agents/lib/autonomy.js` in the producers (generate?), publisher (auto-post?) and paid agents (auto-scale?). `kill_switch: true` halts every automatic action instantly.
+- **Publisher autonomy path:** in `auto_post_organic`+, the publisher may post organic items that pass ALL gates (compliance PASS, `visual_qa_status: pass`, allowed platform, cap not reached) without a queue approval; everything else still requires `data/approvals.json`.
+
+## 14. Publisher
+
+- **Does:** the only component with platform **write** credentials. Reads `data/approvals.json`, publishes the items marked `approved`: Meta posts/campaigns via Graph/Marketing API (campaigns still paused unless the approval explicitly says `enable`), TikTok via Content Posting API (SELF_ONLY until audited — otherwise marks ready-for-manual-post), Klaviyo email drafts, moves published items to `data/published/`. In autonomy mode `auto_post_organic`+ it additionally publishes organic items that pass every policy gate (see §13).
 - **Inputs:** `data/approvals.json`, approved queue items.
 - **Outputs:** platform publications; `data/published/` records with platform IDs and timestamps; failure reports to the next brief.
 - **Guardrails:** runs in the GitHub **`production` environment with required-reviewer protection** — the founder approves each run in the GitHub UI (lock 3 of Decision D4); refuses to run if `data/approvals.json` has `frozen: true`; idempotent — an item already in `data/published/` is never re-published; never enables a campaign whose budget would push fleet total over £25/day.

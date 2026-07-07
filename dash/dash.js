@@ -16,8 +16,11 @@ const DATA = "../data";
 const PAT_KEY = "hb_dash_pat";
 const IS_FILE = location.protocol === "file:";
 
-const AGENTS = ["master", "tiktok", "social", "ppc"];
-const AGENT_LABELS = { master: "Master", tiktok: "TikTok", social: "Social", ppc: "PPC" };
+const AGENTS = ["master", "tiktok", "social", "video", "image", "ppc", "paid"];
+const AGENT_LABELS = {
+  master: "Master", tiktok: "TikTok", social: "Social",
+  video: "Video", image: "Image", ppc: "PPC", paid: "Paid Growth"
+};
 
 /* ---------------- fetch helpers ---------------- */
 
@@ -256,7 +259,13 @@ function decidedIds(decisions) {
 
 /* ---------------- payload rendering (drawer / approvals) ---------------- */
 
-const FIELD_ORDER = ["hook", "script", "caption", "hashtags", "title", "headline", "primary_text", "description", "cta", "landing_url", "utm"];
+const FIELD_ORDER = [
+  "media_url", "video_url", "image_url", "preview_url", "thumbnail_url",
+  "visual_qa_status", "media_status", "product_on_screen_plan", "product_spec_version", "product_asset_ids",
+  "hook", "script", "shot_list", "voiceover", "caption", "hashtags", "alt_text",
+  "generation_prompt", "visual_prompt", "negative_prompt", "trend_basis", "expiry",
+  "title", "headline", "primary_text", "description", "cta", "landing_url", "utm"
+];
 
 function fieldCopyValue(v) {
   if (Array.isArray(v)) {
@@ -268,10 +277,24 @@ function fieldCopyValue(v) {
   return String(v == null ? "" : v);
 }
 
+const MEDIA_URL_KEYS = new Set(["media_url", "video_url", "image_url", "preview_url", "thumbnail_url"]);
+
 function renderField(key, value) {
   const label = titleCase(key);
   const copyVal = fieldCopyValue(value);
   let valueHtml;
+  if (MEDIA_URL_KEYS.has(key) && typeof value === "string" && /^https?:\/\//.test(value)) {
+    const isImg = key === "image_url" || key === "thumbnail_url" || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(value);
+    valueHtml = '<div class="field-value">' +
+      (isImg
+        ? '<a href="' + esc(value) + '" target="_blank" rel="noopener"><img src="' + esc(value) + '" alt="' + esc(label) + ' preview" style="max-width:220px;max-height:220px;border-radius:8px;display:block;margin-bottom:6px" loading="lazy"></a>'
+        : "") +
+      '<a href="' + esc(value) + '" target="_blank" rel="noopener">' + esc(value) + "</a></div>";
+    return '<div class="field">' +
+      '<div class="field-head"><span class="field-label">' + esc(label) + "</span>" +
+      '<button type="button" class="copy-btn" data-copy="' + esc(copyVal) + '">Copy</button></div>' +
+      valueHtml + "</div>";
+  }
   if (key === "hashtags" && Array.isArray(value)) {
     valueHtml = '<div class="field-value"><div class="hashtag-wrap">' +
       value.map((h) => '<span class="hashtag">' + esc(String(h).startsWith("#") ? h : "#" + h) + "</span>").join("") +
@@ -311,6 +334,50 @@ function itemMetaChips(item, statusLabelHtml) {
   return html;
 }
 
+/* ---------------- autonomy status panel ---------------- */
+
+function renderAutonomyPanel(policy, published) {
+  const el = document.getElementById("autonomy");
+  if (!el) return;
+  if (!policy) {
+    el.innerHTML = emptyState(
+      "No autonomy config",
+      "data/config/autonomy.json controls how automatic the fleet is — from draft-only up to autonomous organic posting and ad scaling.",
+      "Everything behaves as draft_only until the file exists."
+    );
+    return;
+  }
+  const kill = policy.kill_switch === true;
+  const mode = policy.mode || "draft_only";
+  const todayKey = ymd(new Date());
+  const postedToday = {};
+  (published || []).forEach((p) => {
+    if (String(p.published_at || "").slice(0, 10) === todayKey && p.mode !== "ready-manual") {
+      postedToday[p.platform] = (postedToday[p.platform] || 0) + 1;
+    }
+  });
+  const autoPosted = (published || []).filter((p) =>
+    String(p.published_at || "").slice(0, 10) === todayKey &&
+    /auto_post_organic/.test(String(p.detail || ""))).length;
+  const caps = policy.max_posts_per_day_by_platform || {};
+  const capRows = Object.keys(caps).map((p) =>
+    '<div class="guard-row"><span class="k">' + esc(titleCase(p)) + " posts today</span><span class=\"v\">" +
+    esc(String(postedToday[p] || 0)) + " / " + esc(String(caps[p])) + "</span></div>").join("");
+  const ads = policy.ads || {};
+  el.innerHTML = '<div class="card">' +
+    '<div class="guard-row"><span class="k">Mode</span><span class="v' + (mode === "draft_only" ? "" : " on") + '">' + esc(mode) + "</span></div>" +
+    '<div class="guard-row"><span class="k">Kill switch</span><span class="v">' + (kill ? "🔴 ACTIVE — all automation halted" : "off") + "</span></div>" +
+    '<div class="guard-row"><span class="k">Allowed platforms</span><span class="v">' + esc((policy.allowed_platforms || []).join(", ") || "none") + "</span></div>" +
+    capRows +
+    '<div class="guard-row"><span class="k">Auto-posted today</span><span class="v">' + esc(String(autoPosted)) + "</span></div>" +
+    '<div class="guard-row"><span class="k">Ad budget cap</span><span class="v">' + esc(fmtGBP(ads.max_daily_ad_budget_gbp)) + "/day · stop-loss " + esc(fmtGBP(ads.stop_loss_spend_gbp)) + "</span></div>" +
+    '<div class="guard-row"><span class="k">Gates</span><span class="v">' +
+    (policy.requires_compliance_pass ? "compliance PASS" : "⚠ compliance gate OFF") + " · " +
+    (policy.requires_visual_qa_pass ? "visual QA pass" : "⚠ visual QA gate OFF") + "</span></div>" +
+    '<p class="footnote" style="margin:10px 0 0">Config lives in data/config/autonomy.json — flip kill_switch to true to stop all automatic generation, posting and scaling instantly.</p>' +
+    "</div>";
+}
+
 /* ============================================================
    PAGE: index.html — master overview
    ============================================================ */
@@ -318,16 +385,19 @@ function itemMetaChips(item, statusLabelHtml) {
 async function initIndex() {
   insertLocalBanner();
 
-  const [metrics, queue, decisions, master, tiktok, social, ppc, brief] = await Promise.all([
+  const [metrics, queue, decisions, brief, autonomy, published, ...agentStates] = await Promise.all([
     fetchJSON(DATA + "/metrics/latest.json"),
     loadQueue(),
     loadApprovals(),
-    fetchJSON(DATA + "/state/master.json"),
-    fetchJSON(DATA + "/state/tiktok.json"),
-    fetchJSON(DATA + "/state/social.json"),
-    fetchJSON(DATA + "/state/ppc.json"),
-    loadLatestBrief()
+    loadLatestBrief(),
+    fetchJSON(DATA + "/config/autonomy.json"),
+    loadPublished(),
+    ...AGENTS.map((a) => fetchJSON(DATA + "/state/" + a + ".json"))
   ]);
+  const stateByAgent = {};
+  AGENTS.forEach((a, i) => { stateByAgent[a] = agentStates[i]; });
+  const master = stateByAgent.master;
+  renderAutonomyPanel(autonomy, published);
 
   /* --- KPI tiles --- */
   const sh = (metrics && metrics.shopify) || {};
@@ -385,7 +455,7 @@ async function initIndex() {
   }
 
   /* --- per-agent status cards --- */
-  const states = { master, tiktok, social, ppc };
+  const states = stateByAgent;
   const anyState = AGENTS.some((a) => states[a] && states[a].last_run);
   const cardsEl = document.getElementById("agent-cards");
   cardsEl.innerHTML = AGENTS.map((a) => {

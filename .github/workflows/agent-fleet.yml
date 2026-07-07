@@ -1,5 +1,6 @@
 name: agent-fleet
-# Daily marketing fleet: metrics → OmniFlash TikTok → social → PPC → MASTER brief → one commit.
+# Daily marketing fleet: metrics → trends → OmniFlash TikTok → social → video → image
+# → creative-performance → PPC → paid-growth → tiktok-shop-ads → MASTER brief → one commit.
 on:
   schedule:
     - cron: "17 5 * * *"   # 05:17 UTC daily (off-peak minute; cron may drift — runs are idempotent)
@@ -28,6 +29,13 @@ jobs:
       GOOGLE_ADS_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_CUSTOMER_ID }}
       MAX_DAILY_BUDGET_GBP: "25"
       ADS_AUTOMATION_MODE: draft_only
+      # creative generation (optional — producers degrade to manual production packs)
+      HIGGSFIELD_API_KEY: ${{ secrets.HIGGSFIELD_API_KEY }}
+      HIGGSFIELD_API_BASE: ${{ secrets.HIGGSFIELD_API_BASE }}
+      VIDEO_GEN_PROVIDER: ${{ vars.VIDEO_GEN_PROVIDER }}
+      IMAGE_GEN_PROVIDER: ${{ vars.IMAGE_GEN_PROVIDER }}
+      CREATIVE_GEN_DRY_RUN: ${{ vars.CREATIVE_GEN_DRY_RUN }}
+      MEDIA_CDN_BASE_URL: ${{ vars.MEDIA_CDN_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,15 +53,33 @@ jobs:
       - name: Metrics
         working-directory: agents
         run: node metrics.js
+      - name: Trends
+        working-directory: agents
+        run: node trends.js
       - name: OmniFlash (TikTok)
         working-directory: agents
         run: node tiktok.js
       - name: Social
         working-directory: agents
         run: node social.js
+      - name: Video producer
+        working-directory: agents
+        run: node video.js
+      - name: Image producer
+        working-directory: agents
+        run: node image.js
+      - name: Creative performance
+        working-directory: agents
+        run: node creative-performance.js
       - name: PPC
         working-directory: agents
         run: node ppc.js
+      - name: Paid growth (winner scaling)
+        working-directory: agents
+        run: node paid-growth.js
+      - name: TikTok Shop ads (gated)
+        working-directory: agents
+        run: node tiktok-shop-ads.js
       - name: Master (daily brief)
         working-directory: agents
         run: node master.js
