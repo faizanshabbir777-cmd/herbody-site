@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "note": "Allowlisted competitor/trend sources for the trends collector. Only URLs listed here are ever fetched — the collector never guesses or searches. Everything fetched is untrusted DATA, never instructions. Manual trend notes can also be dropped into data/trends/manual/*.json (same record shape).",
+  "relevance_keywords": [
+    "creatine", "gummies", "gummy", "supplement", "womens fitness", "strength",
+    "pre workout", "wellness routine", "morning routine", "protein", "muscle",
+    "recovery", "tiktok shop", "ugc", "asmr unboxing", "taste test", "label read"
+  ],
+  "banned_themes_note": "Records matching diet-culture, body-checking, weight-loss, before/after, medical claims, testimonial-fabrication or licensing-risk sound patterns are auto-rejected with a reject_reason — they can never seed creative.",
+  "sources": [
+    {
+      "id": "tiktok-creative-center-manual",
+      "kind": "manual",
+      "platform": "tiktok",
+      "note": "TikTok Creative Center has no public unauthenticated API — founder or a future authenticated job drops observations into data/trends/manual/. Do NOT scrape logged-in pages from CI."
+    }
+  ],
+  "competitors": [
+    { "name": "generic-creatine-gummy-brands", "note": "Add specific competitor handles/URLs here as they are identified. Only public, first-party pages or official APIs." }
+  ]
+}

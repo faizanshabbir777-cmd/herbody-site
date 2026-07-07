@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "note": "SINGLE SOURCE OF TRUTH for what generated creative is allowed to depict. Generated media must show THIS product — never a random/generic supplement, stock bottle, unrelated gummies or competitor packaging. Update `approved_reference_assets` as real pack shots land on the website; keep `approved_for_generation` accurate.",
+  "brand_name": "PureLife Nutra",
+  "product_type": "Creatine Gummies",
+  "product_name": "PureLife Nutra Creatine Gummies",
+  "website_product_url": "https://{{SHOPIFY_STORE_DOMAIN}}/products/creatine-gummies",
+  "visual_spec": {
+    "packaging_type": "matte white plastic jar with wrap-around label",
+    "container_shape": "short round wide-mouth jar",
+    "lid_colour": "matte black screw lid",
+    "label_colours": ["clean white base", "deep green accents", "black typography"],
+    "logo_usage": "PureLife Nutra wordmark exactly as supplied — never redrawn, restyled or approximated by the model",
+    "label_text_locked": true,
+    "flavour": "TODO_VERIFY — confirm flavour before any flavour-specific creative",
+    "gummy_shape": "square-cut gummy cube",
+    "gummy_colour": "translucent amber-orange",
+    "serving_visual_rules": "Gummies shown loose in hand, on a plate/counter, or beside the open jar. Never show swallowing close-ups framed as instant effect, never medical framing, never pills or powder."
+  },
+  "must_show_product": true,
+  "approved_reference_assets": [],
+  "reference_asset_contract": {
+    "note": "Each entry: { id, url, role (hero|label|lifestyle|gummy-macro), angle, background_notes, approved_for_generation: true|false, last_reviewed: YYYY-MM-DD }. Only entries with approved_for_generation:true are ever passed to generation providers.",
+    "allowed_sources": [
+      "website_product_url page images (first-party only)",
+      "founder-supplied media URLs added to approved_reference_assets"
+    ]
+  },
+  "forbidden_visual_substitutes": [
+    "stock supplement bottles",
+    "invented jars or pouches",
+    "invented or redesigned labels",
+    "unrelated gummies or sweets",
+    "competitor packaging",
+    "third-party logos",
+    "powder tubs or pill bottles standing in for the gummies"
+  ],
+  "tiktok_shop": {
+    "approved": false,
+    "note": "TikTok Shop UK listing requires category approval + document checks. Until approved:true, all paid/organic traffic routes to the DTC website PDP."
+  }
+}
