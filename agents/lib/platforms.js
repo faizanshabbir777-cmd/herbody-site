@@ -128,6 +128,7 @@ export const tiktok = {
         post_id: String(v.id),
         platform: "tiktok",
         title: v.title || "",
+        caption: v.title || "", // Display API "title" is the caption text — join key for UTMs
         published_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
         views: v.view_count || 0,
         impressions: v.view_count || 0,
@@ -192,7 +193,7 @@ export const meta = {
     audit("meta", "pagePost", true, body.id);
     return { available: true, id: body.id };
   },
-  /** Organic IG media metrics (Graph API). Read-only; degrades gracefully. */
+  /** Organic IG media metrics (Graph API), incl. per-media reach/views insights. */
   async igMediaMetrics() {
     if (!this.igAvailable) return { available: false };
     const u = `https://graph.facebook.com/${META_V}/${env("META_IG_USER_ID")}/media?` +
@@ -202,16 +203,37 @@ export const meta = {
         limit: "20",
       });
     const body = await jfetch(u);
-    const rows = (body?.data || []).map((m) => ({
-      post_id: String(m.id),
-      platform: "instagram",
-      title: String(m.caption || "").slice(0, 80),
-      published_at: m.timestamp || null,
-      likes: m.like_count || 0,
-      comments: m.comments_count || 0,
-      media_type: m.media_type || "",
-      permalink: m.permalink || "",
-    }));
+    const rows = [];
+    for (const m of body?.data || []) {
+      // Per-media insights (reach/views/saved) — metric availability varies by
+      // media type, so failures degrade to zeros rather than dropping the row.
+      let reach = 0, views = 0, saved = 0;
+      try {
+        const iu = `https://graph.facebook.com/${META_V}/${m.id}/insights?` +
+          new URLSearchParams({ access_token: env("META_ACCESS_TOKEN"), metric: "reach,views,saved" });
+        const ins = await jfetch(iu);
+        for (const metric of ins?.data || []) {
+          const v = metric?.values?.[0]?.value || 0;
+          if (metric.name === "reach") reach = v;
+          if (metric.name === "views") views = v;
+          if (metric.name === "saved") saved = v;
+        }
+      } catch { /* insights unavailable for this media type — keep zeros */ }
+      rows.push({
+        post_id: String(m.id),
+        platform: "instagram",
+        title: String(m.caption || "").slice(0, 120),
+        caption: String(m.caption || "").slice(0, 500),
+        published_at: m.timestamp || null,
+        impressions: reach || views || 0,
+        views,
+        likes: m.like_count || 0,
+        comments: m.comments_count || 0,
+        saves: saved,
+        media_type: m.media_type || "",
+        permalink: m.permalink || "",
+      });
+    }
     audit("meta", "igMediaMetrics", true, `${rows.length} media`);
     return { available: true, rows };
   },

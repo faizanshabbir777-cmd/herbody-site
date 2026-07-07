@@ -37,18 +37,30 @@ out.gads = await safe(
 const organicTikTok = await safe("tiktok-organic", () => tiktok.organicVideoMetrics());
 const organicIG = await safe("ig-organic", () => meta.igMediaMetrics());
 
-// Join platform rows onto published queue items by utm_content in caption, else by title.
+// Join platform rows onto published queue items. Priority:
+//  1. platform_post_id recorded by the publisher at post time (exact),
+//  2. utm_content token appearing in the platform caption/title,
+//  3. caption/title prefix overlap (manual posts pasted from the queue card).
 const published = readJson("data/published/index.json", { items: [] }).items || [];
 const platformRows = [...(organicTikTok.rows || []), ...(organicIG.rows || [])];
+const utmContentOf = (payload) => {
+  const s = String(payload.utm_content || payload.utm || "");
+  const m = s.match(/utm_content=([^&\s]+)/);
+  return m ? m[1] : payload.utm_content || "";
+};
 const creativeRows = [];
 for (const p of published) {
   const full = readJson(`data/published/${p.id}.json`, {});
   const payload = full.payload || {};
-  const match = platformRows.find(
-    (r) => r.platform === p.platform &&
-      (payload.utm && r.title?.includes?.(String(payload.utm))
-        || (p.title && r.title && r.title.slice(0, 40) === p.title.slice(0, 40)))
-  );
+  const utmToken = utmContentOf(payload);
+  const captionOf = (r) => `${r.caption || ""} ${r.title || ""}`;
+  const captionPrefix = String(payload.caption || "").slice(0, 40);
+  const match = platformRows.find((r) => {
+    if (r.platform !== p.platform) return false;
+    if (p.platform_post_id && r.post_id === String(p.platform_post_id)) return true;
+    if (utmToken && captionOf(r).includes(utmToken)) return true;
+    return !!(captionPrefix && captionOf(r).includes(captionPrefix));
+  });
   creativeRows.push({
     creative_id: p.id,
     post_id: match?.post_id || null,
