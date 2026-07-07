@@ -1,7 +1,14 @@
 // Social media agent — Instagram / Facebook / Pinterest content (draft-first).
+// Requests generated image or video assets through the shared creative producer
+// (real product only, per the product gate) when the autonomy mode allows.
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
 import { putDraft } from "./lib/queue.js";
+import { requestCreative } from "./lib/creative-requests.js";
+import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
+
+/** Formats that need motion assets; everything else gets a still image. */
+const VIDEO_FORMATS = new Set(["reel"]);
 
 const CHARTER = `You are HerBody's social media manager (UK) for Instagram, Facebook and Pinterest.
 Plan today's posts: IG feed/reel/story concepts, FB page post, occasional Pinterest pin.
@@ -27,6 +34,8 @@ const SCHEMA = {
           caption: { type: "string" },
           hashtags: { type: "array", items: { type: "string" } },
           visual_brief: { type: "string" },
+          generation_prompt: { type: "string", description: "prompt for the AI image/video tool — must show the real product per the visual spec" },
+          alt_text: { type: "string" },
           link: { type: "string" },
           post_time_uk: { type: "string" },
           compliance_status: { type: "string", enum: ["PASS", "NEEDS_REVIEW"] },
@@ -58,7 +67,27 @@ Produce today's social drafts (1–4 across channels) and updated compressed mem
 
 const { data, usage } = await structured({ charter: CHARTER, user, schema: SCHEMA });
 
+const policy = loadAutonomy();
+const allowGenerate = modeAllows(policy, "generate");
+let generated = 0;
+
 for (const d of data.drafts) {
+  const assetType = VIDEO_FORMATS.has(d.format) ? "video" : "image";
+  let creative = {
+    media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
+    visual_qa_status: "not_generated",
+  };
+  if (allowGenerate) {
+    creative = await requestCreative({
+      platform: d.channel,
+      format: d.format,
+      creative_goal: d.title,
+      asset_type: assetType,
+      prompt: d.generation_prompt || d.visual_brief,
+      aspect_ratio: assetType === "video" || d.format === "story" ? "9:16" : "1:1",
+    });
+    if (creative.media_status === "generated") generated++;
+  }
   putDraft("social", {
     id: `${today()}-social-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`,
     platform: d.channel,
@@ -66,8 +95,14 @@ for (const d of data.drafts) {
     scheduled_for: today(),
     title: d.title,
     compliance_status: d.compliance_status,
-    payload: d,
+    payload: {
+      ...d,
+      ...creative,
+      // publisher contract: IG needs image_url or video_url to API-post
+      image_url: assetType === "image" ? creative.media_url || null : null,
+      video_url: assetType === "video" ? creative.media_url || null : null,
+    },
   });
 }
 saveMemory("social", { ...data.memory, agent: "social" });
-console.log(`[social] ${data.drafts.length} draft(s) queued · tokens ${usage.input_tokens}/${usage.output_tokens}`);
+console.log(`[social] ${data.drafts.length} draft(s) queued · ${generated} generated · tokens ${usage.input_tokens}/${usage.output_tokens}`);

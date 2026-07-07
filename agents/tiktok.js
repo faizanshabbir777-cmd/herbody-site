@@ -1,10 +1,13 @@
-// OmniFlash — the HerBody auto TikTok manager.
-// Daily: reads strategy + memory + metrics → drafts 1–3 videos (script/hook/caption/
-// hashtags/posting time) + keeps the content calendar → approval queue. Draft-first:
-// nothing publishes without a human approval (see publish.js).
+// OmniFlash — the auto TikTok manager.
+// Daily: reads strategy + memory + metrics + trends → drafts 1–3 videos (script/hook/
+// caption/hashtags/posting time) + requests generated video assets through the shared
+// creative producer when the autonomy mode allows. Draft-first: publishing is governed
+// by the approval queue + autonomy policy (see publish.js).
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
 import { putDraft } from "./lib/queue.js";
+import { requestCreative } from "./lib/creative-requests.js";
+import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
 
 const CHARTER = `You are OmniFlash, HerBody's TikTok manager (UK).
 Your job today: plan and script TikTok content that a busy founder can film on a phone.
@@ -35,6 +38,7 @@ const SCHEMA = {
           post_time_uk: { type: "string" },
           pillar: { type: "string" },
           filming_notes: { type: "string" },
+          generation_prompt: { type: "string", description: "cinematic 9:16 prompt for the AI video tool — must show the real product per the visual spec" },
           compliance_status: { type: "string", enum: ["PASS", "NEEDS_REVIEW"] },
           compliance_notes: { type: "string" },
         },
@@ -57,6 +61,7 @@ const SCHEMA = {
 const mem = loadMemory("tiktok");
 const strategy = readJson("data/config/strategy.json", {});
 const metrics = readJson("data/metrics/latest.json", {});
+const trends = readJson("data/trends/latest.json", { relevant: [] });
 const queueDepth = (readJson("data/queue/index.json", { items: [] }).items || [])
   .filter((i) => i.agent === "tiktok").length;
 
@@ -65,11 +70,36 @@ Current strategy: ${JSON.stringify(strategy)}
 Queue depth (tiktok): ${queueDepth}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
-Produce today's TikTok drafts (1–3), a calendar note, and my updated compressed memory.`;
+${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 10)))}
+Produce today's TikTok drafts (1–3), a calendar note, and my updated compressed memory.
+Include a generation_prompt per draft so the creative producer can render the video.`;
 
 const { data, usage } = await structured({ charter: CHARTER, user, schema: SCHEMA });
 
+const policy = loadAutonomy();
+const allowGenerate = modeAllows(policy, "generate");
+let generated = 0;
+
 for (const d of data.drafts) {
+  // Ask the shared creative producer for the actual video asset. The producer
+  // enforces the product gate (real product only) and degrades to manual when
+  // generation is unavailable/disabled — the draft still queues either way.
+  let creative = {
+    media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
+    visual_qa_status: "not_generated",
+  };
+  if (allowGenerate) {
+    creative = await requestCreative({
+      platform: "tiktok",
+      format: "short-video",
+      creative_goal: d.title,
+      trend_basis: data.trend_response || "",
+      asset_type: "video",
+      prompt: d.generation_prompt || `${d.hook}\n${d.script}`,
+      aspect_ratio: "9:16",
+    });
+    if (creative.media_status === "generated") generated++;
+  }
   putDraft("tiktok", {
     id: `${today()}-tiktok-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`,
     platform: "tiktok",
@@ -77,8 +107,8 @@ for (const d of data.drafts) {
     scheduled_for: today(),
     title: d.title,
     compliance_status: d.compliance_status,
-    payload: d,
+    payload: { ...d, ...creative, video_url: creative.media_url || null },
   });
 }
 saveMemory("tiktok", { ...data.memory, agent: "tiktok" });
-console.log(`[omniflash] ${data.drafts.length} draft(s) queued · trend: ${data.trend_response || "—"} · tokens in/out ${usage.input_tokens}/${usage.output_tokens}`);
+console.log(`[omniflash] ${data.drafts.length} draft(s) queued · ${generated} generated · trend: ${data.trend_response || "—"} · tokens in/out ${usage.input_tokens}/${usage.output_tokens}`);
