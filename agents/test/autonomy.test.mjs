@@ -12,10 +12,13 @@ const POLICY = {
   max_posts_per_day_by_platform: { tiktok: 2, instagram: 1 },
 };
 
+const TODAY = "2026-07-07";
+const CLOCK = { todayStr: TODAY };
 const ITEM = {
   platform: "tiktok",
+  scheduled_for: TODAY,
   compliance_status: "PASS",
-  payload: { visual_qa_status: "pass" },
+  payload: { visual_qa_status: "pass", video_url: "https://cdn.example.com/x.mp4" },
 };
 
 test("mode ladder — each mode includes everything below it", () => {
@@ -30,50 +33,69 @@ test("mode ladder — each mode includes everything below it", () => {
 test("kill switch halts everything regardless of mode", () => {
   const p = { ...POLICY, mode: "auto_scale_ads", kill_switch: true };
   assert.equal(modeAllows(p, "generate"), false);
-  assert.equal(canAutoPost(p, ITEM).ok, false);
+  assert.equal(canAutoPost(p, ITEM, {}, CLOCK).ok, false);
   assert.equal(canAutoScale(p, { proposedDailyBudgetGbp: 5 }).ok, false);
 });
 
 test("auto post allowed only when every gate passes", () => {
-  assert.equal(canAutoPost(POLICY, ITEM, {}).ok, true);
+  assert.equal(canAutoPost(POLICY, ITEM, {}, CLOCK).ok, true);
 });
 
 test("auto post blocked in draft_only / auto_generate", () => {
-  const r = canAutoPost({ ...POLICY, mode: "auto_generate" }, ITEM);
+  const r = canAutoPost({ ...POLICY, mode: "auto_generate" }, ITEM, {}, CLOCK);
   assert.equal(r.ok, false);
   assert.match(r.reason, /does not allow auto posting/);
 });
 
 test("platform allowlist enforced", () => {
-  const r = canAutoPost(POLICY, { ...ITEM, platform: "facebook" });
+  const r = canAutoPost(POLICY, { ...ITEM, platform: "facebook" }, {}, CLOCK);
   assert.equal(r.ok, false);
   assert.match(r.reason, /not in allowed_platforms/);
 });
 
+test("stale drafts (scheduled_for != today) never auto-post", () => {
+  const r = canAutoPost(POLICY, { ...ITEM, scheduled_for: "2026-07-01" }, {}, CLOCK);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /stale drafts never auto-post/);
+  const missing = canAutoPost(POLICY, { ...ITEM, scheduled_for: undefined }, {}, CLOCK);
+  assert.equal(missing.ok, false);
+});
+
 test("per-platform daily caps enforced", () => {
-  assert.equal(canAutoPost(POLICY, ITEM, { tiktok: 1 }).ok, true);
-  const r = canAutoPost(POLICY, ITEM, { tiktok: 2 });
+  assert.equal(canAutoPost(POLICY, ITEM, { tiktok: 1 }, CLOCK).ok, true);
+  const r = canAutoPost(POLICY, ITEM, { tiktok: 2 }, CLOCK);
   assert.equal(r.ok, false);
   assert.match(r.reason, /daily cap reached/);
 });
 
 test("missing cap config blocks (fail closed)", () => {
   const p = { ...POLICY, max_posts_per_day_by_platform: {} };
-  assert.equal(canAutoPost(p, ITEM).ok, false);
+  assert.equal(canAutoPost(p, ITEM, {}, CLOCK).ok, false);
 });
 
 test("compliance gate: NEEDS_REVIEW never auto-posts", () => {
-  const r = canAutoPost(POLICY, { ...ITEM, compliance_status: "NEEDS_REVIEW" });
+  const r = canAutoPost(POLICY, { ...ITEM, compliance_status: "NEEDS_REVIEW" }, {}, CLOCK);
   assert.equal(r.ok, false);
   assert.match(r.reason, /compliance/);
 });
 
 test("visual QA gate: generated media without a human pass never auto-posts", () => {
   for (const qa of ["needs_review", "not_generated", undefined]) {
-    const r = canAutoPost(POLICY, { ...ITEM, payload: { visual_qa_status: qa } });
+    const r = canAutoPost(POLICY, { ...ITEM, payload: { ...ITEM.payload, visual_qa_status: qa } }, {}, CLOCK);
     assert.equal(r.ok, false, `qa=${qa}`);
     assert.match(r.reason, /visual_qa_status/);
   }
+});
+
+test("media gate: tiktok/instagram items without a hosted media URL never auto-post", () => {
+  const r = canAutoPost(POLICY, { ...ITEM, payload: { visual_qa_status: "pass" } }, {}, CLOCK);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /no hosted media URL/);
+  const ig = canAutoPost(POLICY, {
+    ...ITEM, platform: "instagram",
+    payload: { visual_qa_status: "pass", image_url: "https://cdn/x.jpg" },
+  }, {}, CLOCK);
+  assert.equal(ig.ok, true);
 });
 
 test("auto scale: budget clamped to fleet cap", () => {

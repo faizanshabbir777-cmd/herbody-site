@@ -54,15 +54,22 @@ export function modeAllows(policy, action) {
 /**
  * May this queue item be auto-published organically right now?
  * @param {object} policy autonomy policy
- * @param {object} item queue item { platform, compliance_status, payload }
+ * @param {object} item queue item { platform, scheduled_for, compliance_status, payload }
  * @param {object} postedTodayByPlatform e.g. { tiktok: 1 }
+ * @param {object} [opts] { todayStr } injectable clock for tests
  * @returns { ok, reason }
  */
-export function canAutoPost(policy, item, postedTodayByPlatform = {}) {
+export function canAutoPost(policy, item, postedTodayByPlatform = {}, opts = {}) {
   if (!policy || policy.kill_switch === true) return { ok: false, reason: "kill switch active" };
   if (!modeAllows(policy, "post_organic")) return { ok: false, reason: `mode "${policy.mode}" does not allow auto posting` };
   const platform = item?.platform;
   if (!(policy.allowed_platforms || []).includes(platform)) return { ok: false, reason: `platform "${platform}" not in allowed_platforms` };
+  // Only items scheduled for TODAY auto-post — stale undecided drafts from prior
+  // days stay in the queue for a human instead of suddenly going live.
+  const todayStr = opts.todayStr || new Date().toISOString().slice(0, 10);
+  if (item?.scheduled_for !== todayStr) {
+    return { ok: false, reason: `scheduled_for "${item?.scheduled_for || "missing"}" is not today (${todayStr}) — stale drafts never auto-post` };
+  }
   const cap = (policy.max_posts_per_day_by_platform || {})[platform];
   if (cap == null) return { ok: false, reason: `no daily cap configured for "${platform}"` };
   if ((postedTodayByPlatform[platform] || 0) >= cap) return { ok: false, reason: `daily cap reached for "${platform}" (${cap})` };
@@ -71,6 +78,12 @@ export function canAutoPost(policy, item, postedTodayByPlatform = {}) {
   const qa = item?.payload?.visual_qa_status;
   if (policy.requires_visual_qa_pass && qa !== "pass") {
     return { ok: false, reason: `visual_qa_status "${qa || "missing"}" is not pass — a human must visually approve generated product media` };
+  }
+  // TikTok/IG API posting needs a hosted media URL — without one the item can
+  // only ever become ready-manual, so it is not auto-post eligible.
+  if ((platform === "tiktok" || platform === "instagram") &&
+      !item?.payload?.video_url && !item?.payload?.image_url && !item?.payload?.media_url) {
+    return { ok: false, reason: "no hosted media URL in payload — API posting impossible, needs manual post" };
   }
   return { ok: true, reason: "eligible for auto post" };
 }

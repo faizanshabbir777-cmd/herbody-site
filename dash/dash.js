@@ -357,8 +357,7 @@ function renderAutonomyPanel(policy, published) {
     }
   });
   const autoPosted = (published || []).filter((p) =>
-    String(p.published_at || "").slice(0, 10) === todayKey &&
-    /auto_post_organic/.test(String(p.detail || ""))).length;
+    String(p.published_at || "").slice(0, 10) === todayKey && p.mode === "api-auto").length;
   const caps = policy.max_posts_per_day_by_platform || {};
   const capRows = Object.keys(caps).map((p) =>
     '<div class="guard-row"><span class="k">' + esc(titleCase(p)) + " posts today</span><span class=\"v\">" +

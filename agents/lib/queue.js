@@ -77,7 +77,8 @@ export function markPublished(item, result) {
     platform: item.platform,
     title: item.title,
     published_at: nowIso(),
-    mode: result.mode, // "api" | "ready-manual"
+    mode: result.mode, // "api" | "api-auto" | "ready-manual"
+    platform_post_id: result.post_id || null, // joins organic metrics back to this creative
     result_url: result.url || null,
     detail: result.detail || null,
     payload: item.payload,
@@ -85,7 +86,7 @@ export function markPublished(item, result) {
   writeJson(`data/published/${item.id}.json`, rec);
   const idx = readJson("data/published/index.json", { items: [] });
   const i = idx.items.findIndex((e) => e.id === item.id);
-  const entry = { id: rec.id, agent: rec.agent, platform: rec.platform, title: rec.title, published_at: rec.published_at, mode: rec.mode, result_url: rec.result_url };
+  const entry = { id: rec.id, agent: rec.agent, platform: rec.platform, title: rec.title, published_at: rec.published_at, mode: rec.mode, platform_post_id: rec.platform_post_id, result_url: rec.result_url };
   if (i >= 0) idx.items[i] = entry;
   else idx.items.push(entry);
   writeJson("data/published/index.json", idx);

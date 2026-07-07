@@ -16,25 +16,35 @@ async function publishOne(item, { auto = false } = {}) {
     if (r.available === false || r.skipped) {
       result = { mode: "ready-manual", detail: r.reason || "TikTok credentials not configured — post manually from the dashboard payload" };
     } else {
-      result = { mode: "api", detail: `publish_id ${r.id} (SELF_ONLY until app audit passes)` };
+      result = { mode: "api", post_id: r.id, detail: `publish_id ${r.id} (SELF_ONLY until app audit passes)` };
     }
   } else if (item.platform === "instagram") {
     const r = await meta.igPublish(item.payload);
     if (r.available === false || r.skipped) {
       result = { mode: "ready-manual", detail: r.reason || "Meta credentials not configured — post manually" };
     } else {
-      result = { mode: "api", detail: `ig media ${r.id}` };
+      result = { mode: "api", post_id: r.id, detail: `ig media ${r.id}` };
     }
   } else if (item.platform === "facebook") {
     const r = await meta.pagePost(item.payload);
     result = r.available === false
       ? { mode: "ready-manual", detail: "Meta credentials not configured — post manually" }
-      : { mode: "api", detail: `fb post ${r.id}` };
+      : { mode: "api", post_id: r.id, detail: `fb post ${r.id}` };
   } else {
     // ppc/paid campaign items and anything else are handled by ppc-push workflow / manually
     result = { mode: "ready-manual", detail: `no auto-publish path for platform "${item.platform}"` };
   }
-  if (auto) result.detail = `[auto_post_organic] ${result.detail || ""}`.trim();
+  if (auto) {
+    // Autonomy must never silently consume an item it couldn't actually post:
+    // ready-manual outcomes stay in the queue for a human instead of being
+    // marked published. Successful API posts are labelled api-auto for audit.
+    if (result.mode === "ready-manual") {
+      console.log(`[publish] autonomy left ${item.id} in queue: ${result.detail}`);
+      return result;
+    }
+    result.mode = "api-auto";
+    result.detail = `[auto_post_organic] ${result.detail || ""}`.trim();
+  }
   markPublished(item, result);
   console.log(`[publish] ${item.id} → ${result.mode} ${result.detail || ""}${auto ? " (autonomy)" : ""}`);
   return result;
