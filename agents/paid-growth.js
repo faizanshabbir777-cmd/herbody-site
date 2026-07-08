@@ -10,11 +10,18 @@ import { loadAutonomy, canAutoScale, stopLossTriggered, modeAllows } from "./lib
 import { paidTestDraft, normalizeAdRow } from "./lib/performance.js";
 import { loadProductSpec } from "./lib/product-assets.js";
 import { campaignPrefix } from "./lib/utm.js";
-import { qaDecisions } from "./lib/visual-qa.js";
+import { qaDecisions, resolveVisualQa } from "./lib/visual-qa.js";
 
 const qa = qaDecisions();
-/** Latest human QA verdict wins over the status snapshotted at publish time. */
-const qaStatusOf = (label) => qa.get(label.creative_id)?.status || label.visual_qa_status;
+/**
+ * Latest human QA verdict wins over the status snapshotted at publish time —
+ * resolved through the media fingerprint, so a pass recorded for OLD media
+ * never qualifies a regenerated asset for paid promotion.
+ */
+const qaStatusOf = (label) => resolveVisualQa(
+  { id: label.creative_id, payload: { visual_qa_status: label.visual_qa_status, media_url: label.media_url } },
+  qa
+);
 
 const policy = loadAutonomy();
 const spec = loadProductSpec();

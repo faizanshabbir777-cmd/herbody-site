@@ -5,7 +5,7 @@
 // GitHub environment + approvals/ADS_LAUNCH_APPROVAL.json. Budgets are
 // re-clamped through the autonomy policy at push time. Campaign level only:
 // ad groups / ad creatives are finished by a human in Ads Manager.
-import { queueItems, decisions, markPublished } from "./lib/queue.js";
+import { queueItems, decisions, markPublished, putDraft } from "./lib/queue.js";
 import { exists, readJson, writeJson, nowIso } from "./lib/state.js";
 import { tiktok, meta } from "./lib/platforms.js";
 import { loadAutonomy, canAutoScale } from "./lib/autonomy.js";
@@ -66,6 +66,11 @@ for (const { item } of paidItems) {
   const results = [];
   let itemPushed = 0;
   for (const c of campaigns) {
+    // Idempotent retries: campaigns already created on a previous run are never re-pushed.
+    if (c.push_status === "api" && c.pushed_campaign_id) {
+      results.push({ campaign: c.campaign_name, mode: "already-pushed", detail: `campaign ${c.pushed_campaign_id} created on a previous run` });
+      continue;
+    }
     if (!channelAllows(c.platform)) {
       results.push({ campaign: c.campaign_name, mode: "skipped", detail: `channel filter "${CHANNEL}" excludes ${c.platform}` });
       continue;
@@ -89,15 +94,19 @@ for (const { item } of paidItems) {
         r = await meta.createCampaignPaused({ name: c.campaign_name, dailyBudgetGbp: budget });
       }
       if (r.available === false) {
+        c.push_status = "ready-manual";
         results.push({ campaign: c.campaign_name, mode: "ready-manual", detail: `no ${c.platform} credentials — create manually from the draft spec` });
         manual++;
       } else {
+        c.push_status = "api";
+        c.pushed_campaign_id = r.id;
         results.push({ campaign: c.campaign_name, mode: "api", detail: `${c.platform} campaign ${r.id} created PAUSED (£${budget}/day) — finish ad groups/creatives + enable in Ads Manager` });
         fleetSpendPlanned += budget;
         itemPushed++;
         pushed++;
       }
     } catch (e) {
+      c.push_status = "failed";
       results.push({ campaign: c.campaign_name, mode: "failed", detail: String(e.message).slice(0, 200) });
     }
   }
@@ -105,6 +114,16 @@ for (const { item } of paidItems) {
   if (skippedAll) {
     // Entirely outside the dispatched channel — leave the item in the queue untouched.
     console.log(`[ads-push] ${item.id}: all campaigns outside channel "${CHANNEL}" — left in queue`);
+    continue;
+  }
+  // Persist per-campaign push state on the draft (idempotent retries read it back).
+  putDraft(item.agent, { ...item, payload: { ...item.payload, campaigns } });
+  // Only mark the ITEM published when every campaign reached a terminal state
+  // (api / already-pushed / ready-manual). Failed or budget-blocked campaigns
+  // keep the item in the queue so a later run can retry the remainder.
+  const unresolved = results.filter((r) => r.mode === "failed" || r.mode === "blocked");
+  if (unresolved.length) {
+    console.log(`[ads-push] ${item.id}: ${unresolved.length} campaign(s) unresolved (${unresolved.map((r) => r.mode).join(", ")}) — left in queue for retry`);
     continue;
   }
   markPublished(item, {

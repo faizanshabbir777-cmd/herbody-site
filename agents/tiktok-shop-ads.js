@@ -8,9 +8,13 @@ import { putDraft } from "./lib/queue.js";
 import { loadAutonomy, canAutoScale, modeAllows } from "./lib/autonomy.js";
 import { loadProductSpec } from "./lib/product-assets.js";
 import { campaignPrefix } from "./lib/utm.js";
-import { qaDecisions } from "./lib/visual-qa.js";
+import { qaDecisions, resolveVisualQa } from "./lib/visual-qa.js";
 
 const qa = qaDecisions();
+const qaStatusOf = (l) => resolveVisualQa(
+  { id: l.creative_id, payload: { visual_qa_status: l.visual_qa_status, media_url: l.media_url } },
+  qa
+);
 
 const spec = loadProductSpec();
 const policy = loadAutonomy();
@@ -36,7 +40,7 @@ if (!approved) {
 const perf = readJson("data/state/creative-performance.json", { labels: [] });
 const winners = (perf.labels || []).filter(
   (l) => l.label === "winner" && l.platform === "tiktok"
-    && (!policy.requires_visual_qa_pass || (qa.get(l.creative_id)?.status || l.visual_qa_status) === "pass")
+    && (!policy.requires_visual_qa_pass || qaStatusOf(l) === "pass")
     && (!policy.requires_compliance_pass || l.compliance_status === "PASS")
 );
 

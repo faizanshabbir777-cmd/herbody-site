@@ -18,9 +18,16 @@ const items = queueItems();
 const blockedItems = items
   .filter(({ item }) => item.payload?.media_status === "blocked_missing_product_spec")
   .map(({ item }) => item.id);
+// The fleet's day boundary is Europe/London (state.js today()) — convert the
+// UTC checked_at stamp into a UK date before comparing.
+const ukDateOf = (iso) => {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+};
 const rejectedToday = items
   .filter(({ item }) => item.payload?.compliance_gate?.verdict === "REJECT"
-    && String(item.payload.compliance_gate.checked_at || "").slice(0, 10) === new Date().toISOString().slice(0, 10))
+    && ukDateOf(item.payload.compliance_gate.checked_at) === today())
   .map(({ item }) => ({ id: item.id, reasons: item.payload.compliance_gate.reasons }));
 const failedRenders = items
   .filter(({ item }) => item.payload?.media_status === "failed")

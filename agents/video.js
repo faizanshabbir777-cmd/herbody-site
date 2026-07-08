@@ -128,8 +128,9 @@ for (const p of data.packs) {
     continue;
   }
   // Idempotent re-runs: reuse today's already-generated/pending media — never
-  // re-spend provider credits for the same item id.
-  const existing = readJson(`data/queue/video/${id}.json`, null);
+  // re-spend provider credits. A/B packs store media on the -a variant file.
+  const existing = readJson(`data/queue/video/${id}.json`, null)
+    || readJson(`data/queue/video/${id}-a.json`, null);
   let creative = reusableCreative(existing?.payload);
   if (!creative) {
     creative = {
