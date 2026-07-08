@@ -178,6 +178,15 @@ for (const p of data.packs) {
       hook: v.hook,
       ...(v.suffix ? { utm: withVariantSuffix(p.utm, v.suffix), variant_group: id } : {}),
     };
+    const payload = buildProducerPayload(pack, spec, gate, creative, { assetType: "video", registerChecked: today() });
+    // Idempotent refresh must not erase downstream stamps: when the creative
+    // copy is unchanged, carry over OmniFlash's editorial verdict and the
+    // compliance-gate stamp instead of forcing a full re-review.
+    const prior = readJson(`data/queue/video/${vid}.json`, null)?.payload;
+    if (prior && prior.hook === payload.hook && prior.caption === payload.caption) {
+      if (prior.editorial && !payload.editorial) payload.editorial = prior.editorial;
+      if (prior.compliance_gate && !payload.compliance_gate) payload.compliance_gate = prior.compliance_gate;
+    }
     putDraft("video", {
       id: vid,
       platform: p.platforms?.[0] || "tiktok",
@@ -185,7 +194,7 @@ for (const p of data.packs) {
       scheduled_for: today(),
       title: v.suffix ? `${p.title} (variant ${v.suffix.toUpperCase()})` : p.title,
       compliance_status: p.compliance_status,
-      payload: buildProducerPayload(pack, spec, gate, creative, { assetType: "video", registerChecked: today() }),
+      payload,
     });
   }
 }

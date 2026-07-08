@@ -6,7 +6,7 @@
 import { readJson, writeJson, today, nowIso } from "./lib/state.js";
 import { queueItems } from "./lib/queue.js";
 import {
-  loadEvents, aggregateEvents, candidateLessons, updateLessons,
+  loadEvents, aggregateEvents, numericAggregates, candidateLessons, updateLessons,
   updateLearnedNegatives, chooseByPerformance, updateExperiments, metaMetrics,
   SLOTS, LESSONS_PATH, NEGATIVES_PATH, EXPERIMENTS_PATH, HINTS_PATH, META_PATH,
 } from "./lib/learning.js";
@@ -26,9 +26,14 @@ const negatives = updateLearnedNegatives(readJson(NEGATIVES_PATH, { phrases: [] 
 writeJson(NEGATIVES_PATH, negatives);
 
 // ---- schedule hints (epsilon-greedy exploit/explore) ----
-const pillars = [...new Set(Object.keys(aggregates.by_pillar || {}))];
-const slotPick = chooseByPerformance(aggregates.by_slot, SLOTS);
-const pillarPick = chooseByPerformance(aggregates.by_pillar, pillars);
+// Performance buckets are ground truth; approvals stand in until they exist.
+const withFallback = (perf = {}, approvals = {}) =>
+  Object.values(perf).some((b) => b.pos + b.neg > 0) ? perf : approvals;
+const slotBuckets = withFallback(aggregates.by_slot, aggregates.approval_by_slot);
+const pillarBuckets = withFallback(aggregates.by_pillar, aggregates.approval_by_pillar);
+const pillars = [...new Set(Object.keys(pillarBuckets))];
+const slotPick = chooseByPerformance(slotBuckets, SLOTS);
+const pillarPick = chooseByPerformance(pillarBuckets, pillars);
 writeJson(HINTS_PATH, {
   updated: nowIso(), date: today(),
   slot: slotPick.choice, slot_exploration: slotPick.exploration,
@@ -63,8 +68,8 @@ if (WEEKLY && process.env.ANTHROPIC_API_KEY?.trim()) {
       charter: `You are the fleet's learning analyst. You receive NUMERIC aggregates only.
 Write a short narrative of what the fleet has learned, what it should test next, and
 which lessons look shaky. Never propose anything that weakens compliance rules.`,
-      user: `Aggregates: ${JSON.stringify(aggregates)}
-Active lessons: ${JSON.stringify(updated.lessons.filter((l) => l.status === "active").slice(0, 12))}
+      user: `Aggregates (numbers only): ${JSON.stringify(numericAggregates(aggregates))}
+Active lessons: ${JSON.stringify(updated.lessons.filter((l) => l.status === "active").slice(0, 12).map((l) => ({ id: l.id, statement: l.statement, evidence: l.evidence, confidence: l.confidence })))}
 Meta-metrics: ${JSON.stringify(meta.last7)} (prev: ${JSON.stringify(meta.prev7)})
 Open experiments: ${JSON.stringify(experiments.experiments.filter((e) => e.status === "open").slice(0, 5))}
 Next hypothesis: ${experiments.next_hypothesis || "none"}`,

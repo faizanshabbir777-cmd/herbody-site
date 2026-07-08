@@ -109,14 +109,32 @@ export function deriveEventsFrom(s = {}) {
   for (const r of s.perfLabels || []) {
     if (!r.creative_id) continue;
     const c = ctx(r.creative_id);
+    // Id keyed on creative+label: a stable label never re-records (no daily
+    // double counting); a label CHANGE (promising → winner) records once.
     push({
-      id: `perf:${r.creative_id}:${s.todayStr || today()}`, type: "performance", item_id: r.creative_id,
+      id: `perf:${r.creative_id}:${r.label}`, type: "performance", item_id: r.creative_id,
       agent: c.agent, platform: r.platform || c.platform, tags: c.tags,
       signal: r.label === "winner" ? 1 : r.label === "reject" || r.label === "fatigue" ? -1 : 0,
       evidence: { label: r.label, impressions: r.impressions || 0, revenue_gbp: r.revenue_gbp || 0, utm_content: r.utm_content || "" },
     });
   }
   return events;
+}
+
+/**
+ * A creative's performance signal must count ONCE — keep only the latest
+ * performance event per creative (label transitions supersede earlier labels).
+ * Non-performance events pass through untouched.
+ */
+export function latestPerformanceOnly(events = []) {
+  const latest = new Map();
+  const rest = [];
+  for (const e of events) {
+    if (e.type !== "performance") { rest.push(e); continue; }
+    const prev = latest.get(e.item_id);
+    if (!prev || String(e.at || "") >= String(prev.at || "")) latest.set(e.item_id, e);
+  }
+  return [...rest, ...latest.values()];
 }
 
 /** Load repo state and derive today's events (the collector's entry point). */
@@ -167,13 +185,12 @@ export function loadEvents({ sinceIso = null } = {}) {
 // Aggregation (mechanical, injection-safe: numbers only, no free text into LLMs)
 // ---------------------------------------------------------------------------
 
-const OUTCOME_TYPES = new Set(["human_decision", "performance"]);
-
-/** Aggregate outcome events per tag dimension → { value: { pos, neg, n } }. */
-export function aggregateByDimension(events, dim) {
+/** Aggregate outcome events of the given types per tag dimension → { value: { pos, neg, n } }. */
+export function aggregateByDimension(events, dim, types = ["performance"]) {
+  const wanted = new Set(types);
   const out = {};
   for (const e of events) {
-    if (!OUTCOME_TYPES.has(e.type)) continue;
+    if (!wanted.has(e.type)) continue;
     const v = e.tags?.[dim];
     if (!v) continue;
     const b = (out[v] ||= { pos: 0, neg: 0, n: 0 });
@@ -197,10 +214,16 @@ export function countStrings(events, picker) {
 }
 
 export function aggregateEvents(events) {
+  // Performance is the ground truth (deduped to the latest label per creative);
+  // human approvals are a separate, weaker signal — never mixed into one bucket.
+  const deduped = latestPerformanceOnly(events);
   return {
-    by_hook_type: aggregateByDimension(events, "hook_type"),
-    by_pillar: aggregateByDimension(events, "pillar"),
-    by_slot: aggregateByDimension(events, "slot"),
+    by_hook_type: aggregateByDimension(deduped, "hook_type", ["performance"]),
+    by_pillar: aggregateByDimension(deduped, "pillar", ["performance"]),
+    by_slot: aggregateByDimension(deduped, "slot", ["performance"]),
+    approval_by_hook_type: aggregateByDimension(deduped, "hook_type", ["human_decision"]),
+    approval_by_pillar: aggregateByDimension(deduped, "pillar", ["human_decision"]),
+    approval_by_slot: aggregateByDimension(deduped, "slot", ["human_decision"]),
     rejection_reasons: countStrings(events.filter((e) => e.type === "human_decision" && e.signal < 0),
       (e) => [...(e.evidence?.reasons || []), ...(e.evidence?.note ? [e.evidence.note] : [])]),
     gate_reject_reasons: countStrings(events.filter((e) => e.type === "gate_verdict" && e.signal < 0),
@@ -210,6 +233,27 @@ export function aggregateEvents(events) {
     editorial_needs_work_by_agent: events
       .filter((e) => e.type === "editorial_verdict" && e.signal < 0)
       .reduce((m, e) => ((m[e.agent || "?"] = (m[e.agent || "?"] || 0) + 1), m), {}),
+  };
+}
+
+/**
+ * NUMBERS-ONLY view of the aggregates — the only shape ever passed to an LLM.
+ * Free-text keys (rejection notes, vision reasons) are reduced to counts so no
+ * untrusted platform/dashboard text can reach the weekly narrative prompt.
+ */
+export function numericAggregates(aggregates = {}) {
+  const pick = (k) => aggregates[k] || {};
+  return {
+    by_hook_type: pick("by_hook_type"),
+    by_pillar: pick("by_pillar"),
+    by_slot: pick("by_slot"),
+    approval_by_hook_type: pick("approval_by_hook_type"),
+    approval_by_pillar: pick("approval_by_pillar"),
+    approval_by_slot: pick("approval_by_slot"),
+    rejection_reason_count: Object.values(pick("rejection_reasons")).reduce((s, n) => s + n, 0),
+    gate_reject_count: Object.values(pick("gate_reject_reasons")).reduce((s, n) => s + n, 0),
+    vision_fail_count: Object.values(pick("vision_fail_reasons")).reduce((s, n) => s + n, 0),
+    editorial_needs_work_by_agent: pick("editorial_needs_work_by_agent"),
   };
 }
 
@@ -224,11 +268,19 @@ const MAX_CONTRADICTIONS = 2;
 
 const winRate = (b) => (b.pos + b.neg ? b.pos / (b.pos + b.neg) : null);
 
-/** Derive today's candidate lessons from dimension aggregates (pure). */
+/**
+ * Derive today's candidate lessons from dimension aggregates (pure).
+ * Ground truth is PERFORMANCE; while a dimension has no performance outcomes
+ * yet (pre-launch), human-approval outcomes stand in — clearly labelled and
+ * with a confidence penalty, so early lessons never masquerade as proven.
+ */
 export function candidateLessons(aggregates) {
   const out = [];
   for (const dim of ["hook_type", "pillar", "slot"]) {
-    const buckets = aggregates[`by_${dim}`] || {};
+    const perf = aggregates[`by_${dim}`] || {};
+    const hasPerf = Object.values(perf).some((b) => b.pos + b.neg > 0);
+    const buckets = hasPerf ? perf : aggregates[`approval_by_${dim}`] || {};
+    const basis = hasPerf ? "performance" : "approvals";
     const rates = Object.entries(buckets)
       .map(([v, b]) => ({ v, b, rate: winRate(b) }))
       .filter((x) => x.rate !== null && x.b.pos + x.b.neg >= MIN_SAMPLE);
@@ -238,15 +290,19 @@ export function candidateLessons(aggregates) {
       const delta = x.rate - overall;
       if (Math.abs(delta) < EFFECT) continue;
       const dir = delta > 0 ? "up" : "down";
+      const suffix = basis === "approvals" ? " (based on approvals only — pre-performance)" : "";
+      const confidence = Math.min(0.95, Math.round((Math.abs(delta) * Math.min(1, (x.b.pos + x.b.neg) / 10)) * 100) / 100 + 0.3)
+        - (basis === "approvals" ? 0.15 : 0);
       out.push({
         id: `${dim}:${x.v}:${dir}`,
         scope: { dimension: dim, value: x.v },
         direction: dir,
+        basis,
         statement: dir === "up"
-          ? `${dim} "${x.v}" outperforms (win rate ${Math.round(x.rate * 100)}% vs ${Math.round(overall * 100)}% average) — make more of it`
-          : `${dim} "${x.v}" underperforms (win rate ${Math.round(x.rate * 100)}% vs ${Math.round(overall * 100)}% average) — retire this angle`,
-        evidence: { pos: x.b.pos, neg: x.b.neg, n: x.b.n, win_rate: Math.round(x.rate * 100) / 100, baseline: Math.round(overall * 100) / 100 },
-        confidence: Math.min(0.95, Math.round((Math.abs(delta) * Math.min(1, (x.b.pos + x.b.neg) / 10)) * 100) / 100 + 0.3),
+          ? `${dim} "${x.v}" outperforms (win rate ${Math.round(x.rate * 100)}% vs ${Math.round(overall * 100)}% average) — make more of it${suffix}`
+          : `${dim} "${x.v}" underperforms (win rate ${Math.round(x.rate * 100)}% vs ${Math.round(overall * 100)}% average) — retire this angle${suffix}`,
+        evidence: { basis, pos: x.b.pos, neg: x.b.neg, n: x.b.n, win_rate: Math.round(x.rate * 100) / 100, baseline: Math.round(overall * 100) / 100 },
+        confidence: Math.round(Math.max(0.1, confidence) * 100) / 100,
       });
     }
   }
@@ -404,7 +460,9 @@ export function windowRates(events) {
 }
 
 /** 7d vs prior-7d comparison; regressions = bad rates rising >10pts (pure). */
-export function metaMetrics(events, nowIso_ = nowIso()) {
+export function metaMetrics(rawEvents, nowIso_ = nowIso()) {
+  // One performance signal per creative — label transitions supersede.
+  const events = latestPerformanceOnly(rawEvents);
   const nowMs = new Date(nowIso_).getTime();
   const winOf = (fromDays, toDays) => events.filter((e) => {
     const t = new Date(e.at || 0).getTime();
