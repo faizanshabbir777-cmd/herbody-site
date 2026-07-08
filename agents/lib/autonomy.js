@@ -1,7 +1,7 @@
 // Autonomy policy — the ONLY place automatic behaviour is decided.
 // Mode ladder: draft_only < auto_generate < auto_post_organic < auto_scale_ads.
 // kill_switch:true stops all automatic generation/posting/scaling instantly.
-import { readJson } from "./state.js";
+import { readJson, today } from "./state.js";
 
 export const AUTONOMY_PATH = "data/config/autonomy.json";
 export const MODES = ["draft_only", "auto_generate", "auto_post_organic", "auto_scale_ads"];
@@ -13,6 +13,9 @@ export const DEFAULT_POLICY = {
   max_posts_per_day_by_platform: {},
   requires_visual_qa_pass: true,
   requires_compliance_pass: true,
+  // Pre-audit TikTok apps can only create SELF_ONLY (private) posts — burning
+  // daily caps on invisible posts. Off until the app passes TikTok's audit.
+  allow_self_only_tiktok_posts: false,
   ads: {
     max_daily_ad_budget_gbp: 25,
     max_budget_increase_pct: 20,
@@ -64,9 +67,12 @@ export function canAutoPost(policy, item, postedTodayByPlatform = {}, opts = {})
   if (!modeAllows(policy, "post_organic")) return { ok: false, reason: `mode "${policy.mode}" does not allow auto posting` };
   const platform = item?.platform;
   if (!(policy.allowed_platforms || []).includes(platform)) return { ok: false, reason: `platform "${platform}" not in allowed_platforms` };
+  if (platform === "tiktok" && policy.allow_self_only_tiktok_posts !== true) {
+    return { ok: false, reason: "TikTok app pre-audit — API posts are SELF_ONLY (private); set allow_self_only_tiktok_posts:true only if that is acceptable, or wait for the audit" };
+  }
   // Only items scheduled for TODAY auto-post — stale undecided drafts from prior
   // days stay in the queue for a human instead of suddenly going live.
-  const todayStr = opts.todayStr || new Date().toISOString().slice(0, 10);
+  const todayStr = opts.todayStr || today();
   if (item?.scheduled_for !== todayStr) {
     return { ok: false, reason: `scheduled_for "${item?.scheduled_for || "missing"}" is not today (${todayStr}) — stale drafts never auto-post` };
   }
@@ -75,6 +81,12 @@ export function canAutoPost(policy, item, postedTodayByPlatform = {}, opts = {})
   if ((postedTodayByPlatform[platform] || 0) >= cap) return { ok: false, reason: `daily cap reached for "${platform}" (${cap})` };
   const compliance = item?.compliance_status || item?.payload?.compliance_status;
   if (policy.requires_compliance_pass && compliance !== "PASS") return { ok: false, reason: `compliance_status "${compliance}" is not PASS` };
+  // Fail closed: the MECHANICAL gate must also have stamped PASS — a drafting
+  // agent's self-assessment alone never unlocks autonomous posting.
+  const gateVerdict = item?.payload?.compliance_gate?.verdict;
+  if (policy.requires_compliance_pass && gateVerdict !== "PASS") {
+    return { ok: false, reason: `compliance gate verdict "${gateVerdict || "missing"}" is not PASS (run compliance-gate.js)` };
+  }
   const qa = item?.payload?.visual_qa_status;
   if (policy.requires_visual_qa_pass && qa !== "pass") {
     return { ok: false, reason: `visual_qa_status "${qa || "missing"}" is not pass — a human must visually approve generated product media` };
@@ -123,11 +135,17 @@ export function stopLossTriggered(policy, { spendGbp = 0, conversions = 0, roas 
   return { triggered: false, reason: "" };
 }
 
-/** Count today's auto/API publishes per platform from the published index. */
-export function postedTodayByPlatform(publishedItems = [], todayStr = new Date().toISOString().slice(0, 10)) {
+const ukDateOf = (iso) => {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+};
+
+/** Count today's auto/API publishes per platform from the published index (UK day). */
+export function postedTodayByPlatform(publishedItems = [], todayStr = today()) {
   const counts = {};
   for (const p of publishedItems) {
-    if (String(p.published_at || "").slice(0, 10) !== todayStr) continue;
+    if (ukDateOf(p.published_at) !== todayStr) continue;
     if (p.mode === "ready-manual") continue;
     counts[p.platform] = (counts[p.platform] || 0) + 1;
   }

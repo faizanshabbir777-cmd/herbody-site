@@ -2,6 +2,23 @@
 // Pure functions (injectable data) so the whole loop is unit-testable without
 // platform credentials. Labels: winner | promising | fatigue | reject.
 
+/**
+ * Normalise spend + conversions from a platform ad-report row.
+ * Meta puts conversions inside the `actions` array; TikTok integrated reports
+ * nest metrics under `row.metrics`.
+ */
+export function normalizeAdRow(src, row = {}) {
+  const m = row.metrics || row;
+  const spend = parseFloat(m.spend ?? row.spend ?? 0) || 0;
+  let conversions = parseFloat(m.conversion ?? m.conversions ?? row.conversion ?? row.conversions ?? 0) || 0;
+  if (src === "meta" && Array.isArray(row.actions)) {
+    conversions = row.actions
+      .filter((a) => /purchase|complete_payment|conversion/i.test(String(a.action_type || "")))
+      .reduce((s, a) => s + (parseFloat(a.value) || 0), 0);
+  }
+  return { spend, conversions };
+}
+
 /** Engagement rate % from a normalized creative metric row. */
 export function engagementRatePct(row = {}) {
   const impressions = row.impressions || row.views || 0;
@@ -46,6 +63,72 @@ export function labelCreative(row = {}, thresholds = {}) {
 /** Label a full set of rows → [{...row, label, reason, recommended_action}]. */
 export function labelAll(rows = [], thresholds = {}) {
   return rows.map((r) => ({ ...r, ...labelCreative(r, thresholds) }));
+}
+
+/**
+ * Adaptive thresholds: once the account has real signal (≥5 creatives past the
+ * impression gate), gates track the account's own median engagement rate
+ * instead of static config — clamped so they can never drift absurd.
+ * Config: winner_thresholds.adaptive { enabled, min_winner_er_pct, max_winner_er_pct }.
+ */
+export function effectiveThresholds(rows = [], base = {}) {
+  const adaptive = base.adaptive || {};
+  if (adaptive.enabled !== true) return { ...base, adaptive_applied: false };
+  const minImp = base.min_impressions ?? 2000;
+  const ers = rows
+    .filter((r) => (r.impressions || r.views || 0) >= minImp)
+    .map((r) => engagementRatePct(r))
+    .sort((a, b) => a - b);
+  if (ers.length < 5) return { ...base, adaptive_applied: false };
+  const median = ers[Math.floor(ers.length / 2)];
+  const lo = adaptive.min_winner_er_pct ?? 3;
+  const hi = adaptive.max_winner_er_pct ?? 12;
+  const winner = Math.min(hi, Math.max(lo, Math.round(median * 1.5 * 100) / 100));
+  const promising = Math.round(winner * 0.6 * 100) / 100;
+  return {
+    ...base,
+    min_engagement_rate_pct: winner,
+    promising_engagement_rate_pct: promising,
+    adaptive_applied: true,
+    adaptive_basis: { median_er_pct: median, sample: ers.length },
+  };
+}
+
+/**
+ * A/B hook variants share a utm_content base with an -a/-b/-c suffix
+ * (e.g. vid_ritual01-a vs vid_ritual01-b). Group and compare them.
+ */
+export function variantBase(utmContent = "") {
+  const m = String(utmContent).match(/^(.*)-([a-z])$/i);
+  return m ? m[1] : null;
+}
+
+/** Group labelled rows into variant sets and pick each group's leader by ER. */
+export function compareVariants(rows = []) {
+  const groups = new Map();
+  for (const r of rows) {
+    const b = variantBase(r.utm_content);
+    if (!b) continue;
+    if (!groups.has(b)) groups.set(b, []);
+    groups.get(b).push(r);
+  }
+  const out = [];
+  for (const [b, members] of groups) {
+    if (members.length < 2) continue;
+    const ranked = [...members].sort((x, y) => engagementRatePct(y) - engagementRatePct(x));
+    out.push({
+      base: b,
+      variants: ranked.map((m) => ({
+        creative_id: m.creative_id || null,
+        utm_content: m.utm_content,
+        engagement_rate_pct: engagementRatePct(m),
+        impressions: m.impressions || m.views || 0,
+      })),
+      leader: ranked[0].utm_content,
+      recommendation: `scale "${ranked[0].utm_content}", retire the rest of ${b}-*`,
+    });
+  }
+  return out;
 }
 
 /** Winners eligible for paid promotion (enough signal + winner label). */

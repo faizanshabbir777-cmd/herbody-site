@@ -3,7 +3,7 @@
 // (real product only, per the product gate) when the autonomy mode allows.
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
-import { putDraft } from "./lib/queue.js";
+import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { requestCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
 
@@ -61,6 +61,7 @@ const metrics = readJson("data/metrics/latest.json", {});
 
 const user = `Date: ${today()} (idempotent daily run).
 Strategy: ${JSON.stringify(strategy)}
+Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("social").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
 Produce today's social drafts (1–4 across channels) and updated compressed memory.`;
@@ -71,7 +72,14 @@ const policy = loadAutonomy();
 const allowGenerate = modeAllows(policy, "generate");
 let generated = 0;
 
+let skipped = 0;
 for (const d of data.drafts) {
+  const id = `${today()}-social-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`;
+  if (shouldSkipDuplicate("social", id, d.title)) {
+    skipped++;
+    console.log(`[social] skip duplicate concept: ${d.title}`);
+    continue;
+  }
   const assetType = VIDEO_FORMATS.has(d.format) ? "video" : "image";
   let creative = {
     media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
@@ -89,7 +97,7 @@ for (const d of data.drafts) {
     if (creative.media_status === "generated") generated++;
   }
   putDraft("social", {
-    id: `${today()}-social-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`,
+    id,
     platform: d.channel,
     type: d.format,
     scheduled_for: today(),
@@ -105,4 +113,4 @@ for (const d of data.drafts) {
   });
 }
 saveMemory("social", { ...data.memory, agent: "social" });
-console.log(`[social] ${data.drafts.length} draft(s) queued · ${generated} generated · tokens ${usage.input_tokens}/${usage.output_tokens}`);
+console.log(`[social] ${data.drafts.length - skipped} draft(s) queued (${skipped} duplicate(s) skipped) · ${generated} generated · tokens ${usage.input_tokens}/${usage.output_tokens}`);

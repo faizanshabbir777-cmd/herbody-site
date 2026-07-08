@@ -4,7 +4,8 @@
 // post) into data/metrics/creative/ for the winner-selection loop.
 // No Anthropic call — pure collection.
 import { shopify, tiktok, meta, gads } from "./lib/platforms.js";
-import { writeJson, readJson, today, nowIso } from "./lib/state.js";
+import { writeJson, readJson, today, nowIso, pruneMetrics } from "./lib/state.js";
+import { matchPlatformRow, buildCreativeRow } from "./lib/creative-metrics.js";
 
 const out = { updated: nowIso(), shopify: {}, tiktok: {}, meta: {}, gads: {}, notes: [] };
 
@@ -37,51 +38,15 @@ out.gads = await safe(
 const organicTikTok = await safe("tiktok-organic", () => tiktok.organicVideoMetrics());
 const organicIG = await safe("ig-organic", () => meta.igMediaMetrics());
 
-// Join platform rows onto published queue items. Priority:
-//  1. platform_post_id recorded by the publisher at post time (exact),
-//  2. utm_content token appearing in the platform caption/title,
-//  3. caption/title prefix overlap (manual posts pasted from the queue card).
+// Join platform rows onto published queue items (see lib/creative-metrics.js
+// for the match priority: platform_post_id → utm_content → caption prefix).
 const published = readJson("data/published/index.json", { items: [] }).items || [];
 const platformRows = [...(organicTikTok.rows || []), ...(organicIG.rows || [])];
-const utmContentOf = (payload) => {
-  const s = String(payload.utm_content || payload.utm || "");
-  const m = s.match(/utm_content=([^&\s]+)/);
-  return m ? m[1] : payload.utm_content || "";
-};
 const creativeRows = [];
 for (const p of published) {
   const full = readJson(`data/published/${p.id}.json`, {});
-  const payload = full.payload || {};
-  const utmToken = utmContentOf(payload);
-  const captionOf = (r) => `${r.caption || ""} ${r.title || ""}`;
-  const captionPrefix = String(payload.caption || "").slice(0, 40);
-  const match = platformRows.find((r) => {
-    if (r.platform !== p.platform) return false;
-    if (p.platform_post_id && r.post_id === String(p.platform_post_id)) return true;
-    if (utmToken && captionOf(r).includes(utmToken)) return true;
-    return !!(captionPrefix && captionOf(r).includes(captionPrefix));
-  });
-  creativeRows.push({
-    creative_id: p.id,
-    post_id: match?.post_id || null,
-    platform: p.platform,
-    asset_type: full.payload?.asset_type || (p.agent === "image" ? "image" : "video"),
-    hook: payload.hook || "",
-    trend_basis: payload.trend_basis || "",
-    utm_content: payload.utm || payload.utm_content || "",
-    published_at: p.published_at,
-    media_url: payload.video_url || payload.image_url || payload.media_url || null,
-    product_spec_version: payload.product_spec_version || null,
-    visual_qa_status: payload.visual_qa_status || null,
-    compliance_status: full.compliance_status || payload.compliance_status || null,
-    views: match?.views || 0,
-    impressions: match?.impressions || match?.views || 0,
-    likes: match?.likes || 0,
-    comments: match?.comments || 0,
-    shares: match?.shares || 0,
-    saves: match?.saves || 0,
-    matched: !!match,
-  });
+  const match = matchPlatformRow(p, full.payload || {}, platformRows);
+  creativeRows.push(buildCreativeRow(p, full, match));
 }
 // Unmatched platform rows still count — they may be manual posts.
 for (const r of platformRows) {
@@ -103,4 +68,8 @@ for (const k of ["shopify", "tiktok", "meta", "gads"]) {
 
 writeJson(`data/metrics/shopify/${today()}.json`, { date: today(), ...out.shopify });
 writeJson("data/metrics/latest.json", out);
+
+// retention: dated snapshots older than 90 days are pruned (monthly firsts kept)
+pruneMetrics("data/metrics/creative");
+pruneMetrics("data/metrics/shopify");
 console.log(`[metrics] updated · ${creativeRows.length} creative row(s) · notes: ${out.notes.join(" | ") || "all sources ok"}`);

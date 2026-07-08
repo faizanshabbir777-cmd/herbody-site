@@ -4,18 +4,22 @@
 // (feedback) and the paid-scaling agents (promotion candidates).
 import { readJson, writeJson, nowIso, today } from "./lib/state.js";
 import { loadAutonomy } from "./lib/autonomy.js";
-import { labelAll, paidTestCandidates } from "./lib/performance.js";
+import { labelAll, paidTestCandidates, effectiveThresholds, compareVariants } from "./lib/performance.js";
 
 const policy = loadAutonomy();
 const creative = readJson("data/metrics/creative/latest.json", { rows: [] });
 
-const labelled = labelAll(creative.rows || [], policy.winner_thresholds);
+// Adaptive gates: track the account's own median engagement once there's signal.
+const thresholds = effectiveThresholds(creative.rows || [], policy.winner_thresholds);
+const labelled = labelAll(creative.rows || [], thresholds);
 const winners = paidTestCandidates(labelled);
+const variantComparisons = compareVariants(labelled);
 
 writeJson("data/state/creative-performance.json", {
   updated: nowIso(),
   date: today(),
-  thresholds: policy.winner_thresholds,
+  thresholds,
+  variant_comparisons: variantComparisons,
   labels: labelled.map((r) => ({
     creative_id: r.creative_id,
     post_id: r.post_id,
@@ -39,5 +43,6 @@ writeJson("data/state/creative-performance.json", {
 const counts = labelled.reduce((m, r) => ((m[r.label] = (m[r.label] || 0) + 1), m), {});
 console.log(
   `[creative-performance] ${labelled.length} creative(s) labelled · ` +
-  `${counts.winner || 0} winner / ${counts.promising || 0} promising / ${counts.fatigue || 0} fatigue / ${counts.reject || 0} reject`
+  `${counts.winner || 0} winner / ${counts.promising || 0} promising / ${counts.fatigue || 0} fatigue / ${counts.reject || 0} reject · ` +
+  `${variantComparisons.length} A/B comparison(s)${thresholds.adaptive_applied ? ` · adaptive gates (winner ER ${thresholds.min_engagement_rate_pct}%)` : ""}`
 );

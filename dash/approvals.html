@@ -53,6 +53,17 @@
     </div>
   </section>
 
+  <section class="section" aria-label="Autonomy kill switch">
+    <div class="section-head"><span class="spark">✦</span><h2>Kill switch</h2></div>
+    <div class="card settings-panel">
+      <p class="page-sub">Flipping the kill switch stops <b>all</b> automatic generation, posting and ad scaling on the next agent run — approvals and manual publishing keep working. It writes one commit to <b>data/config/autonomy.json</b> (needs the token above).</p>
+      <div class="settings-row">
+        <button type="button" class="pill pill-bad" id="kill-switch-btn" disabled>Loading…</button>
+        <span class="token-status none" id="kill-switch-status" style="margin:0">Checking…</span>
+      </div>
+    </div>
+  </section>
+
   <section class="section" aria-label="Awaiting decision">
     <div class="section-head"><span class="spark">✦</span><h2>Awaiting your decision</h2></div>
     <div id="approval-list"><div class="skeleton">Loading…</div></div>

@@ -8,9 +8,35 @@ import { approvedUnpublished, queueItems, decisions, markPublished } from "./lib
 import { readJson } from "./lib/state.js";
 import { tiktok, meta } from "./lib/platforms.js";
 import { loadAutonomy, modeAllows, canAutoPost, postedTodayByPlatform } from "./lib/autonomy.js";
+import { qaDecisions, withResolvedVisualQa } from "./lib/visual-qa.js";
+import { mediaHostAllowed } from "./lib/media.js";
+
+const qa = qaDecisions();
+
+/** Media the posting APIs will pull must come from a trusted host. */
+function mediaGate(item) {
+  const url = item.payload?.video_url || item.payload?.image_url || item.payload?.media_url;
+  if (!url) return { ok: true }; // no media → handlers degrade to ready-manual themselves
+  return mediaHostAllowed(url, {
+    // the host recorded at generation time is trusted for this item
+    extraHosts: item.payload?.media_host ? [item.payload.media_host] : [],
+  });
+}
 
 async function publishOne(item, { auto = false } = {}) {
   let result = null;
+  const media = mediaGate(item);
+  if (!media.ok) {
+    // Never hand an untrusted media URL to a posting API — human posts manually.
+    result = { mode: "ready-manual", detail: `media gate: ${media.reason}` };
+    if (auto) {
+      console.log(`[publish] autonomy left ${item.id} in queue: ${result.detail}`);
+      return result;
+    }
+    markPublished(item, result);
+    console.log(`[publish] ${item.id} → ${result.mode} ${result.detail}`);
+    return result;
+  }
   if (item.platform === "tiktok") {
     const r = await tiktok.post(item.payload);
     if (r.available === false || r.skipped) {
@@ -54,7 +80,9 @@ async function publishOne(item, { auto = false } = {}) {
 const approved = approvedUnpublished();
 for (const { item } of approved) {
   try {
-    await publishOne(item);
+    // Stamp the human QA verdict into the payload so the published record (and
+    // the creative-performance loop) carries the final visual QA status.
+    await publishOne(withResolvedVisualQa(item, qa));
   } catch (e) {
     console.log(`[publish] ${item.id} FAILED: ${String(e.message).slice(0, 200)} — left in queue for retry`);
   }
@@ -72,14 +100,15 @@ if (modeAllows(policy, "post_organic")) {
     ({ item }) => !dec.has(item.id) && !publishedIds.has(item.id)
   );
   for (const { item } of pending) {
-    const gate = canAutoPost(policy, item, counts);
+    const resolved = withResolvedVisualQa(item, qa);
+    const gate = canAutoPost(policy, resolved, counts);
     if (!gate.ok) {
       console.log(`[publish] autonomy skip ${item.id}: ${gate.reason}`);
       continue;
     }
     try {
-      const result = await publishOne(item, { auto: true });
-      if (result.mode === "api") {
+      const result = await publishOne(resolved, { auto: true });
+      if (result.mode === "api-auto") {
         counts[item.platform] = (counts[item.platform] || 0) + 1;
         autoCount++;
       }

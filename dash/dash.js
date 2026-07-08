@@ -5,8 +5,7 @@
    ============================================================ */
 "use strict";
 
-/* IMPORTANT: change GH_BRANCH to "main" after the dashboards branch is merged. */
-const GH_BRANCH = "shopify-agents-dashboards-build";
+const GH_BRANCH = "main";
 const GH_OWNER = "faizanshabbir777-cmd";
 const GH_REPO = "herbody-site";
 const GH_API = "https://api.github.com/repos/" + GH_OWNER + "/" + GH_REPO;
@@ -336,7 +335,7 @@ function itemMetaChips(item, statusLabelHtml) {
 
 /* ---------------- autonomy status panel ---------------- */
 
-function renderAutonomyPanel(policy, published) {
+function renderAutonomyPanel(policy, published, usage) {
   const el = document.getElementById("autonomy");
   if (!el) return;
   if (!policy) {
@@ -373,6 +372,11 @@ function renderAutonomyPanel(policy, published) {
     '<div class="guard-row"><span class="k">Gates</span><span class="v">' +
     (policy.requires_compliance_pass ? "compliance PASS" : "⚠ compliance gate OFF") + " · " +
     (policy.requires_visual_qa_pass ? "visual QA pass" : "⚠ visual QA gate OFF") + "</span></div>" +
+    (function () {
+      const day = usage && usage.dates && usage.dates[todayKey];
+      return '<div class="guard-row"><span class="k">Anthropic tokens today</span><span class="v">' +
+        (day ? esc(fmtNum(day.input_tokens) + " in / " + fmtNum(day.output_tokens) + " out · " + day.calls + " calls") : "—") + "</span></div>";
+    })() +
     '<p class="footnote" style="margin:10px 0 0">Config lives in data/config/autonomy.json — flip kill_switch to true to stop all automatic generation, posting and scaling instantly.</p>' +
     "</div>";
 }
@@ -396,7 +400,8 @@ async function initIndex() {
   const stateByAgent = {};
   AGENTS.forEach((a, i) => { stateByAgent[a] = agentStates[i]; });
   const master = stateByAgent.master;
-  renderAutonomyPanel(autonomy, published);
+  const usage = await fetchJSON(DATA + "/state/anthropic-usage.json");
+  renderAutonomyPanel(autonomy, published, usage);
 
   /* --- KPI tiles --- */
   const sh = (metrics && metrics.shopify) || {};
@@ -786,6 +791,7 @@ const APPROVALS_REPO_PATH = "data/approvals.json";
 async function initApprovals() {
   insertLocalBanner();
   setupTokenPanel();
+  setupKillSwitchPanel();
 
   const [queue, decisions] = await Promise.all([loadQueue(), loadApprovals()]);
   const done = decidedIds(decisions);
@@ -808,10 +814,18 @@ async function initApprovals() {
     return;
   }
 
+  const qaDoc = await fetchJSON(DATA + "/visual-qa.json");
+  const qaById = {};
+  ((qaDoc && qaDoc.decisions) || []).forEach((d) => { qaById[d.id] = d; });
+
   listEl.innerHTML = pending.map((it) => {
+    const qa = qaById[it.id];
+    const qaChip = qa
+      ? '<span class="status-chip status-' + (qa.status === "pass" ? "approved" : "rejected") + '">QA ' + esc(qa.status) + "</span>"
+      : "";
     return '<div class="approval-item ' + agentClass(it.agent) + '" data-id="' + esc(it.id) + '">' +
       '<button type="button" class="approval-summary" data-toggle="' + esc(it.id) + '">' +
-      '<span class="title">' + esc(it.title || titleCase(it.type || "Untitled draft")) + "</span>" +
+      '<span class="title">' + esc(it.title || titleCase(it.type || "Untitled draft")) + " " + qaChip + "</span>" +
       agentChip(it.agent) +
       '<span class="meta">' + esc(titleCase(it.platform || "")) +
       (it.scheduled_for ? " · " + esc(fmtDate(it.scheduled_for)) : "") + "</span>" +
@@ -822,6 +836,11 @@ async function initApprovals() {
       '<input type="text" class="decision-note" placeholder="Optional note (kept with the decision)" aria-label="Decision note">' +
       '<button type="button" class="pill pill-good" data-decide="approved">Approve ✦</button>' +
       '<button type="button" class="pill pill-bad" data-decide="rejected">Reject</button>' +
+      "</div>" +
+      '<div class="decision-bar qa-bar" hidden>' +
+      '<span class="field-label" style="align-self:center">Visual QA — does the media show the REAL product (label, jar, gummies) exactly?</span>' +
+      '<button type="button" class="pill pill-good" data-qa="pass">QA pass ✦</button>' +
+      '<button type="button" class="pill pill-bad" data-qa="fail">QA fail</button>' +
       "</div>" +
       '<div class="decision-result" hidden></div>' +
       "</div></div>";
@@ -842,6 +861,12 @@ async function initApprovals() {
         slot.innerHTML = full
           ? renderPayload(full.payload || full)
           : '<p class="skeleton">Could not load the item file' + (IS_FILE ? " — payloads load when served from GitHub Pages." : ".") + "</p>";
+        // Show the visual-QA bar only for items that actually carry generated media.
+        const payload = (full && (full.payload || full)) || {};
+        if (payload.media_url || payload.video_url || payload.image_url || payload.media_status === "generated" || payload.media_status === "pending") {
+          const qaBar = itemEl.querySelector(".qa-bar");
+          if (qaBar) qaBar.hidden = false;
+        }
       }
       return;
     }
@@ -849,8 +874,69 @@ async function initApprovals() {
     if (decideBtn) {
       const itemEl = decideBtn.closest(".approval-item");
       decide(itemEl, decideBtn.dataset.decide);
+      return;
+    }
+    const qaBtn = ev.target.closest("[data-qa]");
+    if (qaBtn) {
+      const itemEl = qaBtn.closest(".approval-item");
+      qaDecide(itemEl, qaBtn.dataset.qa);
     }
   });
+}
+
+const VISUAL_QA_REPO_PATH = "data/visual-qa.json";
+
+/** Write a visual-QA verdict (pass/fail) to data/visual-qa.json via the Contents API. */
+async function qaDecide(itemEl, status) {
+  const id = itemEl.dataset.id;
+  const note = itemEl.querySelector(".decision-note").value.trim();
+  const resultEl = itemEl.querySelector(".decision-result");
+  const buttons = itemEl.querySelectorAll("[data-qa]");
+  resultEl.hidden = false;
+  resultEl.className = "decision-result";
+
+  if (!getPAT()) {
+    resultEl.className = "decision-result err";
+    resultEl.textContent = "No token saved — add your fine-grained GitHub token in the settings panel above first.";
+    return;
+  }
+  buttons.forEach((b) => b.classList.add("busy"));
+  resultEl.textContent = "Writing visual-QA verdict to GitHub…";
+
+  const decision = { id: id, status: status, by: "owner-dashboard", at: new Date().toISOString() };
+  if (note) decision.note = note;
+
+  const attempt = async () => {
+    let json = { version: 1, decisions: [] }, sha = undefined;
+    try {
+      const got = await ghGetJSON(VISUAL_QA_REPO_PATH);
+      json = got.json; sha = got.sha;
+    } catch (e) {
+      if (e.status !== 404) throw e; // 404 → first verdict creates the file
+    }
+    if (!Array.isArray(json.decisions)) json.decisions = [];
+    json.decisions = json.decisions.filter((d) => d.id !== id);
+    json.decisions.push(decision);
+    return ghPutJSON(VISUAL_QA_REPO_PATH, json, sha, "Visual QA " + status + " " + id + " via dashboard");
+  };
+
+  try {
+    let res;
+    try { res = await attempt(); }
+    catch (e) { if (e.status === 409) { res = await attempt(); } else { throw e; } }
+    const commitUrl = res && res.commit && res.commit.html_url;
+    resultEl.className = "decision-result ok";
+    resultEl.innerHTML = "Visual QA " + esc(status) + " saved" +
+      (commitUrl ? ' — <a href="' + esc(commitUrl) + '" target="_blank" rel="noopener">view commit</a>.' : ".") +
+      (status === "pass" ? " This asset can now auto-post / promote once compliance and mode allow." : " This asset is blocked from auto-posting and paid promotion.");
+    itemEl.querySelector(".approval-summary .title").insertAdjacentHTML("beforeend",
+      ' <span class="status-chip status-' + (status === "pass" ? "approved" : "rejected") + '">QA ' + esc(status) + "</span>");
+  } catch (e) {
+    resultEl.className = "decision-result err";
+    resultEl.textContent = "Could not save the visual-QA verdict (" + (e.status || "network error") + "). Check your token and connection, then try again.";
+  } finally {
+    buttons.forEach((b) => b.classList.remove("busy"));
+  }
 }
 
 /** Write a decision to data/approvals.json via the GitHub Contents API. */
@@ -928,6 +1014,72 @@ async function decide(itemEl, status) {
   } finally {
     buttons.forEach((b) => b.classList.remove("busy"));
   }
+}
+
+/* --- kill switch panel --- */
+
+const AUTONOMY_REPO_PATH = "data/config/autonomy.json";
+
+function setupKillSwitchPanel() {
+  const btn = document.getElementById("kill-switch-btn");
+  const statusEl = document.getElementById("kill-switch-status");
+  if (!btn) return;
+
+  let active = null;
+
+  const render = () => {
+    if (active === null) {
+      btn.textContent = "Unavailable";
+      btn.disabled = true;
+      statusEl.className = "token-status none";
+      statusEl.textContent = "Could not read data/config/autonomy.json.";
+      return;
+    }
+    btn.disabled = false;
+    if (active) {
+      btn.textContent = "Resume automation";
+      btn.className = "pill pill-good";
+      statusEl.className = "token-status ok";
+      statusEl.textContent = "🔴 KILL SWITCH ACTIVE — all automatic generation, posting and scaling is halted.";
+    } else {
+      btn.textContent = "STOP all automation";
+      btn.className = "pill pill-bad";
+      statusEl.className = "token-status none";
+      statusEl.textContent = "Automation running normally (kill switch off).";
+    }
+  };
+
+  fetchJSON(DATA + "/config/autonomy.json").then((cfg) => {
+    active = cfg ? cfg.kill_switch === true : null;
+    render();
+  });
+
+  btn.addEventListener("click", async () => {
+    if (!getPAT()) {
+      statusEl.className = "token-status none";
+      statusEl.textContent = "No token saved — add your GitHub token above first.";
+      return;
+    }
+    const next = !active;
+    if (next && !window.confirm("Activate the kill switch? All automatic generation, posting and ad scaling stops on the next run.")) return;
+    btn.disabled = true;
+    statusEl.textContent = "Writing to GitHub…";
+    try {
+      const attempt = async () => {
+        const { json, sha } = await ghGetJSON(AUTONOMY_REPO_PATH);
+        json.kill_switch = next;
+        return ghPutJSON(AUTONOMY_REPO_PATH, json, sha,
+          (next ? "KILL SWITCH ON" : "kill switch off") + " via dashboard");
+      };
+      try { await attempt(); } catch (e) { if (e.status === 409) await attempt(); else throw e; }
+      active = next;
+      render();
+    } catch (e) {
+      statusEl.className = "token-status none";
+      statusEl.textContent = "Could not update the kill switch (" + (e.status || "network error") + ").";
+      btn.disabled = false;
+    }
+  });
 }
 
 /* --- token settings panel --- */

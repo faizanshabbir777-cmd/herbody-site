@@ -5,7 +5,7 @@
 // by the approval queue + autonomy policy (see publish.js).
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
-import { putDraft } from "./lib/queue.js";
+import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { requestCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
 
@@ -31,6 +31,7 @@ const SCHEMA = {
           slug: { type: "string" },
           title: { type: "string" },
           hook: { type: "string", description: "first 2 seconds, spoken" },
+          hook_variants: { type: "array", maxItems: 2, items: { type: "string" }, description: "optional alternative hooks for A/B posting (utm_content suffixes -a/-b)" },
           script: { type: "string", description: "beat-by-beat, 15–35s, filmable on a phone" },
           on_screen_text: { type: "array", items: { type: "string" } },
           caption: { type: "string" },
@@ -68,6 +69,7 @@ const queueDepth = (readJson("data/queue/index.json", { items: [] }).items || []
 const user = `Date: ${today()} (idempotent daily run — if you already planned today, refresh/improve today's drafts).
 Current strategy: ${JSON.stringify(strategy)}
 Queue depth (tiktok): ${queueDepth}
+Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("tiktok").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
 ${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 10)))}
@@ -80,7 +82,14 @@ const policy = loadAutonomy();
 const allowGenerate = modeAllows(policy, "generate");
 let generated = 0;
 
+let skipped = 0;
 for (const d of data.drafts) {
+  const id = `${today()}-tiktok-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`;
+  if (shouldSkipDuplicate("tiktok", id, d.title)) {
+    skipped++;
+    console.log(`[omniflash] skip duplicate concept: ${d.title}`);
+    continue;
+  }
   // Ask the shared creative producer for the actual video asset. The producer
   // enforces the product gate (real product only) and degrades to manual when
   // generation is unavailable/disabled — the draft still queues either way.
@@ -101,7 +110,7 @@ for (const d of data.drafts) {
     if (creative.media_status === "generated") generated++;
   }
   putDraft("tiktok", {
-    id: `${today()}-tiktok-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`,
+    id,
     platform: "tiktok",
     type: "video",
     scheduled_for: today(),
@@ -111,4 +120,4 @@ for (const d of data.drafts) {
   });
 }
 saveMemory("tiktok", { ...data.memory, agent: "tiktok" });
-console.log(`[omniflash] ${data.drafts.length} draft(s) queued · ${generated} generated · trend: ${data.trend_response || "—"} · tokens in/out ${usage.input_tokens}/${usage.output_tokens}`);
+console.log(`[omniflash] ${data.drafts.length - skipped} draft(s) queued (${skipped} duplicate(s) skipped) · ${generated} generated · trend: ${data.trend_response || "—"} · tokens in/out ${usage.input_tokens}/${usage.output_tokens}`);

@@ -44,6 +44,33 @@ export function putDraft(agent, item) {
   return full;
 }
 
+const normTitle = (t) => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+/** Today's queue items for an agent — producers use this to avoid duplicates. */
+export function todaysItems(agent) {
+  const idx = readJson("data/queue/index.json", { items: [] });
+  return (idx.items || []).filter((e) => e.agent === agent && e.scheduled_for === today());
+}
+
+/** True if the agent already queued a same-day item with (near-)identical title. */
+export function isDuplicateToday(agent, title) {
+  const t = normTitle(title);
+  if (!t) return false;
+  return todaysItems(agent).some((e) => {
+    const existing = normTitle(e.title);
+    return existing === t || existing.includes(t) || t.includes(existing);
+  });
+}
+
+/**
+ * Producer dedup: skip a new draft when a similar-titled item already exists
+ * today under a DIFFERENT id (same id = intentional idempotent refresh).
+ */
+export function shouldSkipDuplicate(agent, id, title) {
+  if (todaysItems(agent).some((e) => e.id === id)) return false;
+  return isDuplicateToday(agent, title);
+}
+
 export function decisions() {
   const a = readJson("data/approvals.json", { decisions: [] });
   const map = new Map();

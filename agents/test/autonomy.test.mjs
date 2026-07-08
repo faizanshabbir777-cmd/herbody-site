@@ -10,6 +10,7 @@ const POLICY = {
   mode: "auto_post_organic",
   allowed_platforms: ["tiktok", "instagram"],
   max_posts_per_day_by_platform: { tiktok: 2, instagram: 1 },
+  allow_self_only_tiktok_posts: true, // most tests assume TikTok posting is enabled
 };
 
 const TODAY = "2026-07-07";
@@ -18,7 +19,11 @@ const ITEM = {
   platform: "tiktok",
   scheduled_for: TODAY,
   compliance_status: "PASS",
-  payload: { visual_qa_status: "pass", video_url: "https://cdn.example.com/x.mp4" },
+  payload: {
+    visual_qa_status: "pass",
+    video_url: "https://cdn.example.com/x.mp4",
+    compliance_gate: { verdict: "PASS", reasons: [] },
+  },
 };
 
 test("mode ladder — each mode includes everything below it", () => {
@@ -79,6 +84,28 @@ test("compliance gate: NEEDS_REVIEW never auto-posts", () => {
   assert.match(r.reason, /compliance/);
 });
 
+test("mechanical compliance-gate stamp required — self-assessed PASS alone never auto-posts", () => {
+  const noStamp = { ...ITEM, payload: { ...ITEM.payload, compliance_gate: undefined } };
+  const r = canAutoPost(POLICY, noStamp, {}, CLOCK);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /compliance gate verdict/);
+  const rejected = { ...ITEM, payload: { ...ITEM.payload, compliance_gate: { verdict: "REJECT" } } };
+  assert.equal(canAutoPost(POLICY, rejected, {}, CLOCK).ok, false);
+});
+
+test("SELF_ONLY flag: TikTok auto-posting blocked until the app audit flag is set", () => {
+  const p = { ...POLICY, allow_self_only_tiktok_posts: false };
+  const r = canAutoPost(p, ITEM, {}, CLOCK);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /SELF_ONLY/);
+  // Instagram unaffected by the TikTok flag
+  const ig = canAutoPost(p, {
+    ...ITEM, platform: "instagram",
+    payload: { ...ITEM.payload, video_url: null, image_url: "https://cdn/x.jpg" },
+  }, {}, CLOCK);
+  assert.equal(ig.ok, true);
+});
+
 test("visual QA gate: generated media without a human pass never auto-posts", () => {
   for (const qa of ["needs_review", "not_generated", undefined]) {
     const r = canAutoPost(POLICY, { ...ITEM, payload: { ...ITEM.payload, visual_qa_status: qa } }, {}, CLOCK);
@@ -88,12 +115,12 @@ test("visual QA gate: generated media without a human pass never auto-posts", ()
 });
 
 test("media gate: tiktok/instagram items without a hosted media URL never auto-post", () => {
-  const r = canAutoPost(POLICY, { ...ITEM, payload: { visual_qa_status: "pass" } }, {}, CLOCK);
+  const r = canAutoPost(POLICY, { ...ITEM, payload: { ...ITEM.payload, video_url: null } }, {}, CLOCK);
   assert.equal(r.ok, false);
   assert.match(r.reason, /no hosted media URL/);
   const ig = canAutoPost(POLICY, {
     ...ITEM, platform: "instagram",
-    payload: { visual_qa_status: "pass", image_url: "https://cdn/x.jpg" },
+    payload: { ...ITEM.payload, video_url: null, image_url: "https://cdn/x.jpg" },
   }, {}, CLOCK);
   assert.equal(ig.ok, true);
 });

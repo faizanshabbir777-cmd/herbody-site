@@ -8,6 +8,8 @@ import {
   productPreservationClause, productNegativePrompt, blockedChecklist,
 } from "./product-assets.js";
 import { generateVideo, generateImage } from "./creative-gen.js";
+import { rehostMedia, hostOf } from "./media.js";
+import { visionQaCheck, applyVisionVerdict } from "./vision-qa.js";
 
 /**
  * Assemble the queue payload for a producer draft: creative pack fields + product
@@ -92,14 +94,44 @@ export async function requestCreative(req, deps = {}) {
       });
 
   const generated = gen.status === "generated" && gen.media_url;
-  return {
+
+  // Provider URLs can expire — re-host on Shopify Files when configured, and
+  // record the provider host so the publisher's allowlist can trust it.
+  let hosting = { hosted_url: null, hosted_file_id: null, hosted_pending: false, hosting_note: "" };
+  if (generated) {
+    hosting = await (deps.rehost || rehostMedia)(gen.media_url, {
+      alt: `${base.brand_name || ""} ${base.creative_goal || ""}`.trim(),
+      assetType: base.asset_type,
+    });
+  }
+
+  // Vision pre-check: can auto-FAIL obvious product substitutions, never auto-pass.
+  let visionCheck = { checked: false, verdict: "unclear", reasons: [] };
+  if (generated) {
+    try {
+      visionCheck = await (deps.visionCheck || visionQaCheck)({
+        mediaUrl: gen.media_url,
+        thumbnailUrl: gen.thumbnail_url || gen.preview_url,
+        assetType: base.asset_type,
+        spec,
+        referenceUrl: gate.references[0]?.url || null,
+      });
+    } catch { /* vision assist must never break generation */ }
+  }
+
+  return applyVisionVerdict({
     ...base,
     status: gen.available === false ? "manual" : gen.status,
     media_status: generated ? "generated" : gen.available === false ? "manual" : gen.status,
     generation_prompt: prompt,
     negative_prompt: negative,
     provider_job_id: gen.provider_job_id || null,
-    media_url: gen.media_url || null,
+    media_url: hosting.hosted_url || gen.media_url || null,
+    provider_media_url: gen.media_url || null,
+    media_host: hostOf(hosting.hosted_url || gen.media_url),
+    hosted_file_id: hosting.hosted_file_id,
+    hosted_pending: hosting.hosted_pending,
+    hosting_note: hosting.hosting_note,
     preview_url: gen.preview_url || null,
     thumbnail_url: gen.thumbnail_url || null,
     // Anything generated needs human eyes before it can post — always.
@@ -109,5 +141,5 @@ export async function requestCreative(req, deps = {}) {
         ? "generated against approved product reference assets — verify label/packaging fidelity before approval"
         : "generated from locked visual spec only (no reference images yet) — REQUIRES close visual QA before approval")
       : gen.notes || "",
-  };
+  }, visionCheck);
 }

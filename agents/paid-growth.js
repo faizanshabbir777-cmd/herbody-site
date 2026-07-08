@@ -7,8 +7,13 @@
 import { readJson, writeJson, loadMemory, saveMemory, today, nowIso } from "./lib/state.js";
 import { putDraft } from "./lib/queue.js";
 import { loadAutonomy, canAutoScale, stopLossTriggered, modeAllows } from "./lib/autonomy.js";
-import { paidTestDraft } from "./lib/performance.js";
+import { paidTestDraft, normalizeAdRow } from "./lib/performance.js";
 import { loadProductSpec } from "./lib/product-assets.js";
+import { qaDecisions } from "./lib/visual-qa.js";
+
+const qa = qaDecisions();
+/** Latest human QA verdict wins over the status snapshotted at publish time. */
+const qaStatusOf = (label) => qa.get(label.creative_id)?.status || label.visual_qa_status;
 
 const policy = loadAutonomy();
 const spec = loadProductSpec();
@@ -21,23 +26,10 @@ const landingUrl = spec?.website_product_url || "";
 const winners = (perf.labels || []).filter((l) => l.label === "winner");
 
 // Stop-loss sweep over live ad rows (flag only — pausing needs the publisher/human).
-// Meta insights put conversions inside the `actions` array; TikTok integrated
-// reports nest metrics under `row.metrics` — normalise both before judging.
-function spendConversionsOf(src, row) {
-  const m = row.metrics || row;
-  const spend = parseFloat(m.spend ?? row.spend ?? 0) || 0;
-  let conversions = parseFloat(m.conversion ?? m.conversions ?? row.conversion ?? row.conversions ?? 0) || 0;
-  if (src === "meta" && Array.isArray(row.actions)) {
-    conversions = row.actions
-      .filter((a) => /purchase|complete_payment|conversion/i.test(String(a.action_type || "")))
-      .reduce((s, a) => s + (parseFloat(a.value) || 0), 0);
-  }
-  return { spend, conversions };
-}
 const stopLossFlags = [];
 for (const src of ["tiktok", "meta"]) {
   for (const row of metrics?.[src]?.rows || []) {
-    const { spend, conversions } = spendConversionsOf(src, row);
+    const { spend, conversions } = normalizeAdRow(src, row);
     const sl = stopLossTriggered(policy, { spendGbp: spend, conversions });
     if (sl.triggered) stopLossFlags.push({ platform: src, campaign: row.campaign_id || row.campaign_name || row.dimensions?.campaign_id || "?", ...sl });
   }
@@ -47,8 +39,9 @@ const drafts = [];
 let fleetSpendPlanned = 0;
 for (const w of winners) {
   // Never promote creative that failed product-fidelity QA or compliance.
-  if (policy.requires_visual_qa_pass && w.visual_qa_status !== "pass") {
-    console.log(`[paid-growth] skip ${w.creative_id || w.post_id}: visual_qa_status "${w.visual_qa_status || "missing"}" is not pass`);
+  const qaStatus = qaStatusOf(w);
+  if (policy.requires_visual_qa_pass && qaStatus !== "pass") {
+    console.log(`[paid-growth] skip ${w.creative_id || w.post_id}: visual_qa_status "${qaStatus || "missing"}" is not pass`);
     continue;
   }
   if (policy.requires_compliance_pass && w.compliance_status !== "PASS") {

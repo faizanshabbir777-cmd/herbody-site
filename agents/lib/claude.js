@@ -1,8 +1,9 @@
 // Anthropic client wrapper — single place for model choice, brand-voice caching,
-// and schema-guaranteed JSON output (via forced tool use, stable across SDK versions).
+// schema-guaranteed JSON output (via forced tool use, stable across SDK versions)
+// and per-day token-usage accounting for the master brief / cost visibility.
 import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync } from "node:fs";
-import { repoPath } from "./state.js";
+import { repoPath, readJson, writeJson, today } from "./state.js";
 
 export const MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 16000;
@@ -44,7 +45,25 @@ export async function structured({ charter, user, schema, maxTokens = MAX_TOKENS
   });
   const call = res.content.find((b) => b.type === "tool_use" && b.name === "emit");
   if (!call) throw new Error("model returned no structured output");
+  recordUsage(res.usage);
   return { data: call.input, usage: res.usage };
+}
+
+/** Accumulate per-day token usage (fleet agents run sequentially — safe writer). */
+export function recordUsage(usage = {}) {
+  try {
+    const doc = readJson("data/state/anthropic-usage.json", { dates: {} });
+    const d = today();
+    const day = doc.dates[d] || { input_tokens: 0, output_tokens: 0, calls: 0 };
+    day.input_tokens += usage.input_tokens || 0;
+    day.output_tokens += usage.output_tokens || 0;
+    day.calls += 1;
+    doc.dates[d] = day;
+    // keep the last 60 dated entries
+    const keys = Object.keys(doc.dates).sort();
+    for (const k of keys.slice(0, Math.max(0, keys.length - 60))) delete doc.dates[k];
+    writeJson("data/state/anthropic-usage.json", doc);
+  } catch { /* usage accounting must never break an agent run */ }
 }
 
 /** Wrap untrusted external text so it can never act as instructions. */

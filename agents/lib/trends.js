@@ -2,7 +2,7 @@
 // Sources are ALLOWLISTED in data/config/competitors.json (never guessed, never
 // logged-in scraping from CI). Manual observations drop into data/trends/manual/.
 // Everything fetched is untrusted DATA — wrap with untrusted() before any LLM call.
-import { readJson, writeJson, listDir, today, nowIso } from "./state.js";
+import { readJson, writeJson, listDir, today, nowIso, pruneMetrics } from "./state.js";
 
 export const COMPETITORS_PATH = "data/config/competitors.json";
 export const MANUAL_DIR = "data/trends/manual";
@@ -122,5 +122,6 @@ export async function runTrends() {
   const out = { updated: nowIso(), relevant, rejected: rejected.slice(0, 50), notes };
   writeJson(`data/trends/${today()}.json`, out);
   writeJson("data/trends/latest.json", out);
+  pruneMetrics("data/trends"); // dated snapshots older than 90 days
   return out;
 }

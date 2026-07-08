@@ -37,8 +37,8 @@ jobs:
       CREATIVE_GEN_DRY_RUN: ${{ vars.CREATIVE_GEN_DRY_RUN }}
       MEDIA_CDN_BASE_URL: ${{ vars.MEDIA_CDN_BASE_URL }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: npm
@@ -53,6 +53,9 @@ jobs:
       - name: Metrics
         working-directory: agents
         run: node metrics.js
+      - name: Collect pending renders
+        working-directory: agents
+        run: node collect-pending.js
       - name: Trends
         working-directory: agents
         run: node trends.js
@@ -68,6 +71,9 @@ jobs:
       - name: Image producer
         working-directory: agents
         run: node image.js
+      - name: Compliance gate (content drafts)
+        working-directory: agents
+        run: node compliance-gate.js
       - name: Creative performance
         working-directory: agents
         run: node creative-performance.js
@@ -80,6 +86,9 @@ jobs:
       - name: TikTok Shop ads (gated)
         working-directory: agents
         run: node tiktok-shop-ads.js
+      - name: Compliance gate (paid drafts)
+        working-directory: agents
+        run: node compliance-gate.js
       - name: Master (daily brief)
         working-directory: agents
         run: node master.js

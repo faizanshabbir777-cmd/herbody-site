@@ -4,7 +4,7 @@
 // Draft-first: everything queues for approval; media never lands in the repo.
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
-import { putDraft } from "./lib/queue.js";
+import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { loadProductSpec, generationGate, blockedChecklist } from "./lib/product-assets.js";
 import { requestCreative, buildProducerPayload } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
@@ -13,8 +13,9 @@ const spec = loadProductSpec();
 const gate = generationGate(spec);
 
 if (gate.mode === "blocked") {
+  // Stable id (no date) — one persistent checklist item, not one per day.
   putDraft("image", {
-    id: `${today()}-image-blocked-product-spec`,
+    id: "image-blocked-product-spec",
     platform: "instagram",
     type: "image",
     title: "BLOCKED — complete the product visual spec before image generation",
@@ -90,6 +91,7 @@ const user = `Date: ${today()} (idempotent daily run — refresh/improve today's
 Strategy: ${JSON.stringify(strategy)}
 Gate mode: ${gate.mode} (${gate.mode === "references" ? `${gate.references.length} approved product reference asset(s)` : "locked visual spec only — outputs need close visual QA"}).
 Creative performance labels: ${JSON.stringify(perf.labels?.slice?.(0, 10) || [])}
+Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("image").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 15)))}
 Produce 1–4 image briefs (mix formats: feed/story/carousel/ad still/thumbnail) and my updated compressed memory.`;
@@ -100,7 +102,14 @@ const policy = loadAutonomy();
 const allowGenerate = modeAllows(policy, "generate");
 let generated = 0;
 
+let skipped = 0;
 for (const b of data.briefs) {
+  const id = `${today()}-image-${b.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`;
+  if (shouldSkipDuplicate("image", id, b.title)) {
+    skipped++;
+    console.log(`[image] skip duplicate concept: ${b.title}`);
+    continue;
+  }
   let creative = {
     media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
     visual_qa_status: "not_generated",
@@ -119,7 +128,7 @@ for (const b of data.briefs) {
     if (creative.media_status === "generated") generated++;
   }
   putDraft("image", {
-    id: `${today()}-image-${b.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`,
+    id,
     platform: b.platforms?.[0] || "instagram",
     type: "image",
     scheduled_for: today(),
@@ -130,4 +139,4 @@ for (const b of data.briefs) {
 }
 
 saveMemory("image", { ...data.memory, agent: "image" });
-console.log(`[image] ${data.briefs.length} brief(s) queued · ${generated} generated · gate ${gate.mode} · tokens ${usage.input_tokens}/${usage.output_tokens}`);
+console.log(`[image] ${data.briefs.length - skipped} brief(s) queued (${skipped} duplicate(s) skipped) · ${generated} generated · gate ${gate.mode} · tokens ${usage.input_tokens}/${usage.output_tokens}`);

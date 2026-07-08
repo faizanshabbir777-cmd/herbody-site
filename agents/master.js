@@ -34,7 +34,10 @@ const DAILY_SCHEMA = {
         actions_for_owner: { type: "array", items: { type: "string" } },
         per_agent_notes: {
           type: "object",
-          properties: { tiktok: { type: "string" }, social: { type: "string" }, ppc: { type: "string" } },
+          properties: {
+            tiktok: { type: "string" }, social: { type: "string" }, ppc: { type: "string" },
+            video: { type: "string" }, image: { type: "string" }, paid: { type: "string" },
+          },
         },
         summary_md: { type: "string", description: "the whole brief as tight markdown" },
       },
@@ -88,8 +91,11 @@ const WEEKLY_SCHEMA = {
 
 const mem = loadMemory("master");
 const states = Object.fromEntries(
-  ["tiktok", "social", "ppc"].map((a) => [a, readJson(`data/state/${a}.json`, {})])
+  ["tiktok", "social", "video", "image", "ppc", "paid"].map((a) => [a, readJson(`data/state/${a}.json`, {})])
 );
+const creativePerf = readJson("data/state/creative-performance.json", {});
+const shopReadiness = readJson("data/state/tiktok-shop-readiness.json", {});
+const anthropicUsage = readJson("data/state/anthropic-usage.json", {});
 const queue = readJson("data/queue/index.json", { items: [] });
 const published = readJson("data/published/index.json", { items: [] });
 const approvals = readJson("data/approvals.json", { decisions: [] });
@@ -105,6 +111,9 @@ Current strategy: ${JSON.stringify(strategy)}
 Agent states (check last_run for missed runs): ${JSON.stringify(states)}
 Queue: ${queue.items.length} items total, ${pendingIds.size} awaiting human decision.
 Published (last 10): ${JSON.stringify((published.items || []).slice(-10))}
+Creative performance labels (latest): ${JSON.stringify((creativePerf.labels || []).slice(0, 10))}
+TikTok Shop readiness: ${JSON.stringify(shopReadiness.blockers ? { approved: shopReadiness.approved, blockers: shopReadiness.blockers.length } : shopReadiness)}
+Anthropic usage (tokens by date): ${JSON.stringify(anthropicUsage.dates ? Object.fromEntries(Object.entries(anthropicUsage.dates).slice(-3)) : {})}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
 ${WEEKLY ? "Set next week's strategy, budgets and the weekly brief." : "Write today's brief."}`;

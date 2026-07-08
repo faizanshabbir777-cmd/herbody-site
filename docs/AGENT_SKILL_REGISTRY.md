@@ -112,9 +112,21 @@ One entry per agent in the fleet. Shared rules for **all** agents: system prompt
 
 ## 13. Autonomy policy (cross-cutting)
 
-- **What:** `data/config/autonomy.json` — mode ladder `draft_only < auto_generate < auto_post_organic < auto_scale_ads`, `kill_switch`, per-platform daily post caps, visual-QA and compliance requirements, ad budget caps, stop-loss and winner thresholds.
-- **Enforced by:** `agents/lib/autonomy.js` in the producers (generate?), publisher (auto-post?) and paid agents (auto-scale?). `kill_switch: true` halts every automatic action instantly.
-- **Publisher autonomy path:** in `auto_post_organic`+, the publisher may post organic items that pass ALL gates (compliance PASS, `visual_qa_status: pass`, allowed platform, cap not reached) without a queue approval; everything else still requires `data/approvals.json`.
+- **What:** `data/config/autonomy.json` — mode ladder `draft_only < auto_generate < auto_post_organic < auto_scale_ads`, `kill_switch`, per-platform daily post caps (UK day boundary), visual-QA and compliance requirements, `allow_self_only_tiktok_posts` (off until the TikTok app audit passes), ad budget caps, stop-loss and winner thresholds (optionally adaptive to the account's own median engagement).
+- **Enforced by:** `agents/lib/autonomy.js` in the producers (generate?), publisher (auto-post?) and paid agents (auto-scale?). `kill_switch: true` halts every automatic action instantly — toggleable from the Approvals dashboard.
+- **Publisher autonomy path:** in `auto_post_organic`+, the publisher may post organic items that pass ALL gates — human compliance `PASS` **and** mechanical compliance-gate `PASS`, human visual-QA `pass` in `data/visual-qa.json`, allowed platform, scheduled today, hosted media URL from an allowlisted host, cap not reached — without a queue approval; everything else still requires `data/approvals.json`. Ready-manual outcomes are never marked published by the autonomy path.
+- **Visual QA:** producers stamp generated media `needs_review`; an optional Claude-vision pre-check (`agents/lib/vision-qa.js`) can auto-FAIL obvious product substitutions but can never auto-pass; the founder's pass/fail verdict is written by the dashboard to `data/visual-qa.json`.
+
+## 13a. Collect-pending
+
+- **Does:** start-of-fleet sweep that finalises provider render jobs that outlived a previous run (`media_status: "pending"` + `provider_job_id`) and resolves Shopify Files CDN URLs still processing. Runs the vision pre-check on newly collected renders.
+- **Code:** `agents/collect-pending.js` + `checkJob` in `agents/lib/creative-gen.js`.
+
+## 13b. Ads push (the only campaign-creation path)
+
+- **Does:** pushes human-approved paid queue drafts to Meta/TikTok as **PAUSED** campaigns (campaign level only — ad groups/creatives finished by a human in Ads Manager). Budgets re-clamped through the autonomy policy at push time.
+- **Gates:** manual workflow dispatch + GitHub `ads-production` environment + `approvals/ADS_LAUNCH_APPROVAL.json` + per-item approval in `data/approvals.json` + kill switch.
+- **Code:** `agents/ads-push.js` · workflow `.github/workflows/ppc-push.yml`.
 
 ## 14. Publisher
 

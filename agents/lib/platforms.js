@@ -58,11 +58,29 @@ export const shopify = {
     if (errs.length) throw new Error(errs[0].message);
     const f = r.data?.fileCreate?.files?.[0];
     audit("shopify", "hostMediaFromUrl", true, f?.id || "");
+    if (f?.id && f?.fileStatus === "READY") {
+      const st = await this.fileById(f.id);
+      return { available: true, id: f.id, url: st.url, pending: !st.url };
+    }
+    return { available: true, id: f?.id || null, url: null, pending: true };
+  },
+  /** Resolve a hosted file's public CDN URL once Shopify has processed it. */
+  async fileById(id) {
+    if (!this.available) return { available: false };
+    const q = `query($id:ID!){ node(id:$id){
+      ... on MediaImage { fileStatus image { url } }
+      ... on Video { fileStatus sources { url mimeType } preview { image { url } } }
+      ... on GenericFile { fileStatus url }
+    } }`;
+    const r = await this.gql(q, { id });
+    const n = r.data?.node || {};
+    const url = n.image?.url || n.sources?.[0]?.url || n.url || null;
     return {
       available: true,
-      id: f?.id || null,
-      url: f?.preview?.image?.url || null,
-      pending: f?.fileStatus !== "READY",
+      status: n.fileStatus || "UNKNOWN",
+      url,
+      preview_url: n.preview?.image?.url || null,
+      ready: n.fileStatus === "READY" && !!url,
     };
   },
   /** Yesterday+today order rollup for metrics. */
@@ -137,6 +155,25 @@ export const tiktok = {
         shares: v.share_count || 0,
       })),
     };
+  },
+  /** Create a TikTok campaign in DISABLE (paused) state. Campaign level only. */
+  async createCampaignPaused({ name, objective = "TRAFFIC", dailyBudgetGbp = 5 }) {
+    if (!this.adsAvailable) return { available: false };
+    const body = await jfetch("https://business-api.tiktok.com/open_api/v1.3/campaign/create/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Access-Token": env("TIKTOK_ACCESS_TOKEN") },
+      body: JSON.stringify({
+        advertiser_id: env("TIKTOK_ADVERTISER_ID"),
+        campaign_name: name,
+        objective_type: objective,
+        budget_mode: "BUDGET_MODE_DAY",
+        budget: dailyBudgetGbp,
+        operation_status: "DISABLE", // paused — a human enables in Ads Manager
+      }),
+    });
+    const id = body?.data?.campaign_id;
+    audit("tiktok", "createCampaignPaused", true, id || "");
+    return { available: true, id };
   },
   async adInsights() {
     if (!this.adsAvailable) return { available: false };
@@ -236,6 +273,24 @@ export const meta = {
     }
     audit("meta", "igMediaMetrics", true, `${rows.length} media`);
     return { available: true, rows };
+  },
+  /** Create a Meta campaign in PAUSED state. Campaign level only. */
+  async createCampaignPaused({ name, objective = "OUTCOME_TRAFFIC", dailyBudgetGbp = 5 }) {
+    if (!this.adsAvailable) return { available: false };
+    const acct = env("META_AD_ACCOUNT_ID").replace(/^act_/, "");
+    const body = await jfetch(`https://graph.facebook.com/${META_V}/act_${acct}/campaigns`, {
+      method: "POST",
+      body: new URLSearchParams({
+        access_token: env("META_ACCESS_TOKEN"),
+        name,
+        objective,
+        status: "PAUSED", // a human enables in Ads Manager
+        special_ad_categories: "[]",
+        daily_budget: String(Math.round(dailyBudgetGbp * 100)), // minor units
+      }),
+    });
+    audit("meta", "createCampaignPaused", true, body?.id || "");
+    return { available: true, id: body?.id };
   },
   async adInsights() {
     if (!this.adsAvailable) return { available: false };

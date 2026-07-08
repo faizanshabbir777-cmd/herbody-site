@@ -7,6 +7,9 @@ import { readJson, writeJson, loadMemory, saveMemory, today, nowIso } from "./li
 import { putDraft } from "./lib/queue.js";
 import { loadAutonomy, canAutoScale, modeAllows } from "./lib/autonomy.js";
 import { loadProductSpec } from "./lib/product-assets.js";
+import { qaDecisions } from "./lib/visual-qa.js";
+
+const qa = qaDecisions();
 
 const spec = loadProductSpec();
 const policy = loadAutonomy();
@@ -32,7 +35,7 @@ if (!approved) {
 const perf = readJson("data/state/creative-performance.json", { labels: [] });
 const winners = (perf.labels || []).filter(
   (l) => l.label === "winner" && l.platform === "tiktok"
-    && (!policy.requires_visual_qa_pass || l.visual_qa_status === "pass")
+    && (!policy.requires_visual_qa_pass || (qa.get(l.creative_id)?.status || l.visual_qa_status) === "pass")
     && (!policy.requires_compliance_pass || l.compliance_status === "PASS")
 );
 
@@ -66,7 +69,8 @@ for (const w of winners) {
 if (drafts.length) {
   putDraft("paid", {
     id: `${today()}-tiktok-shop-winner-ads`,
-    platform: "tiktok",
+    // platform "ppc": campaign drafts must never hit the organic posting path in publish.js
+    platform: "ppc",
     type: "campaign",
     title: `TikTok Shop ads from ${drafts.length} winning creative(s) — all PAUSED`,
     compliance_status: "NEEDS_REVIEW",
