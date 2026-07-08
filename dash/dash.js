@@ -344,7 +344,7 @@ function itemMetaChips(item, statusLabelHtml) {
 
 /* ---------------- autonomy status panel ---------------- */
 
-function renderAutonomyPanel(policy, published, usage) {
+function renderAutonomyPanel(policy, published, usage, integrations) {
   const el = document.getElementById("autonomy");
   if (!el) return;
   if (!policy) {
@@ -387,8 +387,20 @@ function renderAutonomyPanel(policy, published, usage) {
     (policy.requires_visual_qa_pass ? "visual QA pass" : "⚠ visual QA gate OFF") + "</span></div>" +
     (function () {
       const day = usage && usage.dates && usage.dates[todayKey];
-      return '<div class="guard-row"><span class="k">Anthropic tokens today</span><span class="v">' +
-        (day ? esc(fmtNum(day.input_tokens) + " in / " + fmtNum(day.output_tokens) + " out · " + day.calls + " calls") : "—") + "</span></div>";
+      const budget = policy.llm && policy.llm.daily_budget_gbp;
+      return '<div class="guard-row"><span class="k">Anthropic today</span><span class="v">' +
+        (day
+          ? esc(fmtNum(day.input_tokens) + " in / " + fmtNum(day.output_tokens) + " out · ~" + fmtGBP(day.est_cost_gbp || 0)) +
+            (budget ? esc(" / " + fmtGBP(budget) + " budget") : "")
+          : "—") + "</span></div>";
+    })() +
+    (function () {
+      if (!integrations) return "";
+      const live = (integrations.live || []).length;
+      const degraded = integrations.degraded || [];
+      return '<div class="guard-row"><span class="k">Integrations</span><span class="v">' +
+        esc(live + " live") +
+        (degraded.length ? esc(" · degraded: " + degraded.join(", ")) : " · all configured") + "</span></div>";
     })() +
     '<p class="footnote" style="margin:10px 0 0">Config lives in data/config/autonomy.json — flip kill_switch to true to stop all automatic generation, posting and scaling instantly.</p>' +
     "</div>";
@@ -413,8 +425,11 @@ async function initIndex() {
   const stateByAgent = {};
   AGENTS.forEach((a, i) => { stateByAgent[a] = agentStates[i]; });
   const master = stateByAgent.master;
-  const usage = await fetchJSON(DATA + "/state/anthropic-usage.json");
-  renderAutonomyPanel(autonomy, published, usage);
+  const [usage, integrations] = await Promise.all([
+    fetchJSON(DATA + "/state/anthropic-usage.json"),
+    fetchJSON(DATA + "/state/integrations.json")
+  ]);
+  renderAutonomyPanel(autonomy, published, usage, integrations);
 
   /* --- KPI tiles --- */
   const sh = (metrics && metrics.shopify) || {};
@@ -851,7 +866,7 @@ async function initApprovals() {
       '<button type="button" class="pill pill-bad" data-decide="rejected">Reject</button>' +
       "</div>" +
       '<div class="decision-bar qa-bar" hidden>' +
-      '<span class="field-label" style="align-self:center">Visual QA — does the media show the REAL product (label, jar, gummies) exactly?</span>' +
+      '<span class="field-label" style="align-self:center">Visual QA — does the media show the REAL product (pouch, label, powder) exactly?</span>' +
       '<button type="button" class="pill pill-good" data-qa="pass">QA pass ✦</button>' +
       '<button type="button" class="pill pill-bad" data-qa="fail">QA fail</button>' +
       "</div>" +
@@ -879,6 +894,9 @@ async function initApprovals() {
         if (payload.media_url || payload.video_url || payload.image_url || payload.media_status === "generated" || payload.media_status === "pending") {
           const qaBar = itemEl.querySelector(".qa-bar");
           if (qaBar) qaBar.hidden = false;
+          // Fingerprint: record WHICH media the verdict applies to, so a stale
+          // pass never covers a newer render.
+          itemEl.dataset.mediaUrl = payload.media_url || payload.video_url || payload.image_url || "";
         }
       }
       return;
@@ -918,6 +936,7 @@ async function qaDecide(itemEl, status) {
 
   const decision = { id: id, status: status, by: "owner-dashboard", at: new Date().toISOString() };
   if (note) decision.note = note;
+  if (itemEl.dataset.mediaUrl) decision.media_url = itemEl.dataset.mediaUrl;
 
   const attempt = async () => {
     let json = { version: 1, decisions: [] }, sha = undefined;

@@ -9,6 +9,7 @@ import { putDraft } from "./lib/queue.js";
 import { loadAutonomy, canAutoScale, stopLossTriggered, modeAllows } from "./lib/autonomy.js";
 import { paidTestDraft, normalizeAdRow } from "./lib/performance.js";
 import { loadProductSpec } from "./lib/product-assets.js";
+import { campaignPrefix } from "./lib/utm.js";
 import { qaDecisions } from "./lib/visual-qa.js";
 
 const qa = qaDecisions();
@@ -31,7 +32,15 @@ for (const src of ["tiktok", "meta"]) {
   for (const row of metrics?.[src]?.rows || []) {
     const { spend, conversions } = normalizeAdRow(src, row);
     const sl = stopLossTriggered(policy, { spendGbp: spend, conversions });
-    if (sl.triggered) stopLossFlags.push({ platform: src, campaign: row.campaign_id || row.campaign_name || row.dimensions?.campaign_id || "?", ...sl });
+    if (sl.triggered) {
+      stopLossFlags.push({
+        platform: src,
+        campaign_id: row.campaign_id || row.dimensions?.campaign_id || null,
+        campaign: row.campaign_name || row.campaign_id || row.dimensions?.campaign_id || "?",
+        spend_gbp: spend,
+        ...sl,
+      });
+    }
   }
 }
 
@@ -57,6 +66,7 @@ for (const w of winners) {
     budgetGbp: scale.budget,
     tiktokShopApproved,
     landingUrl,
+    namePrefix: campaignPrefix(spec),
   });
   // Drafts are ALWAYS PAUSED; auto_scale_ads only marks eligibility for the push tooling.
   draft.auto_scale_eligible = scale.ok && modeAllows(policy, "scale_ads");

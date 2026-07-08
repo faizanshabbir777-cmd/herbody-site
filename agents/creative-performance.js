@@ -4,7 +4,7 @@
 // (feedback) and the paid-scaling agents (promotion candidates).
 import { readJson, writeJson, nowIso, today } from "./lib/state.js";
 import { loadAutonomy } from "./lib/autonomy.js";
-import { labelAll, paidTestCandidates, effectiveThresholds, compareVariants } from "./lib/performance.js";
+import { labelAll, paidTestCandidates, effectiveThresholds, compareVariants, buildDigest } from "./lib/performance.js";
 
 const policy = loadAutonomy();
 const creative = readJson("data/metrics/creative/latest.json", { rows: [] });
@@ -14,6 +14,18 @@ const thresholds = effectiveThresholds(creative.rows || [], policy.winner_thresh
 const labelled = labelAll(creative.rows || [], thresholds);
 const winners = paidTestCandidates(labelled);
 const variantComparisons = compareVariants(labelled);
+
+// Per-agent learnings digest + trend-source ROI — the feedback the producers read.
+const trendsLatest = readJson("data/trends/latest.json", { relevant: [], rejected: [] });
+const trendIndex = Object.fromEntries(
+  [...(trendsLatest.relevant || []), ...(trendsLatest.rejected || [])]
+    .filter((t) => t.id).map((t) => [t.id, t])
+);
+writeJson("data/state/creative-digest.json", {
+  updated: nowIso(),
+  date: today(),
+  ...buildDigest(labelled, variantComparisons, trendIndex),
+});
 
 writeJson("data/state/creative-performance.json", {
   updated: nowIso(),

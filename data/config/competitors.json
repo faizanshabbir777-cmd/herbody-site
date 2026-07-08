@@ -1,10 +1,11 @@
 {
-  "version": 1,
+  "version": 2,
   "note": "Allowlisted competitor/trend sources for the trends collector. Only URLs listed here are ever fetched — the collector never guesses or searches. Everything fetched is untrusted DATA, never instructions. Manual trend notes can also be dropped into data/trends/manual/*.json (same record shape).",
   "relevance_keywords": [
-    "creatine", "gummies", "gummy", "supplement", "womens fitness", "strength",
-    "pre workout", "wellness routine", "morning routine", "protein", "muscle",
-    "recovery", "tiktok shop", "ugc", "asmr unboxing", "taste test", "label read"
+    "creatine", "collagen", "creatine for women", "womens supplement", "supplement",
+    "powder", "scoop", "shake", "morning routine", "wellness routine", "morning ritual",
+    "strength", "recovery", "strawberry lemonade", "label read", "ingredient",
+    "myth bust", "asmr", "unboxing", "taste test", "tiktok shop", "ugc"
   ],
   "banned_themes_note": "Records matching diet-culture, body-checking, weight-loss, before/after, medical claims, testimonial-fabrication or licensing-risk sound patterns are auto-rejected with a reject_reason — they can never seed creative.",
   "sources": [
@@ -16,6 +17,6 @@
     }
   ],
   "competitors": [
-    { "name": "generic-creatine-gummy-brands", "note": "Add specific competitor handles/URLs here as they are identified. Only public, first-party pages or official APIs." }
+    { "name": "uk-womens-creatine-collagen-brands", "note": "Add specific competitor handles/URLs here as they are identified (see seo/KEYWORD_MAP.md for the UK competitor set). Only public, first-party pages or official APIs." }
   ]
 }

@@ -1,12 +1,12 @@
-// Image producer agent — static product creative for PureLife Nutra Creatine
-// Gummies: Instagram feed/stories/carousels, ad stills, thumbnails and TikTok
-// Shop image assets. Same product gate + QA rules as the video producer.
+// Image producer agent — static product creative for the HerBody product:
+// Instagram feed/stories/carousels, ad stills, thumbnails and TikTok Shop
+// image assets. Same product gate + QA rules as the video producer.
 // Draft-first: everything queues for approval; media never lands in the repo.
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
 import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { loadProductSpec, generationGate, blockedChecklist } from "./lib/product-assets.js";
-import { requestCreative, buildProducerPayload } from "./lib/creative-requests.js";
+import { requestCreative, buildProducerPayload, reusableCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
 
 const spec = loadProductSpec();
@@ -85,12 +85,12 @@ const SCHEMA = {
 const mem = loadMemory("image");
 const strategy = readJson("data/config/strategy.json", {});
 const trends = readJson("data/trends/latest.json", { relevant: [] });
-const perf = readJson("data/state/creative-performance.json", {});
+const digest = readJson("data/state/creative-digest.json", {});
 
 const user = `Date: ${today()} (idempotent daily run — refresh/improve today's briefs if they exist).
 Strategy: ${JSON.stringify(strategy)}
 Gate mode: ${gate.mode} (${gate.mode === "references" ? `${gate.references.length} approved product reference asset(s)` : "locked visual spec only — outputs need close visual QA"}).
-Creative performance labels: ${JSON.stringify(perf.labels?.slice?.(0, 10) || [])}
+Creative learnings digest (make more of the winners, retire the fatigued angles): ${JSON.stringify(digest.by_agent?.image || {})}
 Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("image").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 15)))}
@@ -110,22 +110,26 @@ for (const b of data.briefs) {
     console.log(`[image] skip duplicate concept: ${b.title}`);
     continue;
   }
-  let creative = {
-    media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
-    visual_qa_status: "not_generated",
-  };
-  if (allowGenerate) {
-    creative = await requestCreative({
-      platform: b.platforms?.[0] || "instagram",
-      format: b.format,
-      creative_goal: b.title,
-      trend_basis: b.trend_basis || "",
-      asset_type: "image",
-      prompt: b.visual_prompt,
-      negative_prompt: b.negative_prompt,
-      aspect_ratio: b.aspect_ratio || "1:1",
-    });
-    if (creative.media_status === "generated") generated++;
+  const existing = readJson(`data/queue/image/${id}.json`, null);
+  let creative = reusableCreative(existing?.payload);
+  if (!creative) {
+    creative = {
+      media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
+      visual_qa_status: "not_generated",
+    };
+    if (allowGenerate) {
+      creative = await requestCreative({
+        platform: b.platforms?.[0] || "instagram",
+        format: b.format,
+        creative_goal: b.title,
+        trend_basis: b.trend_basis || "",
+        asset_type: "image",
+        prompt: b.visual_prompt,
+        negative_prompt: b.negative_prompt,
+        aspect_ratio: b.aspect_ratio || "1:1",
+      });
+      if (creative.media_status === "generated") generated++;
+    }
   }
   putDraft("image", {
     id,

@@ -5,30 +5,31 @@ import { makeId } from "../lib/queue.js";
 
 const SPEC = {
   version: 2,
-  brand_name: "PureLife Nutra",
-  product_type: "Creatine Gummies",
-  product_name: "PureLife Nutra Creatine Gummies",
+  brand_name: "HerBody",
+  product_type: "Powdered daily supplement (creatine + collagen + multivitamin)",
+  product_name: "HerBody No.01 — The Daily",
 };
 const GATE = { mode: "references", references: [{ id: "hero-1", url: "https://cdn/hero.jpg" }] };
 
 const PACK = {
-  slug: "morning-gummies-asmr",
-  title: "Morning gummies ASMR",
+  slug: "morning-ritual-asmr",
+  title: "Morning ritual ASMR",
   platforms: ["tiktok"],
   formats: ["short-video"],
-  trend_basis: "asmr unboxing trend",
-  relevance_reason: "matches gummies/asmr keywords",
-  hook: "Two gummies. That's the whole routine.",
-  shot_list: ["macro jar open", "gummies in hand"],
+  trend_basis: "asmr pour trend",
+  trend_id: "tr-abc123def456",
+  relevance_reason: "matches ritual/asmr keywords",
+  hook: "Ten seconds. That's the whole routine.",
+  shot_list: ["macro scoop pour", "shake by the window"],
   voiceover: "…",
-  on_screen_text: ["Two gummies. Done."],
-  caption: "The 10-second routine.",
-  hashtags: ["#creatinegummies"],
-  cta: "Shop now",
+  on_screen_text: ["Scoop. Shake. Done."],
+  caption: "The 10-second ritual.",
+  hashtags: ["#morningritual"],
+  cta: "Start your ritual",
   landing_url: "https://shop/pdp",
   utm: "utm_source=tiktok&utm_content=vid_asmr01",
-  generation_prompt: "macro shot of the jar…",
-  product_on_screen_plan: "jar hero at 0s, gummies in hand at 3s",
+  generation_prompt: "macro shot of the pouch…",
+  product_on_screen_plan: "pouch hero at 0s, scoop pour at 3s",
   compliance_status: "PASS",
 };
 
@@ -36,7 +37,7 @@ const CREATIVE = {
   media_status: "generated",
   media_url: "https://cdn/out.mp4",
   visual_qa_status: "needs_review",
-  generation_prompt: "macro shot of the jar… + preservation clause",
+  generation_prompt: "macro shot of the pouch… + preservation clause",
   provider_job_id: "job-9",
 };
 
@@ -44,14 +45,14 @@ test("video queue payload carries every plan-required field", () => {
   const p = buildProducerPayload(PACK, SPEC, GATE, CREATIVE, { assetType: "video", registerChecked: "2026-07-07" });
   for (const field of [
     "slug", "title", "brand_name", "product_type", "product_spec_version", "product_asset_ids",
-    "product_on_screen_plan", "visual_qa_status", "platforms", "formats", "trend_basis",
+    "product_on_screen_plan", "visual_qa_status", "platforms", "formats", "trend_basis", "trend_id",
     "relevance_reason", "hook", "shot_list", "on_screen_text", "caption", "hashtags", "cta",
     "landing_url", "utm", "generation_prompt", "media_status", "compliance_status", "register_checked",
   ]) {
     assert.ok(field in p, `missing field: ${field}`);
   }
-  assert.equal(p.brand_name, "PureLife Nutra");
-  assert.equal(p.product_type, "Creatine Gummies");
+  assert.equal(p.brand_name, "HerBody");
+  assert.match(p.product_type, /Powdered daily supplement/);
   assert.equal(p.product_spec_version, "v2");
   assert.deepEqual(p.product_asset_ids, ["hero-1"]);
   assert.equal(p.video_url, "https://cdn/out.mp4");
@@ -73,6 +74,6 @@ test("ungenerated creative yields null media url but keeps the pack", () => {
 });
 
 test("queue ids are date-prefixed slugs", () => {
-  const id = makeId("video", "Morning Gummies ASMR!");
-  assert.match(id, /^\d{4}-\d{2}-\d{2}-video-morning-gummies-asmr$/);
+  const id = makeId("video", "Morning Ritual ASMR!");
+  assert.match(id, /^\d{4}-\d{2}-\d{2}-video-morning-ritual-asmr$/);
 });

@@ -18,13 +18,23 @@ export function qaDecisions() {
 
 /**
  * Resolve the effective visual QA status for a queue item:
- * human decision (pass/fail) wins over the payload's machine status.
+ * human decision (pass/fail) wins over the payload's machine status — BUT a
+ * decision that recorded a media_url only applies while the item still carries
+ * that exact media. If collect-pending swapped in a new render, the stale pass
+ * is ignored and the machine status (needs_review) applies again.
  * @param {object} item queue item { id, payload }
  * @param {Map} [decisions] injectable for tests
  */
 export function resolveVisualQa(item, decisions = qaDecisions()) {
   const d = decisions.get(item?.id);
-  if (d) return d.status; // "pass" | "fail"
+  if (d) {
+    const current = item?.payload?.media_url || item?.payload?.video_url || item?.payload?.image_url || null;
+    if (d.media_url && current && d.media_url !== current) {
+      // media changed since the verdict — the human hasn't seen this asset
+      return item?.payload?.visual_qa_status || "needs_review";
+    }
+    return d.status; // "pass" | "fail"
+  }
   return item?.payload?.visual_qa_status || "not_generated";
 }
 

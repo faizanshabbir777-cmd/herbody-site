@@ -1,14 +1,35 @@
-// Ads push — the ONLY code path that creates campaigns on ad platforms, and it
-// creates them PAUSED, always. Heavy-gated by the ppc-push workflow: manual
-// dispatch + "ads-production" GitHub environment + approvals/ADS_LAUNCH_APPROVAL.json.
-// Pushes only paid queue items a human approved in data/approvals.json.
-// Budgets are re-clamped through the autonomy policy at push time — a stale or
-// hand-edited draft can never exceed the fleet cap. Campaign level only:
+// Ads push — the ONLY code path that touches live ad campaigns:
+//  1. Creates human-approved paid drafts as PAUSED campaigns (always paused).
+//  2. ENFORCE_STOP_LOSS=1: pauses live campaigns flagged by the stop-loss sweep.
+// Heavy-gated by the ppc-push workflow: manual dispatch + "ads-production"
+// GitHub environment + approvals/ADS_LAUNCH_APPROVAL.json. Budgets are
+// re-clamped through the autonomy policy at push time. Campaign level only:
 // ad groups / ad creatives are finished by a human in Ads Manager.
 import { queueItems, decisions, markPublished } from "./lib/queue.js";
-import { exists } from "./lib/state.js";
+import { exists, readJson, writeJson, nowIso } from "./lib/state.js";
 import { tiktok, meta } from "./lib/platforms.js";
 import { loadAutonomy, canAutoScale } from "./lib/autonomy.js";
+
+const ENFORCE_STOP_LOSS = ["1", "true", "yes"].includes(String(process.env.ENFORCE_STOP_LOSS || "").toLowerCase());
+
+// ---- stop-loss enforcement: pausing losers is the SAFE direction, so it runs
+// even under the kill switch (it stops spend rather than starting it). ----
+if (ENFORCE_STOP_LOSS) {
+  const flags = readJson("data/state/paid-growth-latest.json", {}).stop_loss_flags || [];
+  const results = [];
+  for (const f of flags) {
+    if (!f.campaign_id) { results.push({ ...f, action: "manual", note: "no campaign id — pause manually in Ads Manager" }); continue; }
+    try {
+      const api = f.platform === "tiktok" ? tiktok : f.platform === "meta" ? meta : null;
+      const r = api ? await api.pauseCampaign(f.campaign_id) : { available: false };
+      results.push({ ...f, action: r.available === false ? "manual" : "paused", note: r.available === false ? "no credentials" : `paused via API` });
+    } catch (e) {
+      results.push({ ...f, action: "failed", note: String(e.message).slice(0, 160) });
+    }
+  }
+  writeJson("data/state/stop-loss-enforcement.json", { updated: nowIso(), results });
+  console.log(`[ads-push] stop-loss enforcement: ${results.filter((r) => r.action === "paused").length}/${flags.length} campaign(s) paused`);
+}
 
 if (!exists("approvals/ADS_LAUNCH_APPROVAL.json")) {
   console.log("[ads-push] approvals/ADS_LAUNCH_APPROVAL.json missing — nothing pushed (drafts stay in the repo)");

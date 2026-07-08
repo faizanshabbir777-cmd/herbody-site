@@ -7,6 +7,7 @@
   "max_posts_per_day_by_platform": { "tiktok": 2, "instagram": 2, "facebook": 1 },
   "requires_visual_qa_pass": true,
   "requires_compliance_pass": true,
+  "requires_editorial_pass": true,
   "allow_self_only_tiktok_posts": false,
   "ads": {
     "max_daily_ad_budget_gbp": 25,
@@ -21,6 +22,8 @@
     "min_completion_rate_pct": 25,
     "promising_engagement_rate_pct": 3.5,
     "fatigue_drop_pct": 50,
+    "min_revenue_gbp": 40,
     "adaptive": { "enabled": true, "min_winner_er_pct": 3, "max_winner_er_pct": 12 }
-  }
+  },
+  "llm": { "daily_budget_gbp": 5 }
 }

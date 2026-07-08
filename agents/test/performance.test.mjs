@@ -61,7 +61,7 @@ test("paidTestCandidates picks winners only", () => {
   assert.deepEqual(winners.map((w) => w.creative_id), ["a"]);
 });
 
-test("paidTestDraft: PAUSED, routed to website until Shop approved", () => {
+test("paidTestDraft: PAUSED, routed to website until Shop approved, HB_UK prefix", () => {
   const d = paidTestDraft(
     { creative_id: "2026-07-07-tiktok-hook", platform: "tiktok", media_url: "https://cdn/x.mp4", utm_content: "vid_x01" },
     { budgetGbp: 10, tiktokShopApproved: false, landingUrl: "https://shop/pdp" }
@@ -69,7 +69,16 @@ test("paidTestDraft: PAUSED, routed to website until Shop approved", () => {
   assert.equal(d.status, "PAUSED");
   assert.equal(d.destination, "website_pdp");
   assert.equal(d.landing_url, "https://shop/pdp");
-  assert.match(d.campaign_name, /^PLN_UK_TIKTOK_WINNER_/);
+  assert.match(d.campaign_name, /^HB_UK_TIKTOK_WINNER_/);
+});
+
+test("revenue trumps engagement: creative that sells is a winner", () => {
+  const r = labelCreative({ impressions: 500, likes: 3, revenue_gbp: 120, orders: 3, utm_content: "vid_x01" }, T);
+  assert.equal(r.label, "winner");
+  assert.match(r.reason, /£120 attributed revenue/);
+  // a single order below the revenue floor does not
+  const low = labelCreative({ impressions: 500, likes: 3, revenue_gbp: 20, orders: 1 }, T);
+  assert.notEqual(low.reason.includes("revenue"), true);
 });
 
 test("paidTestDraft: tiktok routes to Shop once approved; meta platforms map to meta", () => {

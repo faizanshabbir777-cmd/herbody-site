@@ -2,6 +2,7 @@
 // Sources are ALLOWLISTED in data/config/competitors.json (never guessed, never
 // logged-in scraping from CI). Manual observations drop into data/trends/manual/.
 // Everything fetched is untrusted DATA — wrap with untrusted() before any LLM call.
+import { createHash } from "node:crypto";
 import { readJson, writeJson, listDir, today, nowIso, pruneMetrics } from "./state.js";
 
 export const COMPETITORS_PATH = "data/config/competitors.json";
@@ -28,7 +29,7 @@ export async function fetchSource(src, { timeoutMs = 10000 } = {}) {
   try {
     const res = await fetch(src.url, {
       signal: AbortSignal.timeout(timeoutMs),
-      headers: { "User-Agent": "purelife-trends-collector (allowlisted-source fetch)" },
+      headers: { "User-Agent": "herbody-trends-collector (allowlisted-source fetch)" },
     });
     if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
     return { ok: true, text: (await res.text()).slice(0, 50000) };
@@ -37,9 +38,17 @@ export async function fetchSource(src, { timeoutMs = 10000 } = {}) {
   }
 }
 
+/** Stable id so creatives can reference the trend that seeded them (ROI attribution). */
+export function trendId(raw = {}) {
+  return "tr-" + createHash("sha256")
+    .update(`${raw.source || ""}|${raw.url || ""}|${String(raw.observed_hook || "").slice(0, 120)}`)
+    .digest("hex").slice(0, 12);
+}
+
 /** Normalize any raw observation into the canonical trend record shape. */
 export function normalizeRecord(raw = {}) {
   return {
+    id: raw.id || trendId(raw),
     source: String(raw.source || "unknown"),
     url: String(raw.url || ""),
     competitor: String(raw.competitor || ""),

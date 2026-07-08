@@ -1,13 +1,15 @@
 // Video producer agent — turns relevant trend records + strategy into full video
-// production packs for PureLife Nutra Creatine Gummies (TikTok / Reels / UGC-style /
-// TikTok Shop-ready). Optionally generates the actual asset via the shared creative
-// producer when the autonomy mode allows. Draft-first: everything queues for approval.
+// production packs for the HerBody product (TikTok / Reels / UGC-style /
+// TikTok Shop-ready) and renders them via the shared creative producer when the
+// autonomy mode allows. THE fleet's only video renderer — OmniFlash is the
+// editorial layer on top. Draft-first: everything queues for approval.
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
 import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { loadProductSpec, generationGate, blockedChecklist } from "./lib/product-assets.js";
-import { requestCreative, buildProducerPayload } from "./lib/creative-requests.js";
+import { requestCreative, buildProducerPayload, reusableCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
+import { withVariantSuffix } from "./lib/utm.js";
 
 const spec = loadProductSpec();
 const gate = generationGate(spec);
@@ -53,12 +55,13 @@ const PACK = {
     platforms: { type: "array", items: { type: "string", enum: ["tiktok", "instagram", "facebook"] } },
     formats: { type: "array", items: { type: "string" } },
     trend_basis: { type: "string", description: "which trend record inspired this, or 'evergreen'" },
+    trend_id: { type: "string", description: "the `id` of the trend record used (tr-…), or empty for evergreen" },
     relevance_reason: { type: "string" },
     expiry: { type: "string", description: "date the trend dies, or empty for evergreen" },
-    hook: { type: "string" },
+    hook: { type: "string", description: "primary first-2-seconds hook — becomes variant A" },
     hook_variants: {
-      type: "array", minItems: 2, maxItems: 2, items: { type: "string" },
-      description: "two alternative first-2-second hooks for A/B posting — post variants with utm_content suffixes -a and -b (e.g. vid_x01-a / vid_x01-b)",
+      type: "array", minItems: 1, maxItems: 2, items: { type: "string" },
+      description: "alternative hook(s) — the first becomes variant B. A/B posts share the same media; utm_content gets -a / -b suffixes",
     },
     shot_list: { type: "array", items: { type: "string" } },
     voiceover: { type: "string" },
@@ -98,12 +101,13 @@ const SCHEMA = {
 const mem = loadMemory("video");
 const strategy = readJson("data/config/strategy.json", {});
 const trends = readJson("data/trends/latest.json", { relevant: [] });
-const perf = readJson("data/state/creative-performance.json", {});
+const digest = readJson("data/state/creative-digest.json", {});
 
 const user = `Date: ${today()} (idempotent daily run — refresh/improve today's packs if they exist).
 Strategy: ${JSON.stringify(strategy)}
 Gate mode: ${gate.mode} (${gate.mode === "references" ? `${gate.references.length} approved product reference asset(s)` : "locked visual spec only — outputs need close visual QA"}).
-Winning/fatigued creative labels: ${JSON.stringify(perf.labels?.slice?.(0, 10) || [])}
+Creative learnings digest (make more of the winners, retire the fatigued angles): ${JSON.stringify(digest.by_agent?.video || {})}
+Trend-source ROI so far: ${JSON.stringify(digest.trend_source_roi || {})}
 Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("video").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 15)))}
@@ -123,32 +127,56 @@ for (const p of data.packs) {
     console.log(`[video] skip duplicate concept: ${p.title}`);
     continue;
   }
-  let creative = {
-    media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
-    visual_qa_status: "not_generated",
-  };
-  if (allowGenerate) {
-    creative = await requestCreative({
-      platform: p.platforms?.[0] || "tiktok",
-      format: p.formats?.[0] || "short-video",
-      creative_goal: p.title,
-      trend_basis: p.trend_basis,
-      asset_type: "video",
-      prompt: p.generation_prompt,
-      negative_prompt: p.negative_prompt,
-      aspect_ratio: "9:16",
-    });
-    if (creative.media_status === "generated") generated++;
+  // Idempotent re-runs: reuse today's already-generated/pending media — never
+  // re-spend provider credits for the same item id.
+  const existing = readJson(`data/queue/video/${id}.json`, null);
+  let creative = reusableCreative(existing?.payload);
+  if (!creative) {
+    creative = {
+      media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
+      visual_qa_status: "not_generated",
+    };
+    if (allowGenerate) {
+      creative = await requestCreative({
+        platform: p.platforms?.[0] || "tiktok",
+        format: p.formats?.[0] || "short-video",
+        creative_goal: p.title,
+        trend_basis: p.trend_basis,
+        asset_type: "video",
+        prompt: p.generation_prompt,
+        negative_prompt: p.negative_prompt,
+        aspect_ratio: "9:16",
+      });
+      if (creative.media_status === "generated") generated++;
+    }
   }
-  putDraft("video", {
-    id,
-    platform: p.platforms?.[0] || "tiktok",
-    type: "video",
-    scheduled_for: today(),
-    title: p.title,
-    compliance_status: p.compliance_status,
-    payload: buildProducerPayload(p, spec, gate, creative, { assetType: "video", registerChecked: today() }),
-  });
+  // A/B: when an alternative hook exists, queue TWO drafts sharing the SAME
+  // media (no extra generation) with -a/-b utm_content suffixes so the
+  // performance loop can compare them. Otherwise queue the single pack.
+  const altHook = Array.isArray(p.hook_variants) && p.hook_variants[0] ? p.hook_variants[0] : null;
+  const drafts = altHook
+    ? [
+        { suffix: "a", hook: p.hook },
+        { suffix: "b", hook: altHook },
+      ]
+    : [{ suffix: null, hook: p.hook }];
+  for (const v of drafts) {
+    const vid = v.suffix ? `${id}-${v.suffix}` : id;
+    const pack = {
+      ...p,
+      hook: v.hook,
+      ...(v.suffix ? { utm: withVariantSuffix(p.utm, v.suffix), variant_group: id } : {}),
+    };
+    putDraft("video", {
+      id: vid,
+      platform: p.platforms?.[0] || "tiktok",
+      type: "video",
+      scheduled_for: today(),
+      title: v.suffix ? `${p.title} (variant ${v.suffix.toUpperCase()})` : p.title,
+      compliance_status: p.compliance_status,
+      payload: buildProducerPayload(pack, spec, gate, creative, { assetType: "video", registerChecked: today() }),
+    });
+  }
 }
 
 saveMemory("video", { ...data.memory, agent: "video" });

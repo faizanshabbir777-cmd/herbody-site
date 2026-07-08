@@ -1,20 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { requestCreative } from "../lib/creative-requests.js";
+import { requestCreative, reusableCreative } from "../lib/creative-requests.js";
 
 const SPEC = {
   version: 2,
-  brand_name: "PureLife Nutra",
-  product_type: "Creatine Gummies",
-  product_name: "PureLife Nutra Creatine Gummies",
+  brand_name: "HerBody",
+  product_type: "Powdered daily supplement (creatine + collagen + multivitamin)",
+  product_name: "HerBody No.01 — The Daily",
   visual_spec: {
-    packaging_type: "matte white jar",
-    container_shape: "round jar",
-    lid_colour: "black lid",
-    label_colours: ["white", "green"],
+    packaging_type: "matte stand-up pouch",
+    container_shape: "stand-up pouch",
+    closure: "resealable zip seal",
+    label_colours: ["cream", "black", "pink"],
     logo_usage: "wordmark as supplied",
-    gummy_shape: "cube",
-    gummy_colour: "amber",
+    product_form: "fine powder, 14g scoop",
+    product_colour: "pale pink powder",
   },
   forbidden_visual_substitutes: ["stock supplement bottles"],
   approved_reference_assets: [],
@@ -25,12 +25,15 @@ const genOk = async () => ({
   media_url: "https://cdn.example.com/out.mp4", preview_url: null, thumbnail_url: null,
 });
 const genManual = async () => ({ available: false, status: "manual", media_url: null, notes: "no key" });
+const noRehost = async () => ({ hosted_url: null, hosted_file_id: null, hosted_pending: false, hosting_note: "" });
+const noVision = async () => ({ checked: false, verdict: "unclear", reasons: [] });
+const DEPS = { spec: SPEC, rehost: noRehost, visionCheck: noVision };
 
 test("blocked spec → blocked status + manual checklist, no generator call", async () => {
   let called = false;
   const r = await requestCreative(
     { platform: "tiktok", asset_type: "video", prompt: "x" },
-    { spec: { ...SPEC, brand_name: "" }, genVideo: async () => { called = true; return genOk(); } }
+    { ...DEPS, spec: { ...SPEC, brand_name: "" }, genVideo: async () => { called = true; return genOk(); } }
   );
   assert.equal(called, false, "generator must never run when blocked");
   assert.equal(r.status, "blocked_missing_product_spec");
@@ -41,7 +44,7 @@ test("blocked spec → blocked status + manual checklist, no generator call", as
 test("required_product_presence=false is rejected — every asset must show the product", async () => {
   const r = await requestCreative(
     { asset_type: "image", prompt: "moodboard", required_product_presence: false },
-    { spec: SPEC, genImage: genOk }
+    { ...DEPS, genImage: genOk }
   );
   assert.equal(r.status, "rejected");
   assert.match(r.product_fidelity_notes, /must visibly show the product/);
@@ -50,14 +53,14 @@ test("required_product_presence=false is rejected — every asset must show the 
 test("spec_only generation → needs_review QA + preservation clause in prompt", async () => {
   let captured;
   const r = await requestCreative(
-    { platform: "tiktok", asset_type: "video", prompt: "jar on a kitchen counter, morning light" },
-    { spec: SPEC, genVideo: async (o) => { captured = o; return genOk(); } }
+    { platform: "tiktok", asset_type: "video", prompt: "pouch on a kitchen counter, morning light" },
+    { ...DEPS, genVideo: async (o) => { captured = o; return genOk(); } }
   );
   assert.equal(r.media_status, "generated");
   assert.equal(r.visual_qa_status, "needs_review");
   assert.equal(r.media_url, "https://cdn.example.com/out.mp4");
   assert.match(r.product_fidelity_notes, /REQUIRES close visual QA/);
-  assert.match(captured.prompt, /PureLife Nutra Creatine Gummies/);
+  assert.match(captured.prompt, /HerBody No\.01 — The Daily/);
   assert.match(captured.prompt, /Do not substitute any other supplement product/);
   assert.match(captured.negativePrompt, /stock supplement bottles/);
 });
@@ -70,7 +73,7 @@ test("references mode passes approved assets to the provider and records their i
   let captured;
   const r = await requestCreative(
     { asset_type: "image", prompt: "flat lay" },
-    { spec, genImage: async (o) => { captured = o; return genOk(); } }
+    { ...DEPS, spec, genImage: async (o) => { captured = o; return genOk(); } }
   );
   assert.equal(r.gate_mode, "references");
   assert.deepEqual(r.product_asset_ids, ["hero-1"]);
@@ -81,7 +84,7 @@ test("references mode passes approved assets to the provider and records their i
 test("manual degradation (no provider) keeps the pack queueable", async () => {
   const r = await requestCreative(
     { asset_type: "video", prompt: "x" },
-    { spec: SPEC, genVideo: genManual }
+    { ...DEPS, genVideo: genManual }
   );
   assert.equal(r.status, "manual");
   assert.equal(r.media_status, "manual");
@@ -92,7 +95,7 @@ test("manual degradation (no provider) keeps the pack queueable", async () => {
 test("asset_type routes to the right generator", async () => {
   let video = 0, image = 0;
   const deps = {
-    spec: SPEC,
+    ...DEPS,
     genVideo: async () => { video++; return genOk(); },
     genImage: async () => { image++; return genOk(); },
   };
@@ -103,8 +106,43 @@ test("asset_type routes to the right generator", async () => {
 });
 
 test("queue-ready metadata carries brand identity + spec version", async () => {
-  const r = await requestCreative({ asset_type: "video", prompt: "x" }, { spec: SPEC, genVideo: genOk });
-  assert.equal(r.brand_name, "PureLife Nutra");
-  assert.equal(r.product_type, "Creatine Gummies");
+  const r = await requestCreative({ asset_type: "video", prompt: "x" }, { ...DEPS, genVideo: genOk });
+  assert.equal(r.brand_name, "HerBody");
+  assert.match(r.product_type, /Powdered daily supplement/);
   assert.equal(r.product_spec_version, "v2");
+});
+
+test("vision fail auto-downgrades the creative", async () => {
+  const r = await requestCreative(
+    { asset_type: "image", prompt: "x" },
+    { ...DEPS, genImage: genOk, visionCheck: async () => ({ checked: true, verdict: "fail", reasons: ["wrong packaging"] }) }
+  );
+  assert.equal(r.visual_qa_status, "failed_auto");
+  assert.match(r.product_fidelity_notes, /AUTO-FAILED/);
+});
+
+// ---- A2: idempotent re-runs reuse existing media instead of regenerating ----
+
+test("reusableCreative: generated media is reused", () => {
+  const reuse = reusableCreative({
+    media_status: "generated", media_url: "https://cdn/x.mp4",
+    provider_job_id: "j1", visual_qa_status: "needs_review", generation_prompt: "p",
+  });
+  assert.ok(reuse);
+  assert.equal(reuse.media_status, "generated");
+  assert.equal(reuse.media_url, "https://cdn/x.mp4");
+  assert.equal(reuse.reused, true);
+});
+
+test("reusableCreative: pending jobs are reused (collect-pending finishes them)", () => {
+  const reuse = reusableCreative({ media_status: "pending", provider_job_id: "j2" });
+  assert.ok(reuse);
+  assert.equal(reuse.media_status, "pending");
+});
+
+test("reusableCreative: manual/failed/absent payloads are NOT reused", () => {
+  assert.equal(reusableCreative({ media_status: "manual" }), null);
+  assert.equal(reusableCreative({ media_status: "failed" }), null);
+  assert.equal(reusableCreative({ media_status: "generated", media_url: null }), null);
+  assert.equal(reusableCreative(null), null);
 });

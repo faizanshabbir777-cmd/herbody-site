@@ -1,29 +1,66 @@
-// OmniFlash — the auto TikTok manager.
-// Daily: reads strategy + memory + metrics + trends → drafts 1–3 videos (script/hook/
-// caption/hashtags/posting time) + requests generated video assets through the shared
-// creative producer when the autonomy mode allows. Draft-first: publishing is governed
-// by the approval queue + autonomy policy (see publish.js).
+// OmniFlash — HerBody's TikTok EDITOR and channel manager.
+// The video producer (video.js) is the fleet's renderer; OmniFlash is the
+// editorial layer on top: it reviews every TikTok-bound draft queued today,
+// polishes hooks/captions, sets posting times, keeps the calendar, and stamps
+// an editorial verdict the autonomy policy can require before auto-posting.
+// Fallback: when the day's TikTok queue is EMPTY it drafts 1–2 founder-filmable
+// scripts itself (no media generation — that is video.js's job).
 import { structured, untrusted } from "./lib/claude.js";
-import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
-import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
-import { requestCreative } from "./lib/creative-requests.js";
-import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
+import { readJson, loadMemory, saveMemory, today, nowIso } from "./lib/state.js";
+import { putDraft, queueItems, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 
-const CHARTER = `You are OmniFlash, HerBody's TikTok manager (UK).
-Your job today: plan and script TikTok content that a busy founder can film on a phone.
-Content pillars: the-studied-dose education · morning ritual · ingredient facts ·
+const CHARTER = `You are OmniFlash, HerBody's TikTok channel editor (UK).
+You review TODAY's TikTok-bound drafts from the producer agents and make each one
+channel-ready: sharpen the first-2-seconds hook (spoken aloud), tighten the caption,
+pick the posting slot (07:00–08:30 ritual · 12:00–13:00 · 19:00–21:00 education),
+and give a verdict:
+- "approved" — ready for the founder's yes/no,
+- "needs_work" — explain exactly what must change (the producer redrafts tomorrow).
+Content pillars: studied-dose education · morning ritual · ingredient facts ·
 myth-busting "creatine is for gym bros" · the pledge/tokens (dignity framing) ·
 first-7-days gentleness. 1–2 posts/day cadence.
-Scripts are CREATOR/BRAND voice — never a fake customer testimonial, never results claims,
-never before/after. Hooks must work in the first 2 seconds, spoken aloud.
-Respect every compliance rule in the brand voice pack. British English.`;
+Everything is CREATOR/BRAND voice — never a fake customer testimonial, never results
+claims, never before/after. Respect every compliance rule in the brand voice pack.
+Never invent doses or prices. British English.`;
 
-const SCHEMA = {
+const REVIEW_SCHEMA = {
+  type: "object",
+  required: ["reviews", "calendar_note", "memory"],
+  properties: {
+    reviews: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "verdict", "editor_notes"],
+        properties: {
+          id: { type: "string", description: "the queue item id being reviewed — copy it exactly" },
+          verdict: { type: "string", enum: ["approved", "needs_work"] },
+          improved_hook: { type: "string", description: "sharpened hook, or empty to keep the original" },
+          improved_caption: { type: "string", description: "tightened caption, or empty to keep the original" },
+          post_time_uk: { type: "string" },
+          editor_notes: { type: "string" },
+        },
+      },
+    },
+    calendar_note: { type: "string" },
+    memory: {
+      type: "object",
+      required: ["recent_actions", "learnings", "rolling_summary"],
+      properties: {
+        recent_actions: { type: "array", items: { type: "string" } },
+        learnings: { type: "array", items: { type: "string" } },
+        rolling_summary: { type: "string" },
+      },
+    },
+  },
+};
+
+const FALLBACK_SCHEMA = {
   type: "object",
   required: ["drafts", "calendar_note", "memory"],
   properties: {
     drafts: {
-      type: "array", minItems: 1, maxItems: 3,
+      type: "array", minItems: 1, maxItems: 2,
       items: {
         type: "object",
         required: ["slug", "title", "hook", "script", "on_screen_text", "caption", "hashtags", "post_time_uk", "pillar", "compliance_status"],
@@ -39,13 +76,11 @@ const SCHEMA = {
           post_time_uk: { type: "string" },
           pillar: { type: "string" },
           filming_notes: { type: "string" },
-          generation_prompt: { type: "string", description: "cinematic 9:16 prompt for the AI video tool — must show the real product per the visual spec" },
           compliance_status: { type: "string", enum: ["PASS", "NEEDS_REVIEW"] },
           compliance_notes: { type: "string" },
         },
       },
     },
-    trend_response: { type: "string", description: "if metrics/notes suggest a trend worth answering, a one-line plan; else empty" },
     calendar_note: { type: "string" },
     memory: {
       type: "object",
@@ -63,61 +98,93 @@ const mem = loadMemory("tiktok");
 const strategy = readJson("data/config/strategy.json", {});
 const metrics = readJson("data/metrics/latest.json", {});
 const trends = readJson("data/trends/latest.json", { relevant: [] });
-const queueDepth = (readJson("data/queue/index.json", { items: [] }).items || [])
-  .filter((i) => i.agent === "tiktok").length;
+const digest = readJson("data/state/creative-digest.json", {});
 
-const user = `Date: ${today()} (idempotent daily run — if you already planned today, refresh/improve today's drafts).
-Current strategy: ${JSON.stringify(strategy)}
-Queue depth (tiktok): ${queueDepth}
-Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("tiktok").map((e) => e.title))}
+// TikTok-bound drafts queued today by OTHER agents, not yet reviewed.
+const tiktokToday = queueItems().filter(
+  ({ item }) => item.platform === "tiktok" && item.scheduled_for === today() && item.agent !== "tiktok"
+);
+const unreviewed = tiktokToday.filter(({ item }) => !item.payload?.editorial);
+
+if (unreviewed.length) {
+  // ---------- editorial mode ----------
+  const forReview = unreviewed.slice(0, 6).map(({ item }) => ({
+    id: item.id,
+    agent: item.agent,
+    title: item.title,
+    hook: item.payload?.hook || "",
+    caption: item.payload?.caption || "",
+    on_screen_text: item.payload?.on_screen_text || [],
+    media_status: item.payload?.media_status || "manual",
+    trend_basis: item.payload?.trend_basis || "",
+    compliance_status: item.compliance_status,
+  }));
+
+  const user = `Date: ${today()} — EDITORIAL PASS over today's TikTok drafts.
+Strategy: ${JSON.stringify(strategy)}
+Creative learnings digest: ${JSON.stringify(digest.by_agent?.tiktok || digest.summary || {})}
+My memory: ${JSON.stringify(mem)}
+${untrusted("metrics.latest", JSON.stringify(metrics))}
+Drafts to review (copy each id exactly):
+${JSON.stringify(forReview, null, 1)}
+Review every draft, give a verdict + improvements, one calendar note, and my updated compressed memory.`;
+
+  const { data, usage } = await structured({ charter: CHARTER, user, schema: REVIEW_SCHEMA });
+
+  let approved = 0, needsWork = 0;
+  for (const r of data.reviews || []) {
+    const found = unreviewed.find(({ item }) => item.id === r.id);
+    if (!found) continue;
+    const { item } = found;
+    const p = { ...(item.payload || {}) };
+    const textChanged = !!(r.improved_hook || r.improved_caption);
+    if (r.improved_hook) p.hook = r.improved_hook;
+    if (r.improved_caption) p.caption = r.improved_caption;
+    if (r.post_time_uk) p.post_time_uk = r.post_time_uk;
+    p.editorial = { verdict: r.verdict, notes: r.editor_notes, by: "omniflash", at: nowIso() };
+    // Edited copy invalidates the previous mechanical compliance stamp — the
+    // gate re-checks this item later in the fleet run.
+    if (textChanged) delete p.compliance_gate;
+    putDraft(item.agent, { ...item, payload: p });
+    if (r.verdict === "approved") approved++; else needsWork++;
+  }
+  saveMemory("tiktok", { ...data.memory, agent: "tiktok" });
+  console.log(`[omniflash] editorial pass: ${approved} approved · ${needsWork} needs-work of ${unreviewed.length} draft(s) · ${data.calendar_note ? "calendar noted" : ""} · tokens ${usage.input_tokens}/${usage.output_tokens}`);
+} else if (!tiktokToday.length) {
+  // ---------- fallback concept mode: keep the channel alive with founder-filmable scripts ----------
+  const user = `Date: ${today()} — the TikTok queue is EMPTY today. Draft 1–2 founder-filmable scripts (no AI generation; the founder films on a phone).
+Strategy: ${JSON.stringify(strategy)}
+Creative learnings digest: ${JSON.stringify(digest.by_agent?.tiktok || digest.summary || {})}
+Already queued today (do NOT duplicate): ${JSON.stringify(todaysItems("tiktok").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
 ${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 10)))}
-Produce today's TikTok drafts (1–3), a calendar note, and my updated compressed memory.
-Include a generation_prompt per draft so the creative producer can render the video.`;
+Produce the drafts, a calendar note, and my updated compressed memory.`;
 
-const { data, usage } = await structured({ charter: CHARTER, user, schema: SCHEMA });
+  const { data, usage } = await structured({ charter: CHARTER, user, schema: FALLBACK_SCHEMA });
 
-const policy = loadAutonomy();
-const allowGenerate = modeAllows(policy, "generate");
-let generated = 0;
-
-let skipped = 0;
-for (const d of data.drafts) {
-  const id = `${today()}-tiktok-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`;
-  if (shouldSkipDuplicate("tiktok", id, d.title)) {
-    skipped++;
-    console.log(`[omniflash] skip duplicate concept: ${d.title}`);
-    continue;
-  }
-  // Ask the shared creative producer for the actual video asset. The producer
-  // enforces the product gate (real product only) and degrades to manual when
-  // generation is unavailable/disabled — the draft still queues either way.
-  let creative = {
-    media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
-    visual_qa_status: "not_generated",
-  };
-  if (allowGenerate) {
-    creative = await requestCreative({
+  let queued = 0;
+  for (const d of data.drafts) {
+    const id = `${today()}-tiktok-${d.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`;
+    if (shouldSkipDuplicate("tiktok", id, d.title)) continue;
+    putDraft("tiktok", {
+      id,
       platform: "tiktok",
-      format: "short-video",
-      creative_goal: d.title,
-      trend_basis: data.trend_response || "",
-      asset_type: "video",
-      prompt: d.generation_prompt || `${d.hook}\n${d.script}`,
-      aspect_ratio: "9:16",
+      type: "video",
+      scheduled_for: today(),
+      title: d.title,
+      compliance_status: d.compliance_status,
+      payload: {
+        ...d,
+        media_status: "manual",
+        visual_qa_status: "not_generated",
+        editorial: { verdict: "approved", notes: "OmniFlash fallback script — founder films manually", by: "omniflash", at: nowIso() },
+      },
     });
-    if (creative.media_status === "generated") generated++;
+    queued++;
   }
-  putDraft("tiktok", {
-    id,
-    platform: "tiktok",
-    type: "video",
-    scheduled_for: today(),
-    title: d.title,
-    compliance_status: d.compliance_status,
-    payload: { ...d, ...creative, video_url: creative.media_url || null },
-  });
+  saveMemory("tiktok", { ...data.memory, agent: "tiktok" });
+  console.log(`[omniflash] fallback: ${queued} founder-filmable script(s) queued · tokens ${usage.input_tokens}/${usage.output_tokens}`);
+} else {
+  console.log(`[omniflash] all ${tiktokToday.length} TikTok draft(s) already reviewed — nothing to do`);
 }
-saveMemory("tiktok", { ...data.memory, agent: "tiktok" });
-console.log(`[omniflash] ${data.drafts.length - skipped} draft(s) queued (${skipped} duplicate(s) skipped) · ${generated} generated · trend: ${data.trend_response || "—"} · tokens in/out ${usage.input_tokens}/${usage.output_tokens}`);

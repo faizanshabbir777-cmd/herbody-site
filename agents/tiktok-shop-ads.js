@@ -7,6 +7,7 @@ import { readJson, writeJson, loadMemory, saveMemory, today, nowIso } from "./li
 import { putDraft } from "./lib/queue.js";
 import { loadAutonomy, canAutoScale, modeAllows } from "./lib/autonomy.js";
 import { loadProductSpec } from "./lib/product-assets.js";
+import { campaignPrefix } from "./lib/utm.js";
 import { qaDecisions } from "./lib/visual-qa.js";
 
 const qa = qaDecisions();
@@ -47,7 +48,7 @@ let planned = paidState.date === today() ? paidState.planned_daily_spend_gbp || 
 for (const w of winners) {
   const scale = canAutoScale(policy, { proposedDailyBudgetGbp: 10, fleetDailySpendGbp: planned });
   drafts.push({
-    campaign_name: `PLN_UK_TTSHOP_${String(w.creative_id || w.post_id || "X").replace(/[^a-zA-Z0-9]+/g, "").slice(0, 24).toUpperCase()}`,
+    campaign_name: `${campaignPrefix(spec)}_TTSHOP_${String(w.creative_id || w.post_id || "X").replace(/[^a-zA-Z0-9]+/g, "").slice(0, 24).toUpperCase()}`,
     platform: "tiktok",
     ad_format: "product_shopping_ads",
     status: "PAUSED",

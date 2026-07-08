@@ -38,11 +38,18 @@ export function labelCreative(row = {}, thresholds = {}) {
     min_completion_rate_pct: 25,
     promising_engagement_rate_pct: 3.5,
     fatigue_drop_pct: 50,
+    min_revenue_gbp: 40,
     ...thresholds,
   };
   const impressions = row.impressions || row.views || 0;
   const er = engagementRatePct(row);
   const completion = row.completion_rate_pct ?? null;
+
+  // Revenue trumps engagement: a creative that demonstrably SELLS is a winner
+  // regardless of vanity metrics.
+  if ((row.revenue_gbp || 0) >= t.min_revenue_gbp && (row.orders || 0) >= 2) {
+    return { label: "winner", reason: `£${row.revenue_gbp} attributed revenue across ${row.orders} orders (utm_content ${row.utm_content || "?"})`, recommended_action: "promote to paid test (PAUSED draft unless auto_scale_ads)" };
+  }
 
   if (impressions < t.min_impressions) {
     return { label: "promising", reason: `only ${impressions} impressions — not enough data`, recommended_action: "keep organic; repost variant or wait for more reach" };
@@ -136,13 +143,63 @@ export function paidTestCandidates(labelledRows = []) {
   return labelledRows.filter((r) => r.label === "winner");
 }
 
+/** Which producer agents care about a labelled row (platform + asset type). */
+function agentsFor(row) {
+  const agents = [];
+  if (row.platform === "tiktok") agents.push("tiktok", "video");
+  if (row.platform === "instagram" || row.platform === "facebook") agents.push("social");
+  agents.push(row.asset_type === "image" ? "image" : "video");
+  return [...new Set(agents)];
+}
+
+/**
+ * Per-agent creative learnings digest — the feedback loop the producers read.
+ * make_more: winning hooks/angles to lean into; retire: fatigued/rejected angles;
+ * ab_leaders: variant winners; trend_roi: which trend sources produce winners.
+ */
+export function buildDigest(labelledRows = [], variantComparisons = [], trendIndex = {}) {
+  const byAgent = {};
+  const bucket = (agent) => (byAgent[agent] ||= { make_more: [], retire: [], ab_leaders: [] });
+  for (const r of labelledRows) {
+    const entry = {
+      hook: r.hook || "", trend_basis: r.trend_basis || "", trend_id: r.trend_id || null,
+      platform: r.platform, utm_content: r.utm_content || "", reason: r.reason,
+      ...(r.revenue_gbp ? { revenue_gbp: r.revenue_gbp } : {}),
+    };
+    for (const a of agentsFor(r)) {
+      if (r.label === "winner") bucket(a).make_more.push(entry);
+      if (r.label === "fatigue" || r.label === "reject") bucket(a).retire.push(entry);
+    }
+  }
+  for (const v of variantComparisons) {
+    for (const a of ["tiktok", "video", "social", "image"]) {
+      bucket(a).ab_leaders.push({ base: v.base, leader: v.leader, recommendation: v.recommendation });
+    }
+  }
+  for (const a of Object.keys(byAgent)) {
+    byAgent[a].make_more = byAgent[a].make_more.slice(0, 8);
+    byAgent[a].retire = byAgent[a].retire.slice(0, 8);
+    byAgent[a].ab_leaders = byAgent[a].ab_leaders.slice(0, 5);
+  }
+  // Trend-source ROI: winners per trend id → which sources actually produce winners.
+  const roi = {};
+  for (const r of labelledRows) {
+    if (!r.trend_id) continue;
+    const source = trendIndex[r.trend_id]?.source || "unknown";
+    const s = (roi[source] ||= { winners: 0, total: 0 });
+    s.total++;
+    if (r.label === "winner") s.winners++;
+  }
+  return { by_agent: byAgent, trend_source_roi: roi };
+}
+
 /**
  * Build a PAUSED paid-test campaign draft from a winning creative.
  * Routes to the DTC website until TikTok Shop is approved.
  */
-export function paidTestDraft(winner, { budgetGbp = 10, tiktokShopApproved = false, landingUrl = "" } = {}) {
+export function paidTestDraft(winner, { budgetGbp = 10, tiktokShopApproved = false, landingUrl = "", namePrefix = "HB_UK" } = {}) {
   const platform = winner.platform === "instagram" || winner.platform === "facebook" ? "meta" : winner.platform || "tiktok";
-  const name = `PLN_UK_${platform.toUpperCase()}_WINNER_${String(winner.creative_id || winner.post_id || "X").replace(/[^a-zA-Z0-9]+/g, "").slice(0, 24).toUpperCase()}`;
+  const name = `${namePrefix}_${platform.toUpperCase()}_WINNER_${String(winner.creative_id || winner.post_id || "X").replace(/[^a-zA-Z0-9]+/g, "").slice(0, 24).toUpperCase()}`;
   return {
     campaign_name: name,
     platform,

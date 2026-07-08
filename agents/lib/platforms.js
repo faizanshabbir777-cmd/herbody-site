@@ -83,6 +83,36 @@ export const shopify = {
       ready: n.fileStatus === "READY" && !!url,
     };
   },
+  /**
+   * Revenue attribution per utm_content over the last 30 days, via the order's
+   * customer journey (last visit UTM parameters). Availability of journey data
+   * varies by plan/app setup — degrades to an empty map, never throws upward.
+   */
+  async revenueByUtmContent() {
+    if (!this.available) return { available: false };
+    try {
+      const q = `query($q:String!){ orders(first: 100, query:$q){ nodes{
+        currentTotalPriceSet{shopMoney{amount}}
+        customerJourneySummary{ lastVisit{ utmParameters{ content } } }
+      } } }`;
+      const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+      const r = await this.gql(q, { q: `created_at:>=${since}` });
+      const map = {};
+      for (const o of r.data?.orders?.nodes || []) {
+        const content = o.customerJourneySummary?.lastVisit?.utmParameters?.content;
+        if (!content) continue;
+        const key = String(content).toLowerCase();
+        const m = (map[key] ||= { orders: 0, revenue_gbp: 0 });
+        m.orders++;
+        m.revenue_gbp = Math.round((m.revenue_gbp + parseFloat(o.currentTotalPriceSet?.shopMoney?.amount || 0)) * 100) / 100;
+      }
+      audit("shopify", "revenueByUtmContent", true, `${Object.keys(map).length} utm_content keys`);
+      return { available: true, by_utm_content: map };
+    } catch (e) {
+      audit("shopify", "revenueByUtmContent", false, String(e.message).slice(0, 120));
+      return { available: true, by_utm_content: {}, note: `journey data unavailable: ${String(e.message).slice(0, 120)}` };
+    }
+  },
   /** Yesterday+today order rollup for metrics. */
   async orderStats() {
     if (!this.available) return { available: false };
@@ -156,6 +186,21 @@ export const tiktok = {
       })),
     };
   },
+  /** Pause a live TikTok campaign (stop-loss enforcement — the safe direction). */
+  async pauseCampaign(campaignId) {
+    if (!this.adsAvailable) return { available: false };
+    await jfetch("https://business-api.tiktok.com/open_api/v1.3/campaign/status/update/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Access-Token": env("TIKTOK_ACCESS_TOKEN") },
+      body: JSON.stringify({
+        advertiser_id: env("TIKTOK_ADVERTISER_ID"),
+        campaign_ids: [String(campaignId)],
+        operation_status: "DISABLE",
+      }),
+    });
+    audit("tiktok", "pauseCampaign", true, String(campaignId));
+    return { available: true, id: String(campaignId) };
+  },
   /** Create a TikTok campaign in DISABLE (paused) state. Campaign level only. */
   async createCampaignPaused({ name, objective = "TRAFFIC", dailyBudgetGbp = 5 }) {
     if (!this.adsAvailable) return { available: false };
@@ -219,6 +264,19 @@ export const meta = {
   },
   async pagePost(payload) {
     if (!this.pageAvailable) return { available: false };
+    // Image posts go through /photos; text/link posts through /feed.
+    if (payload.image_url) {
+      const body = await jfetch(`https://graph.facebook.com/${META_V}/${env("META_PAGE_ID")}/photos`, {
+        method: "POST",
+        body: new URLSearchParams({
+          access_token: env("META_ACCESS_TOKEN"),
+          url: payload.image_url,
+          caption: payload.caption || payload.text || "",
+        }),
+      });
+      audit("meta", "pagePhoto", true, body.post_id || body.id);
+      return { available: true, id: body.post_id || body.id };
+    }
     const body = await jfetch(`https://graph.facebook.com/${META_V}/${env("META_PAGE_ID")}/feed`, {
       method: "POST",
       body: new URLSearchParams({
@@ -274,6 +332,16 @@ export const meta = {
     audit("meta", "igMediaMetrics", true, `${rows.length} media`);
     return { available: true, rows };
   },
+  /** Pause a live Meta campaign (stop-loss enforcement — the safe direction). */
+  async pauseCampaign(campaignId) {
+    if (!this.adsAvailable) return { available: false };
+    await jfetch(`https://graph.facebook.com/${META_V}/${campaignId}`, {
+      method: "POST",
+      body: new URLSearchParams({ access_token: env("META_ACCESS_TOKEN"), status: "PAUSED" }),
+    });
+    audit("meta", "pauseCampaign", true, String(campaignId));
+    return { available: true, id: String(campaignId) };
+  },
   /** Create a Meta campaign in PAUSED state. Campaign level only. */
   async createCampaignPaused({ name, objective = "OUTCOME_TRAFFIC", dailyBudgetGbp = 5 }) {
     if (!this.adsAvailable) return { available: false };
@@ -298,7 +366,7 @@ export const meta = {
       new URLSearchParams({
         access_token: env("META_ACCESS_TOKEN"),
         date_preset: "last_7d", level: "campaign",
-        fields: "campaign_name,spend,impressions,clicks,actions",
+        fields: "campaign_id,campaign_name,spend,impressions,clicks,actions",
       });
     const body = await jfetch(u);
     audit("meta", "adInsights", true);

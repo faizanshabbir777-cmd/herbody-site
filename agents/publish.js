@@ -10,6 +10,7 @@ import { tiktok, meta } from "./lib/platforms.js";
 import { loadAutonomy, modeAllows, canAutoPost, postedTodayByPlatform } from "./lib/autonomy.js";
 import { qaDecisions, withResolvedVisualQa } from "./lib/visual-qa.js";
 import { mediaHostAllowed } from "./lib/media.js";
+import { approvedContradiction } from "./lib/publish-rules.js";
 
 const qa = qaDecisions();
 
@@ -77,22 +78,8 @@ async function publishOne(item, { auto = false } = {}) {
 }
 
 // ---------- path 1: human-approved items ----------
-// Human approval is the final say on copy/creative judgement, but two states are
-// contradictory with an approval and always block:
-//  - mechanical compliance gate verdict REJECT (hard-banned claim present),
-//  - visual QA "fail"/"failed_auto" (the media was explicitly failed).
-// Such items stay in the queue with a logged reason for the founder to resolve.
-function approvedContradiction(item) {
-  if (item.payload?.compliance_gate?.verdict === "REJECT") {
-    return `compliance gate REJECT (${(item.payload.compliance_gate.reasons || []).join("; ").slice(0, 200)}) — fix the draft or clear the verdict before publishing`;
-  }
-  const qaStatus = item.payload?.visual_qa_status;
-  if (qaStatus === "fail" || qaStatus === "failed_auto") {
-    return `visual QA "${qaStatus}" — media was failed; regenerate or replace it before publishing`;
-  }
-  return null;
-}
-
+// Contradiction rules live in lib/publish-rules.js (unit-tested): approval is
+// final on judgement, but gate REJECT / failed visual QA always block.
 const approved = approvedUnpublished();
 let approvedPublished = 0;
 for (const { item } of approved) {

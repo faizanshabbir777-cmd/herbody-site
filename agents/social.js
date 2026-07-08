@@ -4,7 +4,7 @@
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
 import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
-import { requestCreative } from "./lib/creative-requests.js";
+import { requestCreative, reusableCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
 
 /** Formats that need motion assets; everything else gets a still image. */
@@ -58,9 +58,11 @@ const SCHEMA = {
 const mem = loadMemory("social");
 const strategy = readJson("data/config/strategy.json", {});
 const metrics = readJson("data/metrics/latest.json", {});
+const digest = readJson("data/state/creative-digest.json", {});
 
 const user = `Date: ${today()} (idempotent daily run).
 Strategy: ${JSON.stringify(strategy)}
+Creative learnings digest (make more of the winners, retire the fatigued angles): ${JSON.stringify(digest.by_agent?.social || {})}
 Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("social").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
@@ -81,20 +83,24 @@ for (const d of data.drafts) {
     continue;
   }
   const assetType = VIDEO_FORMATS.has(d.format) ? "video" : "image";
-  let creative = {
-    media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
-    visual_qa_status: "not_generated",
-  };
-  if (allowGenerate) {
-    creative = await requestCreative({
-      platform: d.channel,
-      format: d.format,
-      creative_goal: d.title,
-      asset_type: assetType,
-      prompt: d.generation_prompt || d.visual_brief,
-      aspect_ratio: assetType === "video" || d.format === "story" ? "9:16" : "1:1",
-    });
-    if (creative.media_status === "generated") generated++;
+  const existing = readJson(`data/queue/social/${id}.json`, null);
+  let creative = reusableCreative(existing?.payload);
+  if (!creative) {
+    creative = {
+      media_status: allowGenerate ? "manual" : "generation_disabled_by_policy",
+      visual_qa_status: "not_generated",
+    };
+    if (allowGenerate) {
+      creative = await requestCreative({
+        platform: d.channel,
+        format: d.format,
+        creative_goal: d.title,
+        asset_type: assetType,
+        prompt: d.generation_prompt || d.visual_brief,
+        aspect_ratio: assetType === "video" || d.format === "story" ? "9:16" : "1:1",
+      });
+      if (creative.media_status === "generated") generated++;
+    }
   }
   putDraft("social", {
     id,

@@ -13,14 +13,14 @@ One entry per agent in the fleet. Shared rules for **all** agents: system prompt
 - **Runs:** daily ~05:30 UK, before content agents; Monday extended run for the digest.
 - **Code:** `agents/master.js` · workflow `.github/workflows/agent-master.yml`.
 
-## 2. TikTok agent — "OmniFlash"
+## 2. TikTok agent — "OmniFlash" (EDITOR layer)
 
-- **Does:** drafts short-video concepts: hook, shot list, script, caption, sounds note, cover-text suggestion. Formats: label-read, ritual/ASMR morning, COA-explainer, pledge-explainer, founder-less brand voiceover.
-- **Inputs:** master task list, `docs/COPY_BANK.md`, trend notes from the metrics agent (untrusted-data wrapped), past approval rates per format.
-- **Outputs:** `data/queue/tiktok/YYYY-MM-DD-<slug>.json` (structured: hook/script/caption/utm/compliance fields).
-- **Guardrails:** creator/brand framing only — never a scripted "customer" voice (DMCC); no before/after, no body-transformation shots in shot lists; captions from approved bank or matrix-mapped; unaudited API = SELF_ONLY, so publishing is manual-post from the queue card until the app passes TikTok audit.
-- **Runs:** daily after master.
-- **Code:** `agents/tiktok.js` · workflow `.github/workflows/agent-tiktok.yml`.
+- **Does:** the TikTok channel's editorial layer. Reviews every TikTok-bound draft the producers queued today: sharpens the first-2-seconds hook, tightens the caption, sets the posting slot, keeps the calendar, and stamps `payload.editorial` with a verdict (`approved` / `needs_work` + notes). The autonomy policy requires this verdict before any TikTok item auto-posts. **Fallback:** when the day's TikTok queue is empty, drafts 1–2 founder-filmable scripts itself (no media generation — the video producer is the fleet's only renderer).
+- **Inputs:** today's TikTok-bound queue items, strategy, creative learnings digest, metrics + trends (untrusted-data wrapped).
+- **Outputs:** editorial stamps on other agents' queue items (compliance-gate stamp invalidated when it edits copy, so the gate re-checks); fallback drafts in `data/queue/tiktok/`.
+- **Guardrails:** creator/brand framing only — never a scripted "customer" voice (DMCC); no before/after; verdicts only downgrade autonomy eligibility, never bypass compliance or visual QA; unaudited API = SELF_ONLY, so publishing is manual-post until the app passes TikTok audit.
+- **Runs:** daily AFTER the producers (social → video → image → OmniFlash).
+- **Code:** `agents/tiktok.js`.
 
 ## 3. Social agent
 
@@ -112,10 +112,16 @@ One entry per agent in the fleet. Shared rules for **all** agents: system prompt
 
 ## 13. Autonomy policy (cross-cutting)
 
-- **What:** `data/config/autonomy.json` — mode ladder `draft_only < auto_generate < auto_post_organic < auto_scale_ads`, `kill_switch`, per-platform daily post caps (UK day boundary), visual-QA and compliance requirements, `allow_self_only_tiktok_posts` (off until the TikTok app audit passes), ad budget caps, stop-loss and winner thresholds (optionally adaptive to the account's own median engagement).
+- **What:** `data/config/autonomy.json` — mode ladder `draft_only < auto_generate < auto_post_organic < auto_scale_ads`, `kill_switch`, per-platform daily post caps (UK day boundary), visual-QA/compliance/editorial requirements, `allow_self_only_tiktok_posts` (off until the TikTok app audit passes), ad budget caps, LLM daily budget, stop-loss and winner thresholds (adaptive to the account's own median engagement; revenue-attributed creatives are winners regardless of engagement).
 - **Enforced by:** `agents/lib/autonomy.js` in the producers (generate?), publisher (auto-post?) and paid agents (auto-scale?). `kill_switch: true` halts every automatic action instantly — toggleable from the Approvals dashboard.
 - **Publisher autonomy path:** in `auto_post_organic`+, the publisher may post organic items that pass ALL gates — human compliance `PASS` **and** mechanical compliance-gate `PASS`, human visual-QA `pass` in `data/visual-qa.json`, allowed platform, scheduled today, hosted media URL from an allowlisted host, cap not reached — without a queue approval; everything else still requires `data/approvals.json`. Ready-manual outcomes are never marked published by the autonomy path.
-- **Visual QA:** producers stamp generated media `needs_review`; an optional Claude-vision pre-check (`agents/lib/vision-qa.js`) can auto-FAIL obvious product substitutions but can never auto-pass; the founder's pass/fail verdict is written by the dashboard to `data/visual-qa.json`.
+- **Visual QA:** producers stamp generated media `needs_review`; an optional Claude-vision pre-check (`agents/lib/vision-qa.js`) can auto-FAIL obvious product substitutions but can never auto-pass; the founder's pass/fail verdict is written by the dashboard to `data/visual-qa.json` **with a media-URL fingerprint** — a pass never covers a newer render.
+
+## 13c. Doctor & Notify (ops surface)
+
+- **Doctor** (`agents/doctor.js`): presence-only integration check, runs first — `data/state/integrations.json` shows live vs degraded platforms on the dashboard.
+- **Notify** (`agents/notify.js`): runs last; collects critical events (kill switch, stop-loss flags, blocked product spec, compliance REJECTs, failed renders, LLM budget breach) into ONE GitHub issue labelled `fleet-alert`. Degrades to log-only without a token.
+- **Housekeeping:** collect-pending archives decided queue items older than 30 days to `data/archive/queue/`; per-day Anthropic usage (+£ estimate) accrues in `data/state/anthropic-usage.json`.
 
 ## 13a. Collect-pending
 

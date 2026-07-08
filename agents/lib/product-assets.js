@@ -1,7 +1,7 @@
 // Product asset gate — the single validator every creative producer must pass
-// before generating ANY media. Guarantees generated assets depict PureLife Nutra
-// Creatine Gummies exactly (per the locked visual spec / approved references) and
-// never a random or generic supplement product.
+// before generating ANY media. Guarantees generated assets depict the real
+// HerBody product exactly (per the locked visual spec / approved references)
+// and never a random or generic supplement product.
 import { readJson } from "./state.js";
 
 export const PRODUCT_ASSETS_PATH = "data/config/product-assets.json";
@@ -9,8 +9,8 @@ export const PRODUCT_ASSETS_PATH = "data/config/product-assets.json";
 /** Minimum visual-spec fields required before spec-only generation is allowed. */
 export const REQUIRED_IDENTITY_FIELDS = ["brand_name", "product_type", "product_name"];
 export const REQUIRED_VISUAL_FIELDS = [
-  "packaging_type", "container_shape", "lid_colour",
-  "label_colours", "logo_usage", "gummy_shape", "gummy_colour",
+  "packaging_type", "container_shape", "closure",
+  "label_colours", "logo_usage", "product_form", "product_colour",
 ];
 
 export function loadProductSpec() {
@@ -67,18 +67,18 @@ export function productPreservationClause(spec) {
   const bits = [
     `Depict ${spec?.product_name || "the product"} by ${spec?.brand_name || "the brand"} exactly according to the supplied product visual spec`,
     `packaging: ${vs.packaging_type || "as specified"}`,
-    `container: ${vs.container_shape || "as specified"} with ${vs.lid_colour || "the specified lid"}`,
+    `container: ${vs.container_shape || "as specified"} with ${vs.closure || "the specified closure"}`,
     `label: ${Array.isArray(vs.label_colours) ? vs.label_colours.join(", ") : vs.label_colours || "as specified"}`,
-    `gummies: ${vs.gummy_shape || "as specified"}, ${vs.gummy_colour || "as specified"}`,
+    `product: ${vs.product_form || "as specified"}, ${vs.product_colour || "as specified"}`,
   ];
-  return `${bits.join("; ")}. Do not substitute any other supplement product, jar, pouch, label, logo, flavour, gummy colour or competitor packaging. Do not redesign or invent label text — the real label artwork is composited before publishing.`;
+  return `${bits.join("; ")}. Do not substitute any other supplement product, bottle, jar, pills, capsules, gummies, label, logo, flavour or competitor packaging. Do not redesign or invent label text — the real label artwork is composited before publishing.`;
 }
 
 /** Product-level negative prompt merged into every generation call. */
 export function productNegativePrompt(spec) {
   const base = [
-    "generic supplement bottle", "random pill bottle", "powder tub", "capsules", "pills",
-    "invented label text", "redesigned logo", "competitor packaging", "third-party logos",
+    "generic supplement bottle", "random pill bottle", "capsules", "pills", "gummies",
+    "invented label text", "invented ingredient panel", "redesigned logo", "competitor packaging", "third-party logos",
     "before and after", "body transformation", "medical imagery", "fake review stars",
     "trust badges", "children", "pregnancy imagery", "watermark", "distorted text",
   ];

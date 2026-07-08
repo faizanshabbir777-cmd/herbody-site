@@ -13,6 +13,8 @@ export const DEFAULT_POLICY = {
   max_posts_per_day_by_platform: {},
   requires_visual_qa_pass: true,
   requires_compliance_pass: true,
+  // OmniFlash editorial verdict required on TikTok items before auto-posting.
+  requires_editorial_pass: true,
   // Pre-audit TikTok apps can only create SELF_ONLY (private) posts — burning
   // daily caps on invisible posts. Off until the app passes TikTok's audit.
   allow_self_only_tiktok_posts: false,
@@ -90,6 +92,13 @@ export function canAutoPost(policy, item, postedTodayByPlatform = {}, opts = {})
   const qa = item?.payload?.visual_qa_status;
   if (policy.requires_visual_qa_pass && qa !== "pass") {
     return { ok: false, reason: `visual_qa_status "${qa || "missing"}" is not pass — a human must visually approve generated product media` };
+  }
+  // TikTok items must carry OmniFlash's editorial approval when required.
+  if (platform === "tiktok" && policy.requires_editorial_pass !== false) {
+    const editorial = item?.payload?.editorial?.verdict;
+    if (editorial !== "approved") {
+      return { ok: false, reason: `editorial verdict "${editorial || "missing"}" is not approved — OmniFlash must review TikTok items first` };
+    }
   }
   // TikTok/IG API posting needs a hosted media URL — without one the item can
   // only ever become ready-manual, so it is not auto-post eligible.

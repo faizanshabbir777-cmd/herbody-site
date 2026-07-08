@@ -1,6 +1,7 @@
 name: agent-fleet
-# Daily marketing fleet: metrics → trends → OmniFlash TikTok → social → video → image
-# → creative-performance → PPC → paid-growth → tiktok-shop-ads → MASTER brief → one commit.
+# Daily marketing fleet: doctor → metrics → collect-pending → trends → social → video
+# → image → OmniFlash (TikTok editor) → compliance gate → creative-performance → PPC
+# → paid-growth → tiktok-shop-ads → gate → MASTER brief → notify → one commit.
 on:
   schedule:
     - cron: "17 5 * * *"   # 05:17 UTC daily (off-peak minute; cron may drift — runs are idempotent)
@@ -10,6 +11,7 @@ concurrency:
   cancel-in-progress: false
 permissions:
   contents: write
+  issues: write   # notify agent maintains the "Fleet alerts" issue
 jobs:
   fleet:
     runs-on: ubuntu-latest
@@ -50,6 +52,9 @@ jobs:
         run: |
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "::error::ANTHROPIC_API_KEY secret is required for the agent fleet"; exit 1; fi
+      - name: Doctor (integration status)
+        working-directory: agents
+        run: node doctor.js
       - name: Metrics
         working-directory: agents
         run: node metrics.js
@@ -59,9 +64,6 @@ jobs:
       - name: Trends
         working-directory: agents
         run: node trends.js
-      - name: OmniFlash (TikTok)
-        working-directory: agents
-        run: node tiktok.js
       - name: Social
         working-directory: agents
         run: node social.js
@@ -71,6 +73,9 @@ jobs:
       - name: Image producer
         working-directory: agents
         run: node image.js
+      - name: OmniFlash (TikTok editor)
+        working-directory: agents
+        run: node tiktok.js
       - name: Compliance gate (content drafts)
         working-directory: agents
         run: node compliance-gate.js
@@ -92,6 +97,11 @@ jobs:
       - name: Master (daily brief)
         working-directory: agents
         run: node master.js
+      - name: Notify (fleet alerts issue)
+        working-directory: agents
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node notify.js
       - name: Commit state (single commit)
         run: |
           git config user.name "herbody-fleet[bot]"

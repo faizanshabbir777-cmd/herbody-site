@@ -2,7 +2,8 @@
 // Queue item: data/queue/<agent>/<id>.json  →  indexed in data/queue/index.json
 // Decisions: data/approvals.json (dashboard-only writer)
 // Published: data/published/<id>.json + data/published/index.json (publisher-only writer)
-import { readJson, writeJson, listDir, today, nowIso } from "./state.js";
+import { unlinkSync } from "node:fs";
+import { readJson, writeJson, listDir, today, nowIso, repoPath } from "./state.js";
 
 export function makeId(agent, slug) {
   const s = String(slug).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 48);
@@ -94,6 +95,34 @@ export function approvedUnpublished() {
   return queueItems().filter(
     ({ item }) => dec.get(item.id)?.status === "approved" && !pub.has(item.id)
   );
+}
+
+/**
+ * Archive decided (published/rejected) queue items older than `days` — keeps the
+ * dashboard and diffs fast. Files move to data/archive/queue/<agent>/; decisions
+ * and published records stay where they are (audit trail intact).
+ * Returns the archived ids.
+ */
+export function archiveDecided({ days = 30 } = {}) {
+  const cutoff = new Date(Date.now() - days * 864e5).toISOString();
+  const dec = decisions();
+  const published = new Set(
+    (readJson("data/published/index.json", { items: [] }).items || []).map((p) => p.id)
+  );
+  const idx = readJson("data/queue/index.json", { items: [] });
+  const keep = [];
+  const archived = [];
+  for (const e of idx.items || []) {
+    const decided = published.has(e.id) || dec.get(e.id)?.status === "rejected";
+    const old = String(e.created || "") < cutoff;
+    if (!(decided && old)) { keep.push(e); continue; }
+    const item = readJson(e.path, null);
+    if (item) writeJson(`data/archive/queue/${e.agent}/${e.id}.json`, item);
+    try { unlinkSync(repoPath(e.path)); } catch { /* already gone */ }
+    archived.push(e.id);
+  }
+  if (archived.length) writeJson("data/queue/index.json", { items: keep });
+  return archived;
 }
 
 /** Record a publish result (publisher is the only writer here). */

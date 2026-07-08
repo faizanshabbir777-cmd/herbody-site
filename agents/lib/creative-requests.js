@@ -1,7 +1,7 @@
-// Shared creative-request contract — the ONE path any agent (tiktok, social,
-// video, image, paid) uses to obtain generated media. It enforces the product
-// gate (PureLife Nutra Creatine Gummies only — never random products), appends
-// the product-preservation clause + negative prompt, and returns queue-ready
+// Shared creative-request contract — the ONE path any agent (social, video,
+// image, paid) uses to obtain generated media. It enforces the product gate
+// (the real HerBody product only — never random products), appends the
+// product-preservation clause + negative prompt, and returns queue-ready
 // metadata. Media URLs only — files never land in the repo.
 import {
   loadProductSpec, generationGate, specVersion,
@@ -10,6 +10,32 @@ import {
 import { generateVideo, generateImage } from "./creative-gen.js";
 import { rehostMedia, hostOf } from "./media.js";
 import { visionQaCheck, applyVisionVerdict } from "./vision-qa.js";
+
+/** Fields copied when reusing an existing item's creative result. */
+const REUSE_FIELDS = [
+  "media_status", "media_url", "provider_media_url", "media_host",
+  "hosted_file_id", "hosted_pending", "hosting_note",
+  "preview_url", "thumbnail_url", "provider_job_id",
+  "visual_qa_status", "vision_qa", "product_fidelity_notes",
+  "generation_prompt", "negative_prompt",
+  "product_spec_version", "product_asset_ids", "gate_mode",
+];
+
+/**
+ * Idempotent re-runs must NOT re-spend generation credits: if today's queue item
+ * already carries generated (or still-rendering) media, reuse it instead of
+ * calling the provider again. Returns the creative subset or null.
+ */
+export function reusableCreative(existingPayload) {
+  const p = existingPayload;
+  if (!p) return null;
+  const generated = p.media_status === "generated" && p.media_url;
+  const pending = p.media_status === "pending" && p.provider_job_id;
+  if (!generated && !pending) return null;
+  const out = { reused: true };
+  for (const f of REUSE_FIELDS) if (p[f] !== undefined) out[f] = p[f];
+  return out;
+}
 
 /**
  * Assemble the queue payload for a producer draft: creative pack fields + product

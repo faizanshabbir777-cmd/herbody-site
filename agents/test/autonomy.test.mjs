@@ -23,6 +23,7 @@ const ITEM = {
     visual_qa_status: "pass",
     video_url: "https://cdn.example.com/x.mp4",
     compliance_gate: { verdict: "PASS", reasons: [] },
+    editorial: { verdict: "approved", by: "omniflash" },
   },
 };
 
@@ -91,6 +92,24 @@ test("mechanical compliance-gate stamp required — self-assessed PASS alone nev
   assert.match(r.reason, /compliance gate verdict/);
   const rejected = { ...ITEM, payload: { ...ITEM.payload, compliance_gate: { verdict: "REJECT" } } };
   assert.equal(canAutoPost(POLICY, rejected, {}, CLOCK).ok, false);
+});
+
+test("editorial gate: TikTok items need OmniFlash approval before auto-posting", () => {
+  const noEd = { ...ITEM, payload: { ...ITEM.payload, editorial: undefined } };
+  const r = canAutoPost(POLICY, noEd, {}, CLOCK);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /editorial verdict/);
+  const needsWork = { ...ITEM, payload: { ...ITEM.payload, editorial: { verdict: "needs_work" } } };
+  assert.equal(canAutoPost(POLICY, needsWork, {}, CLOCK).ok, false);
+  // Instagram items are outside OmniFlash's remit
+  const ig = canAutoPost(POLICY, {
+    ...ITEM, platform: "instagram",
+    payload: { ...ITEM.payload, editorial: undefined, video_url: null, image_url: "https://cdn/x.jpg" },
+  }, {}, CLOCK);
+  assert.equal(ig.ok, true);
+  // and the gate can be disabled
+  const off = canAutoPost({ ...POLICY, requires_editorial_pass: false }, noEd, {}, CLOCK);
+  assert.equal(off.ok, true);
 });
 
 test("SELF_ONLY flag: TikTok auto-posting blocked until the app audit flag is set", () => {

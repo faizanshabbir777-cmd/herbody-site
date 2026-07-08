@@ -37,6 +37,8 @@ out.gads = await safe(
 // ---- creative-level organic rollup (winner-selection input) ----
 const organicTikTok = await safe("tiktok-organic", () => tiktok.organicVideoMetrics());
 const organicIG = await safe("ig-organic", () => meta.igMediaMetrics());
+const revenue = await safe("shopify-utm-revenue", () => shopify.revenueByUtmContent());
+const revenueByUtm = revenue.by_utm_content || {};
 
 // Join platform rows onto published queue items (see lib/creative-metrics.js
 // for the match priority: platform_post_id → utm_content → caption prefix).
@@ -46,7 +48,12 @@ const creativeRows = [];
 for (const p of published) {
   const full = readJson(`data/published/${p.id}.json`, {});
   const match = matchPlatformRow(p, full.payload || {}, platformRows);
-  creativeRows.push(buildCreativeRow(p, full, match));
+  const row = buildCreativeRow(p, full, match);
+  // Revenue attribution: orders whose last visit carried this creative's utm_content.
+  const rev = row.utm_content ? revenueByUtm[String(row.utm_content).toLowerCase()] : null;
+  row.orders = rev?.orders || 0;
+  row.revenue_gbp = rev?.revenue_gbp || 0;
+  creativeRows.push(row);
 }
 // Unmatched platform rows still count — they may be manual posts.
 for (const r of platformRows) {

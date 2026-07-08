@@ -16,6 +16,19 @@ test("no decision → machine status; nothing → not_generated", () => {
   assert.equal(resolveVisualQa({ id: "y", payload: {} }, new Map()), "not_generated");
 });
 
+test("media fingerprint: a pass recorded for OLD media is ignored after a new render", () => {
+  const decided = new Map([["x1", { id: "x1", status: "pass", media_url: "https://cdn/old.mp4" }]]);
+  // same media → pass applies
+  const same = { id: "x1", payload: { visual_qa_status: "needs_review", media_url: "https://cdn/old.mp4" } };
+  assert.equal(resolveVisualQa(same, decided), "pass");
+  // media swapped by collect-pending → stale pass ignored, back to needs_review
+  const swapped = { id: "x1", payload: { visual_qa_status: "needs_review", media_url: "https://cdn/new.mp4" } };
+  assert.equal(resolveVisualQa(swapped, decided), "needs_review");
+  // legacy decisions without media_url still apply (backward compatible)
+  const legacy = new Map([["x1", { id: "x1", status: "pass" }]]);
+  assert.equal(resolveVisualQa(swapped, legacy), "pass");
+});
+
 test("withResolvedVisualQa stamps without mutating the original", () => {
   const orig = item("needs_review");
   const stamped = withResolvedVisualQa(orig, dec("pass"));

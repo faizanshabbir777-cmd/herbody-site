@@ -49,15 +49,25 @@ export async function structured({ charter, user, schema, maxTokens = MAX_TOKENS
   return { data: call.input, usage: res.usage };
 }
 
-/** Accumulate per-day token usage (fleet agents run sequentially — safe writer). */
+// £ per MILLION tokens — estimate only, overridable when pricing changes.
+const PRICE_IN = parseFloat(process.env.ANTHROPIC_PRICE_IN_GBP_PER_MTOK || "2.4");
+const PRICE_OUT = parseFloat(process.env.ANTHROPIC_PRICE_OUT_GBP_PER_MTOK || "12");
+
+export function estimateCostGbp(usage = {}) {
+  const cost = ((usage.input_tokens || 0) * PRICE_IN + (usage.output_tokens || 0) * PRICE_OUT) / 1e6;
+  return Math.round(cost * 10000) / 10000;
+}
+
+/** Accumulate per-day token usage + £ estimate (fleet agents run sequentially — safe writer). */
 export function recordUsage(usage = {}) {
   try {
     const doc = readJson("data/state/anthropic-usage.json", { dates: {} });
     const d = today();
-    const day = doc.dates[d] || { input_tokens: 0, output_tokens: 0, calls: 0 };
+    const day = doc.dates[d] || { input_tokens: 0, output_tokens: 0, calls: 0, est_cost_gbp: 0 };
     day.input_tokens += usage.input_tokens || 0;
     day.output_tokens += usage.output_tokens || 0;
     day.calls += 1;
+    day.est_cost_gbp = Math.round((day.est_cost_gbp + estimateCostGbp(usage)) * 10000) / 10000;
     doc.dates[d] = day;
     // keep the last 60 dated entries
     const keys = Object.keys(doc.dates).sort();

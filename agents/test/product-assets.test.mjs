@@ -7,17 +7,17 @@ import {
 
 const COMPLETE_SPEC = {
   version: 3,
-  brand_name: "PureLife Nutra",
-  product_type: "Creatine Gummies",
-  product_name: "PureLife Nutra Creatine Gummies",
+  brand_name: "HerBody",
+  product_type: "Powdered daily supplement (creatine + collagen + multivitamin)",
+  product_name: "HerBody No.01 — The Daily",
   visual_spec: {
-    packaging_type: "matte white jar",
-    container_shape: "round wide-mouth jar",
-    lid_colour: "matte black lid",
-    label_colours: ["white", "green"],
+    packaging_type: "matte stand-up supplement pouch",
+    container_shape: "stand-up pouch",
+    closure: "resealable zip seal",
+    label_colours: ["cream", "black label block", "pink accent"],
     logo_usage: "wordmark exactly as supplied",
-    gummy_shape: "cube",
-    gummy_colour: "amber",
+    product_form: "fine powder, 14g scoop",
+    product_colour: "pale pink powder",
   },
   forbidden_visual_substitutes: ["stock supplement bottles"],
   approved_reference_assets: [],
@@ -33,13 +33,13 @@ test("validateSpec reports every missing/TODO field", () => {
   const broken = {
     ...COMPLETE_SPEC,
     brand_name: "",
-    visual_spec: { ...COMPLETE_SPEC.visual_spec, gummy_colour: "TODO_VERIFY", lid_colour: "" },
+    visual_spec: { ...COMPLETE_SPEC.visual_spec, product_colour: "TODO_VERIFY", closure: "" },
   };
   const { ok, missing } = validateSpec(broken);
   assert.equal(ok, false);
   assert.ok(missing.includes("brand_name"));
-  assert.ok(missing.includes("visual_spec.gummy_colour"));
-  assert.ok(missing.includes("visual_spec.lid_colour"));
+  assert.ok(missing.includes("visual_spec.product_colour"));
+  assert.ok(missing.includes("visual_spec.closure"));
 });
 
 test("validateSpec blocks on missing config entirely", () => {
@@ -86,8 +86,9 @@ test("only approved_for_generation:true references are used", () => {
 
 test("preservation clause names the exact product and forbids substitution", () => {
   const clause = productPreservationClause(COMPLETE_SPEC);
-  assert.match(clause, /PureLife Nutra Creatine Gummies/);
+  assert.match(clause, /HerBody No\.01 — The Daily/);
   assert.match(clause, /Do not substitute any other supplement product/);
+  assert.match(clause, /gummies/); // powder product — gummies are an explicit substitution ban
 });
 
 test("negative prompt merges spec substitutes with global bans", () => {
@@ -95,6 +96,7 @@ test("negative prompt merges spec substitutes with global bans", () => {
   assert.match(neg, /stock supplement bottles/);
   assert.match(neg, /before and after/);
   assert.match(neg, /competitor packaging/);
+  assert.match(neg, /gummies/);
 });
 
 test("specVersion is stable", () => {
@@ -105,8 +107,9 @@ test("specVersion is stable", () => {
 test("shipped repo config validates and gates as spec_only (generation ready before website images exist)", () => {
   const spec = loadProductSpec();
   assert.ok(spec, "data/config/product-assets.json must exist");
-  assert.equal(spec.brand_name, "PureLife Nutra");
-  assert.equal(spec.product_type, "Creatine Gummies");
+  assert.equal(spec.brand_name, "HerBody");
+  assert.match(spec.product_name, /The Daily/);
+  assert.equal(spec.utm_prefix, "hb_uk");
   const gate = generationGate(spec);
   assert.equal(gate.mode, "spec_only");
 });

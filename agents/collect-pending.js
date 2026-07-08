@@ -3,7 +3,7 @@
 //  2. Shopify Files uploads still processing (hosted_pending:true).
 // Runs at the start of each fleet run. No LLM call. Draft-first stays intact —
 // finished media is stamped needs_review, never auto-passed.
-import { queueItems, putDraft } from "./lib/queue.js";
+import { queueItems, putDraft, archiveDecided } from "./lib/queue.js";
 import { checkJob } from "./lib/creative-gen.js";
 import { rehostMedia, hostOf } from "./lib/media.js";
 import { shopify } from "./lib/platforms.js";
@@ -92,4 +92,7 @@ for (const { item } of queueItems()) {
   }
 }
 
-console.log(`[collect-pending] ${collected} render(s) collected · ${hosted} hosting URL(s) resolved · ${failed} failed · ${stillPending} still pending`);
+// Housekeeping: decided items older than 30 days move to data/archive/queue/.
+const archived = archiveDecided({ days: 30 });
+
+console.log(`[collect-pending] ${collected} render(s) collected · ${hosted} hosting URL(s) resolved · ${failed} failed · ${stillPending} still pending · ${archived.length} archived`);

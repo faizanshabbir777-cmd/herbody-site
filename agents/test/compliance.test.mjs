@@ -6,9 +6,9 @@ const CLEAN_ITEM = {
   type: "video",
   compliance_status: "PASS",
   payload: {
-    hook: "Two gummies. That's the whole routine.",
-    caption: "The 10-second morning routine.",
-    landing_url: "https://shop.example.com/products/creatine-gummies?utm_source=tiktok&utm_medium=organic&utm_content=vid_x01",
+    hook: "One scoop. Ten seconds. Done.",
+    caption: "The 10-second morning ritual.",
+    landing_url: "https://shop.example.com/products/the-daily?utm_source=tiktok&utm_medium=organic&utm_content=vid_x01",
     utm: "utm_source=tiktok&utm_medium=organic&utm_content=vid_x01",
     compliance_status: "PASS",
   },
@@ -42,7 +42,7 @@ test("borderline phrasing forces NEEDS_REVIEW", () => {
   const cases = [
     "tired of complicated routines?",
     "boosts energy every morning",
-    "the best creatine gummies",
+    "the best creatine for women",
     "20% off this week",
   ];
   for (const text of cases) {
@@ -88,7 +88,7 @@ test("gate inspects nested paid campaign creative", () => {
     type: "campaign",
     payload: {
       campaigns: [{
-        campaign_name: "PLN_UK_TIKTOK_WINNER_X",
+        campaign_name: "HB_UK_TIKTOK_WINNER_X",
         creative: { hook: "Clinically proven before and after results" },
       }],
     },

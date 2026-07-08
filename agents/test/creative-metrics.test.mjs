@@ -4,7 +4,7 @@ import { utmContentOf, matchPlatformRow, buildCreativeRow } from "../lib/creativ
 
 const ROWS = [
   { platform: "tiktok", post_id: "701", caption: "morning routine utm_content=vid_x01", views: 100, likes: 5 },
-  { platform: "tiktok", post_id: "702", caption: "Two gummies. That's the whole routine. #ad", views: 200 },
+  { platform: "tiktok", post_id: "702", caption: "Ten seconds. That's the whole routine. #ad", views: 200 },
   { platform: "instagram", post_id: "801", caption: "utm_content=img_y01", impressions: 300, likes: 9 },
 ];
 
@@ -25,7 +25,7 @@ test("match priority 2: utm_content token in caption", () => {
 });
 
 test("match priority 3: caption prefix (manual posts)", () => {
-  const m = matchPlatformRow({ platform: "tiktok" }, { caption: "Two gummies. That's the whole routine." }, ROWS);
+  const m = matchPlatformRow({ platform: "tiktok" }, { caption: "Ten seconds. That's the whole routine." }, ROWS);
   assert.equal(m.post_id, "702");
 });
 

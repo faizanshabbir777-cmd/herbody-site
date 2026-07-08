@@ -38,6 +38,7 @@ export function buildCreativeRow(publishedEntry = {}, fullRecord = {}, match = n
     asset_type: payload.asset_type || (publishedEntry.agent === "image" ? "image" : "video"),
     hook: payload.hook || "",
     trend_basis: payload.trend_basis || "",
+    trend_id: payload.trend_id || null,
     utm_content: utmContentOf(payload),
     published_at: publishedEntry.published_at,
     media_url: payload.video_url || payload.image_url || payload.media_url || null,
