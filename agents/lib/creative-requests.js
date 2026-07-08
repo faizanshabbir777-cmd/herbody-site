@@ -10,6 +10,14 @@ import {
 import { generateVideo, generateImage } from "./creative-gen.js";
 import { rehostMedia, hostOf } from "./media.js";
 import { visionQaCheck, applyVisionVerdict } from "./vision-qa.js";
+import { readJson } from "./state.js";
+import { NEGATIVES_PATH } from "./learning.js";
+
+/** Vision-QA failures teach the generator what to avoid (bounded, advisory). */
+export function learnedNegatives(deps = {}) {
+  const store = deps.negatives !== undefined ? deps.negatives : readJson(NEGATIVES_PATH, { phrases: [] });
+  return (store.phrases || []).map((p) => p.text).filter(Boolean).slice(0, 20);
+}
 
 /** Fields copied when reusing an existing item's creative result. */
 const REUSE_FIELDS = [
@@ -103,8 +111,11 @@ export async function requestCreative(req, deps = {}) {
 
   const prompt = [String(req.prompt || req.copy || "").trim(), productPreservationClause(spec)]
     .filter(Boolean).join("\n\n");
-  const negative = [String(req.negative_prompt || "").trim(), productNegativePrompt(spec)]
-    .filter(Boolean).join(", ");
+  const negative = [
+    String(req.negative_prompt || "").trim(),
+    productNegativePrompt(spec),
+    ...learnedNegatives(deps), // grows from vision-QA failures — the loop closing
+  ].filter(Boolean).join(", ");
 
   const gen = base.asset_type === "image"
     ? await (deps.genImage || generateImage)({

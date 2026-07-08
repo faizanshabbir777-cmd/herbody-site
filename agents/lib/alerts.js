@@ -31,6 +31,9 @@ export function collectAlerts(s = {}) {
   if (budget && spent >= budget) {
     alerts.push({ level: "warning", title: `LLM budget exceeded (£${spent} ≥ £${budget})`, detail: "Today's estimated Anthropic spend passed the daily budget in data/config/autonomy.json → llm.daily_budget_gbp." });
   }
+  for (const r of s.learningRegressions || []) {
+    alerts.push({ level: "warning", title: `Learning regression: ${r.metric}`, detail: `7-day ${r.metric} moved from ${r.from} to ${r.to} — the loop is trending the wrong way; review recent lessons and rejected drafts.` });
+  }
   return alerts;
 }
 

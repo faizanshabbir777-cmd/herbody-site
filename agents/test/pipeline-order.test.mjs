@@ -23,6 +23,10 @@ test("fleet pipeline order invariants", () => {
   // compliance gate stamps after all content (incl. edited copy), before performance/paid
   assert.ok(pos("tiktok.js") < pos("compliance-gate.js"));
   assert.ok(pos("compliance-gate.js") < pos("creative-performance.js"));
+  // learning loop: events collected after labels exist, lessons before paid decisions
+  assert.ok(pos("creative-performance.js") < pos("learning-collector.js"), "collector needs today's performance labels");
+  assert.ok(pos("learning-collector.js") < pos("learn.js"), "learn consumes freshly collected events");
+  assert.ok(pos("learn.js") < pos("paid-growth.js"));
   assert.ok(pos("creative-performance.js") < pos("paid-growth.js"), "paid scaling needs fresh labels");
   assert.ok(pos("paid-growth.js") < pos("tiktok-shop-ads.js"), "shop ads seed the shared budget counter from paid-growth");
   // master sees everything; notify runs last

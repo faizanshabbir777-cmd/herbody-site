@@ -8,6 +8,7 @@ import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { loadProductSpec, generationGate, blockedChecklist } from "./lib/product-assets.js";
 import { requestCreative, buildProducerPayload, reusableCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
+import { lessonsForAgent } from "./lib/learning.js";
 
 const spec = loadProductSpec();
 const gate = generationGate(spec);
@@ -42,10 +43,12 @@ Every image needs alt text.`;
 
 const BRIEF = {
   type: "object",
-  required: ["slug", "title", "format", "platforms", "visual_prompt", "on_image_text", "caption", "alt_text", "cta", "landing_url", "utm", "product_on_screen_plan", "compliance_status"],
+  required: ["slug", "title", "format", "platforms", "pillar", "visual_prompt", "on_image_text", "caption", "alt_text", "cta", "landing_url", "utm", "product_on_screen_plan", "compliance_status"],
   properties: {
     slug: { type: "string" },
     title: { type: "string" },
+    pillar: { type: "string", description: "which content pillar this serves (learning-loop tag)" },
+    angle: { type: "string", description: "one-phrase creative angle (learning-loop tag)" },
     format: { type: "string", enum: ["feed", "story", "carousel", "ad_still", "thumbnail", "tiktok_shop_image"] },
     platforms: { type: "array", items: { type: "string", enum: ["instagram", "facebook", "tiktok", "pinterest"] } },
     aspect_ratio: { type: "string", enum: ["1:1", "4:5", "9:16", "16:9"] },
@@ -86,11 +89,15 @@ const mem = loadMemory("image");
 const strategy = readJson("data/config/strategy.json", {});
 const trends = readJson("data/trends/latest.json", { relevant: [] });
 const digest = readJson("data/state/creative-digest.json", {});
+const lessons = lessonsForAgent(readJson("data/learning/lessons.json", { lessons: [] }), "image");
+const hints = readJson("data/learning/schedule-hints.json", {});
 
 const user = `Date: ${today()} (idempotent daily run — refresh/improve today's briefs if they exist).
 Strategy: ${JSON.stringify(strategy)}
 Gate mode: ${gate.mode} (${gate.mode === "references" ? `${gate.references.length} approved product reference asset(s)` : "locked visual spec only — outputs need close visual QA"}).
 Creative learnings digest (make more of the winners, retire the fatigued angles): ${JSON.stringify(digest.by_agent?.image || {})}
+CONFIRMED LESSONS (evidence-backed — follow them): ${JSON.stringify(lessons)}
+Schedule hint (learning loop): prefer pillar ${hints.pillar || "your choice"}.
 Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("image").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("trends.latest.relevant", JSON.stringify((trends.relevant || []).slice(0, 15)))}

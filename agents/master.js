@@ -96,6 +96,11 @@ const states = Object.fromEntries(
 const creativePerf = readJson("data/state/creative-performance.json", {});
 const shopReadiness = readJson("data/state/tiktok-shop-readiness.json", {});
 const anthropicUsage = readJson("data/state/anthropic-usage.json", {});
+const learningMeta = readJson("data/metrics/learning/latest.json", {});
+const lessonsDoc = readJson("data/learning/lessons.json", { lessons: [] });
+const activeLessons = (lessonsDoc.lessons || []).filter((l) => l.status === "active").slice(0, 8)
+  .map((l) => ({ statement: l.statement, confidence: l.confidence }));
+const experimentsDoc = readJson("data/learning/experiments.json", {});
 const queue = readJson("data/queue/index.json", { items: [] });
 const published = readJson("data/published/index.json", { items: [] });
 const approvals = readJson("data/approvals.json", { decisions: [] });
@@ -114,6 +119,10 @@ Published (last 10): ${JSON.stringify((published.items || []).slice(-10))}
 Creative performance labels (latest): ${JSON.stringify((creativePerf.labels || []).slice(0, 10))}
 TikTok Shop readiness: ${JSON.stringify(shopReadiness.blockers ? { approved: shopReadiness.approved, blockers: shopReadiness.blockers.length } : shopReadiness)}
 Anthropic usage (tokens by date): ${JSON.stringify(anthropicUsage.dates ? Object.fromEntries(Object.entries(anthropicUsage.dates).slice(-3)) : {})}
+LEARNING LOOP — 7d rates vs previous 7d (brief on what the fleet learned + what it's testing): ${JSON.stringify({ last7: learningMeta.last7, prev7: learningMeta.prev7, regressions: learningMeta.regressions })}
+Active lessons: ${JSON.stringify(activeLessons)}
+Experiments: ${JSON.stringify({ open: (experimentsDoc.experiments || []).filter((e) => e.status === "open").slice(0, 3), next: experimentsDoc.next_hypothesis || null })}
+${lessonsDoc.weekly_narrative ? `Learning analyst's weekly narrative: ${JSON.stringify(lessonsDoc.weekly_narrative)}` : ""}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
 ${WEEKLY ? "Set next week's strategy, budgets and the weekly brief." : "Write today's brief."}`;

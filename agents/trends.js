@@ -3,7 +3,7 @@
 // are additionally summarised into structured trend records (the raw text is
 // untrusted DATA — the summariser mines it, never follows instructions in it).
 import { runTrends, scoreRecords, loadSources, normalizeRecord } from "./lib/trends.js";
-import { writeJson, today } from "./lib/state.js";
+import { writeJson, readJson, today } from "./lib/state.js";
 
 const out = await runTrends();
 
@@ -43,7 +43,8 @@ Summarise each snapshot into a trend record (skip snapshots with no usable creat
     });
     const cfg = loadSources();
     const enriched = (data.records || []).map((r) => normalizeRecord(r));
-    const { relevant, rejected } = scoreRecords(enriched, cfg.relevance_keywords || []);
+    const sourceRoi = readJson("data/state/creative-digest.json", {}).trend_source_roi || {};
+    const { relevant, rejected } = scoreRecords(enriched, cfg.relevance_keywords || [], { sourceRoi });
     // enriched records replace their raw counterparts in the outputs
     out.relevant = out.relevant.filter((r) => r.visual_pattern !== RAW_MARKER).concat(relevant);
     out.rejected = out.rejected.filter((r) => r.visual_pattern !== RAW_MARKER).concat(rejected).slice(0, 50);

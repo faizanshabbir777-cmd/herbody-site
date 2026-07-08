@@ -406,6 +406,57 @@ function renderAutonomyPanel(policy, published, usage, integrations) {
     "</div>";
 }
 
+/* ---------------- learning loop panel ---------------- */
+
+function renderLearningPanel(meta, lessons, experiments) {
+  const el = document.getElementById("learning");
+  if (!el) return;
+  if (!meta && !lessons) {
+    el.innerHTML = emptyState(
+      "The learning loop hasn't run yet",
+      "Every draft, verdict, decision and performance result becomes an event; events become evidence-backed lessons that feed straight back into the producers. Trends appear here after the first learn run.",
+      "Events land in data/learning/ after each fleet run."
+    );
+    return;
+  }
+  const pct = (v) => (v == null ? "—" : Math.round(v * 100) + "%");
+  const arrow = (now, prev, downIsGood) => {
+    if (now == null || prev == null || now === prev) return "";
+    const better = downIsGood ? now < prev : now > prev;
+    return better ? " ↓✦" : " ↑⚠";
+  };
+  const l7 = (meta && meta.last7) || {}, p7 = (meta && meta.prev7) || {};
+  const rows = [
+    ["Human rejection rate", l7.human_rejection_rate, p7.human_rejection_rate, true],
+    ["Gate REJECT rate", l7.gate_reject_rate, p7.gate_reject_rate, true],
+    ["Visual QA fail rate", l7.qa_fail_rate, p7.qa_fail_rate, true],
+    ["Editorial needs-work rate", l7.editorial_needs_work_rate, p7.editorial_needs_work_rate, true],
+    ["Winner rate", l7.winner_rate, p7.winner_rate, false]
+  ].map(([k, now, prev, downGood]) =>
+    '<div class="guard-row"><span class="k">' + esc(k) + ' (7d)</span><span class="v">' +
+    esc(pct(now)) + (prev != null ? " (prev " + esc(pct(prev)) + ")" : "") +
+    esc(downGood !== null ? arrow(now, prev, downGood) : "") + "</span></div>"
+  ).join("");
+  const active = ((lessons && lessons.lessons) || []).filter((l) => l.status === "active")
+    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0)).slice(0, 5);
+  const lessonHtml = active.length
+    ? '<div class="mini-label" style="margin-top:12px">Active lessons</div><ul>' +
+      active.map((l) => "<li>" + esc(l.statement) + " <i>(confidence " + esc(String(l.confidence)) + ")</i></li>").join("") + "</ul>"
+    : '<p class="skeleton" style="margin-top:10px">No confirmed lessons yet — the loop needs outcome data.</p>';
+  const open = ((experiments && experiments.experiments) || []).filter((e) => e.status === "open").slice(0, 3);
+  const expHtml = (open.length || (experiments && experiments.next_hypothesis))
+    ? '<div class="mini-label" style="margin-top:12px">Experiments</div><ul>' +
+      open.map((e) => "<li>Open: " + esc(e.hypothesis) + "</li>").join("") +
+      (experiments && experiments.next_hypothesis ? "<li>Next: " + esc(experiments.next_hypothesis) + "</li>" : "") + "</ul>"
+    : "";
+  const regr = ((meta && meta.regressions) || []).length
+    ? '<div class="guard-row"><span class="k">⚠ Regressions</span><span class="v">' +
+      esc(meta.regressions.map((r) => r.metric).join(", ")) + "</span></div>"
+    : "";
+  el.innerHTML = '<div class="card">' + rows + regr + lessonHtml + expHtml +
+    '<p class="footnote" style="margin:10px 0 0">Lessons and hints are advisory inputs to the producers — compliance rules and the autonomy policy never change automatically.</p></div>';
+}
+
 /* ============================================================
    PAGE: index.html — master overview
    ============================================================ */
@@ -425,11 +476,15 @@ async function initIndex() {
   const stateByAgent = {};
   AGENTS.forEach((a, i) => { stateByAgent[a] = agentStates[i]; });
   const master = stateByAgent.master;
-  const [usage, integrations] = await Promise.all([
+  const [usage, integrations, learningMeta, lessons, experiments] = await Promise.all([
     fetchJSON(DATA + "/state/anthropic-usage.json"),
-    fetchJSON(DATA + "/state/integrations.json")
+    fetchJSON(DATA + "/state/integrations.json"),
+    fetchJSON(DATA + "/metrics/learning/latest.json"),
+    fetchJSON(DATA + "/learning/lessons.json"),
+    fetchJSON(DATA + "/learning/experiments.json")
   ]);
   renderAutonomyPanel(autonomy, published, usage, integrations);
+  renderLearningPanel(learningMeta, lessons, experiments);
 
   /* --- KPI tiles --- */
   const sh = (metrics && metrics.shopify) || {};
@@ -860,6 +915,12 @@ async function initApprovals() {
       '<span class="chev">▾</span></button>' +
       '<div class="approval-body">' +
       '<div class="payload-slot"><p class="skeleton">Expand to load the full draft…</p></div>' +
+      '<div class="decision-bar" style="flex-wrap:wrap;gap:6px">' +
+      '<span class="field-label" style="align-self:center">If rejecting, tag why (feeds the learning loop):</span>' +
+      REJECT_REASONS.map((r) =>
+        '<button type="button" class="pill pill-ghost reason-chip" data-reason="' + esc(r) + '">' + esc(titleCase(r)) + "</button>"
+      ).join("") +
+      "</div>" +
       '<div class="decision-bar">' +
       '<input type="text" class="decision-note" placeholder="Optional note (kept with the decision)" aria-label="Decision note">' +
       '<button type="button" class="pill pill-good" data-decide="approved">Approve ✦</button>' +
@@ -916,6 +977,14 @@ async function initApprovals() {
 }
 
 const VISUAL_QA_REPO_PATH = "data/visual-qa.json";
+
+/** Machine-readable rejection reasons — the learning loop's highest-quality negative signal. */
+const REJECT_REASONS = ["claim-risk", "off-brand", "weak-hook", "wrong-product-visual", "duplicate", "bad-timing", "other"];
+
+document.addEventListener("click", (ev) => {
+  const chip = ev.target.closest(".reason-chip");
+  if (chip) chip.classList.toggle("copied"); // reuse the highlighted style as "selected"
+});
 
 /** Write a visual-QA verdict (pass/fail) to data/visual-qa.json via the Contents API. */
 async function qaDecide(itemEl, status) {
@@ -996,6 +1065,9 @@ async function decide(itemEl, status) {
     at: new Date().toISOString()
   };
   if (note) decision.note = note;
+  const reasons = Array.from(itemEl.querySelectorAll(".reason-chip.copied"))
+    .map((c) => c.getAttribute("data-reason")).filter(Boolean);
+  if (status === "rejected" && reasons.length) decision.reasons = reasons;
 
   const attempt = async () => {
     const { json, sha } = await ghGetJSON(APPROVALS_REPO_PATH);

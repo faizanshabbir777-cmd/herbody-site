@@ -50,11 +50,24 @@ test("required_product_presence=false is rejected — every asset must show the 
   assert.match(r.product_fidelity_notes, /must visibly show the product/);
 });
 
+test("learned negatives from vision failures are merged into generation calls", async () => {
+  let captured;
+  await requestCreative(
+    { asset_type: "video", prompt: "x" },
+    {
+      ...DEPS,
+      negatives: { phrases: [{ text: "wrong packaging shape", count: 3 }] },
+      genVideo: async (o) => { captured = o; return genOk(); },
+    }
+  );
+  assert.match(captured.negativePrompt, /wrong packaging shape/);
+});
+
 test("spec_only generation → needs_review QA + preservation clause in prompt", async () => {
   let captured;
   const r = await requestCreative(
     { platform: "tiktok", asset_type: "video", prompt: "pouch on a kitchen counter, morning light" },
-    { ...DEPS, genVideo: async (o) => { captured = o; return genOk(); } }
+    { ...DEPS, negatives: { phrases: [] }, genVideo: async (o) => { captured = o; return genOk(); } }
   );
   assert.equal(r.media_status, "generated");
   assert.equal(r.visual_qa_status, "needs_review");

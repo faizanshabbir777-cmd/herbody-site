@@ -10,6 +10,7 @@ import { loadProductSpec, generationGate, blockedChecklist } from "./lib/product
 import { requestCreative, buildProducerPayload, reusableCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
 import { withVariantSuffix } from "./lib/utm.js";
+import { lessonsForAgent } from "./lib/learning.js";
 
 const spec = loadProductSpec();
 const gate = generationGate(spec);
@@ -48,10 +49,13 @@ No results claims, no before/after, no medical framing, no fake urgency. British
 
 const PACK = {
   type: "object",
-  required: ["slug", "title", "platforms", "formats", "trend_basis", "relevance_reason", "hook", "shot_list", "voiceover", "on_screen_text", "caption", "hashtags", "cta", "landing_url", "utm", "generation_prompt", "product_on_screen_plan", "compliance_status"],
+  required: ["slug", "title", "platforms", "formats", "trend_basis", "relevance_reason", "pillar", "hook_type", "hook", "shot_list", "voiceover", "on_screen_text", "caption", "hashtags", "cta", "landing_url", "utm", "generation_prompt", "product_on_screen_plan", "compliance_status"],
   properties: {
     slug: { type: "string" },
     title: { type: "string" },
+    pillar: { type: "string", description: "which content pillar this serves (learning-loop tag)" },
+    hook_type: { type: "string", enum: ["question", "statement", "statistic", "pattern-interrupt", "demo"], description: "hook taxonomy (learning-loop tag)" },
+    angle: { type: "string", description: "one-phrase creative angle (learning-loop tag)" },
     platforms: { type: "array", items: { type: "string", enum: ["tiktok", "instagram", "facebook"] } },
     formats: { type: "array", items: { type: "string" } },
     trend_basis: { type: "string", description: "which trend record inspired this, or 'evergreen'" },
@@ -102,11 +106,17 @@ const mem = loadMemory("video");
 const strategy = readJson("data/config/strategy.json", {});
 const trends = readJson("data/trends/latest.json", { relevant: [] });
 const digest = readJson("data/state/creative-digest.json", {});
+const lessons = lessonsForAgent(readJson("data/learning/lessons.json", { lessons: [] }), "video");
+const hints = readJson("data/learning/schedule-hints.json", {});
+const experiments = readJson("data/learning/experiments.json", {});
 
 const user = `Date: ${today()} (idempotent daily run — refresh/improve today's packs if they exist).
 Strategy: ${JSON.stringify(strategy)}
 Gate mode: ${gate.mode} (${gate.mode === "references" ? `${gate.references.length} approved product reference asset(s)` : "locked visual spec only — outputs need close visual QA"}).
 Creative learnings digest (make more of the winners, retire the fatigued angles): ${JSON.stringify(digest.by_agent?.video || {})}
+CONFIRMED LESSONS (evidence-backed — follow them): ${JSON.stringify(lessons)}
+Schedule hint (learning loop): prefer slot ${hints.slot || "any"}${hints.slot_exploration ? " (exploration pick)" : ""}, pillar ${hints.pillar || "your choice"}.
+Open experiment to support with hook_variants if natural: ${experiments.next_hypothesis || "none"}
 Trend-source ROI so far: ${JSON.stringify(digest.trend_source_roi || {})}
 Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("video").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}

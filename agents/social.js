@@ -6,6 +6,7 @@ import { readJson, loadMemory, saveMemory, today } from "./lib/state.js";
 import { putDraft, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
 import { requestCreative, reusableCreative } from "./lib/creative-requests.js";
 import { loadAutonomy, modeAllows } from "./lib/autonomy.js";
+import { lessonsForAgent } from "./lib/learning.js";
 
 /** Formats that need motion assets; everything else gets a still image. */
 const VIDEO_FORMATS = new Set(["reel"]);
@@ -31,6 +32,8 @@ const SCHEMA = {
           title: { type: "string" },
           channel: { type: "string", enum: ["instagram", "facebook", "pinterest"] },
           format: { type: "string", enum: ["feed", "reel", "story", "carousel", "pin", "page_post"] },
+          pillar: { type: "string", description: "which content pillar this serves (learning-loop tag)" },
+          angle: { type: "string", description: "one-phrase creative angle (learning-loop tag)" },
           caption: { type: "string" },
           hashtags: { type: "array", items: { type: "string" } },
           visual_brief: { type: "string" },
@@ -59,10 +62,12 @@ const mem = loadMemory("social");
 const strategy = readJson("data/config/strategy.json", {});
 const metrics = readJson("data/metrics/latest.json", {});
 const digest = readJson("data/state/creative-digest.json", {});
+const lessons = lessonsForAgent(readJson("data/learning/lessons.json", { lessons: [] }), "social");
 
 const user = `Date: ${today()} (idempotent daily run).
 Strategy: ${JSON.stringify(strategy)}
 Creative learnings digest (make more of the winners, retire the fatigued angles): ${JSON.stringify(digest.by_agent?.social || {})}
+CONFIRMED LESSONS (evidence-backed — follow them): ${JSON.stringify(lessons)}
 Already queued today (do NOT duplicate these concepts): ${JSON.stringify(todaysItems("social").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}

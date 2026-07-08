@@ -82,11 +82,31 @@ export function relevance(record, keywords = []) {
   };
 }
 
+/**
+ * Learning-loop reweighting: sources that historically produced winners get a
+ * relevance boost; sources that never did (with enough tries) get demoted.
+ * @param {object} roi { [source]: { winners, total } } from the creative digest
+ */
+export function sourceAdjustment(source, roi = {}) {
+  const s = roi[source];
+  if (!s || !s.total) return 0;
+  if (s.winners >= 2 && s.winners / s.total >= 0.3) return 0.15;
+  if (s.total >= 5 && s.winners === 0) return -0.1;
+  return 0;
+}
+
 /** Apply relevance scoring; keep everything (rejects carry reject_reason for the audit trail). */
-export function scoreRecords(records, keywords, { minScore = 0.3 } = {}) {
+export function scoreRecords(records, keywords, { minScore = 0.3, sourceRoi = {} } = {}) {
   const scored = records.map((r) => {
     const { score, why, reject } = relevance(r, keywords);
-    return { ...r, relevance_score: score, why_relevant: why, reject_reason: reject };
+    const adj = reject ? 0 : sourceAdjustment(r.source, sourceRoi);
+    const finalScore = Math.max(0, Math.min(1, Math.round((score + adj) * 100) / 100));
+    return {
+      ...r,
+      relevance_score: finalScore,
+      why_relevant: adj > 0 ? `${why}${why ? "; " : ""}source has produced winners (+${adj})` : why,
+      reject_reason: reject,
+    };
   });
   return {
     relevant: scored.filter((r) => !r.reject_reason && r.relevance_score >= minScore),
@@ -127,7 +147,9 @@ export async function runTrends() {
     }));
   }
 
-  const { relevant, rejected } = scoreRecords(records, cfg.relevance_keywords || []);
+  // Trend-source ROI from the creative digest reweights relevance (learning loop).
+  const sourceRoi = readJson("data/state/creative-digest.json", {}).trend_source_roi || {};
+  const { relevant, rejected } = scoreRecords(records, cfg.relevance_keywords || [], { sourceRoi });
   const out = { updated: nowIso(), relevant, rejected: rejected.slice(0, 50), notes };
   writeJson(`data/trends/${today()}.json`, out);
   writeJson("data/trends/latest.json", out);

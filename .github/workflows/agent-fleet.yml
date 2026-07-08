@@ -1,7 +1,8 @@
 name: agent-fleet
 # Daily marketing fleet: doctor → metrics → collect-pending → trends → social → video
-# → image → OmniFlash (TikTok editor) → compliance gate → creative-performance → PPC
-# → paid-growth → tiktok-shop-ads → gate → MASTER brief → notify → one commit.
+# → image → OmniFlash (TikTok editor) → compliance gate → creative-performance
+# → learning-collector → learn → PPC → paid-growth → tiktok-shop-ads → gate
+# → MASTER brief → notify → one commit.
 on:
   schedule:
     - cron: "17 5 * * *"   # 05:17 UTC daily (off-peak minute; cron may drift — runs are idempotent)
@@ -82,6 +83,12 @@ jobs:
       - name: Creative performance
         working-directory: agents
         run: node creative-performance.js
+      - name: Learning collector (events)
+        working-directory: agents
+        run: node learning-collector.js
+      - name: Learn (lessons · hints · experiments · meta)
+        working-directory: agents
+        run: node learn.js
       - name: PPC
         working-directory: agents
         run: node ppc.js

@@ -33,6 +33,8 @@ const failedRenders = items
   .filter(({ item }) => item.payload?.media_status === "failed")
   .map(({ item }) => item.id);
 
+const learningMeta = readJson("data/metrics/learning/latest.json", {});
+
 const alerts = collectAlerts({
   policy,
   todayStr: today(),
@@ -41,6 +43,7 @@ const alerts = collectAlerts({
   blockedItems,
   rejectedToday,
   failedRenders,
+  learningRegressions: learningMeta.regressions || [],
 });
 
 if (!alerts.length) {

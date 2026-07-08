@@ -8,6 +8,7 @@
 import { structured, untrusted } from "./lib/claude.js";
 import { readJson, loadMemory, saveMemory, today, nowIso } from "./lib/state.js";
 import { putDraft, queueItems, todaysItems, shouldSkipDuplicate } from "./lib/queue.js";
+import { lessonsForAgent } from "./lib/learning.js";
 
 const CHARTER = `You are OmniFlash, HerBody's TikTok channel editor (UK).
 You review TODAY's TikTok-bound drafts from the producer agents and make each one
@@ -68,6 +69,8 @@ const FALLBACK_SCHEMA = {
           slug: { type: "string" },
           title: { type: "string" },
           hook: { type: "string", description: "first 2 seconds, spoken" },
+          hook_type: { type: "string", enum: ["question", "statement", "statistic", "pattern-interrupt", "demo"], description: "hook taxonomy (learning-loop tag)" },
+          angle: { type: "string", description: "one-phrase creative angle (learning-loop tag)" },
           hook_variants: { type: "array", maxItems: 2, items: { type: "string" }, description: "optional alternative hooks for A/B posting (utm_content suffixes -a/-b)" },
           script: { type: "string", description: "beat-by-beat, 15–35s, filmable on a phone" },
           on_screen_text: { type: "array", items: { type: "string" } },
@@ -99,6 +102,8 @@ const strategy = readJson("data/config/strategy.json", {});
 const metrics = readJson("data/metrics/latest.json", {});
 const trends = readJson("data/trends/latest.json", { relevant: [] });
 const digest = readJson("data/state/creative-digest.json", {});
+const lessons = lessonsForAgent(readJson("data/learning/lessons.json", { lessons: [] }), "tiktok");
+const hints = readJson("data/learning/schedule-hints.json", {});
 
 // TikTok-bound drafts queued today by OTHER agents, not yet reviewed.
 const tiktokToday = queueItems().filter(
@@ -123,6 +128,8 @@ if (unreviewed.length) {
   const user = `Date: ${today()} — EDITORIAL PASS over today's TikTok drafts.
 Strategy: ${JSON.stringify(strategy)}
 Creative learnings digest: ${JSON.stringify(digest.by_agent?.tiktok || digest.summary || {})}
+CONFIRMED LESSONS (hold drafts to this evidence-backed standard): ${JSON.stringify(lessons)}
+Best posting slot per the learning loop: ${hints.slot || "editor's judgement"}.
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}
 Drafts to review (copy each id exactly):
@@ -155,6 +162,8 @@ Review every draft, give a verdict + improvements, one calendar note, and my upd
   const user = `Date: ${today()} — the TikTok queue is EMPTY today. Draft 1–2 founder-filmable scripts (no AI generation; the founder films on a phone).
 Strategy: ${JSON.stringify(strategy)}
 Creative learnings digest: ${JSON.stringify(digest.by_agent?.tiktok || digest.summary || {})}
+CONFIRMED LESSONS (evidence-backed — follow them): ${JSON.stringify(lessons)}
+Schedule hint: prefer slot ${hints.slot || "any"}, pillar ${hints.pillar || "your choice"}.
 Already queued today (do NOT duplicate): ${JSON.stringify(todaysItems("tiktok").map((e) => e.title))}
 My memory: ${JSON.stringify(mem)}
 ${untrusted("metrics.latest", JSON.stringify(metrics))}

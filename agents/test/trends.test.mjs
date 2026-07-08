@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeRecord, relevance, scoreRecords, BANNED_THEMES, trendId } from "../lib/trends.js";
+import { normalizeRecord, relevance, scoreRecords, BANNED_THEMES, trendId, sourceAdjustment } from "../lib/trends.js";
 
 const KEYWORDS = ["creatine", "collagen", "supplement", "morning routine", "taste test"];
 
@@ -72,6 +72,23 @@ test("normalizeRecord assigns an id and preserves provided ones", () => {
   const r = normalizeRecord({ observed_hook: "x" });
   assert.match(r.id, /^tr-/);
   assert.equal(normalizeRecord({ id: "tr-custom" }).id, "tr-custom");
+});
+
+test("trend-source ROI reweights relevance (learning loop)", () => {
+  assert.equal(sourceAdjustment("winner-src", { "winner-src": { winners: 3, total: 6 } }), 0.15);
+  assert.equal(sourceAdjustment("dud-src", { "dud-src": { winners: 0, total: 6 } }), -0.1);
+  assert.equal(sourceAdjustment("new-src", { "dud-src": { winners: 0, total: 6 } }), 0);
+  const records = [
+    normalizeRecord({ source: "winner-src", observed_hook: "creatine morning routine" }),
+    normalizeRecord({ source: "dud-src", observed_hook: "creatine morning routine" }),
+  ];
+  const { relevant } = scoreRecords(records, KEYWORDS, {
+    sourceRoi: { "winner-src": { winners: 2, total: 4 }, "dud-src": { winners: 0, total: 8 } },
+  });
+  const w = relevant.find((r) => r.source === "winner-src");
+  const d = relevant.find((r) => r.source === "dud-src");
+  assert.ok(w.relevance_score > d.relevance_score);
+  assert.match(w.why_relevant, /source has produced winners/);
 });
 
 test("BANNED_THEMES covers all required rejection categories", () => {
