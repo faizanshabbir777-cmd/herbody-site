@@ -83,6 +83,20 @@ test("applyGate can only hold or downgrade — never upgrade", () => {
   assert.equal(ok.compliance_status, "PASS");
 });
 
+test("gate inspects nested paid campaign creative", () => {
+  const r = gateItem({
+    type: "campaign",
+    payload: {
+      campaigns: [{
+        campaign_name: "PLN_UK_TIKTOK_WINNER_X",
+        creative: { hook: "Clinically proven before and after results" },
+      }],
+    },
+  });
+  assert.equal(r.verdict, "REJECT");
+  assert.match(r.reasons.join(" "), /clinically proven/i);
+});
+
 test("gate inspects arrays and generation prompts too", () => {
   const r = gateItem({
     ...CLEAN_ITEM,

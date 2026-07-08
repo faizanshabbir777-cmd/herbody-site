@@ -47,6 +47,8 @@ jobs:
         run: npm ci || npm install
       - name: Push approved paid drafts as PAUSED campaigns
         working-directory: agents
+        env:
+          PUSH_CHANNEL: ${{ github.event.inputs.channel }}
         run: |
           echo "Channel: ${{ github.event.inputs.channel }}"
           echo "Google: use the Ads Editor CSVs in data/ppc-export/ (regenerated daily by the fleet)."

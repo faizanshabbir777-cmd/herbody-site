@@ -21,6 +21,12 @@ if (policy.kill_switch) {
   process.exit(0);
 }
 
+// Workflow dispatch input: which channel to push (google/meta/tiktok/all).
+// Google has no API path (Ads Editor CSVs); meta/tiktok filter the campaign list.
+const CHANNEL = (process.env.PUSH_CHANNEL || "all").toLowerCase();
+const channelAllows = (platform) =>
+  CHANNEL === "all" || CHANNEL === platform;
+
 const dec = decisions();
 const paidItems = queueItems().filter(
   ({ item }) => item.agent === "paid" && item.type === "campaign" && dec.get(item.id)?.status === "approved"
@@ -37,7 +43,12 @@ let fleetSpendPlanned = 0;
 for (const { item } of paidItems) {
   const campaigns = item.payload?.campaigns || [];
   const results = [];
+  let itemPushed = 0;
   for (const c of campaigns) {
+    if (!channelAllows(c.platform)) {
+      results.push({ campaign: c.campaign_name, mode: "skipped", detail: `channel filter "${CHANNEL}" excludes ${c.platform}` });
+      continue;
+    }
     // Re-clamp at push time — the policy is authoritative, not the draft.
     const scale = canAutoScale(
       { ...policy, mode: "auto_scale_ads", kill_switch: false }, // budget maths only; gating happened above
@@ -62,17 +73,24 @@ for (const { item } of paidItems) {
       } else {
         results.push({ campaign: c.campaign_name, mode: "api", detail: `${c.platform} campaign ${r.id} created PAUSED (£${budget}/day) — finish ad groups/creatives + enable in Ads Manager` });
         fleetSpendPlanned += budget;
+        itemPushed++;
         pushed++;
       }
     } catch (e) {
       results.push({ campaign: c.campaign_name, mode: "failed", detail: String(e.message).slice(0, 200) });
     }
   }
+  const skippedAll = results.length && results.every((r) => r.mode === "skipped");
+  if (skippedAll) {
+    // Entirely outside the dispatched channel — leave the item in the queue untouched.
+    console.log(`[ads-push] ${item.id}: all campaigns outside channel "${CHANNEL}" — left in queue`);
+    continue;
+  }
   markPublished(item, {
-    mode: pushed ? "api" : "ready-manual",
+    mode: itemPushed ? "api" : "ready-manual",
     detail: results.map((r) => `${r.campaign}: ${r.mode} — ${r.detail}`).join(" | ").slice(0, 900),
   });
-  console.log(`[ads-push] ${item.id}: ${results.length} campaign(s) processed`);
+  console.log(`[ads-push] ${item.id}: ${results.length} campaign(s) processed (${itemPushed} pushed)`);
 }
 
 console.log(`[ads-push] done · ${pushed} pushed PAUSED · ${manual} ready-manual · ${blocked} blocked by budget cap`);

@@ -47,6 +47,15 @@ function ymd(d) {
   return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
 }
 
+/** The fleet's day boundary is Europe/London — mirror agents/lib/state.js today(). */
+function ukDate(d) {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  } catch (e) {
+    return ymd(d);
+  }
+}
+
 function fmtDate(v) {
   const d = parseDate(v);
   if (!d) return "—";
@@ -348,15 +357,19 @@ function renderAutonomyPanel(policy, published, usage) {
   }
   const kill = policy.kill_switch === true;
   const mode = policy.mode || "draft_only";
-  const todayKey = ymd(new Date());
+  const todayKey = ukDate(new Date());
+  const publishedUkDay = (p) => {
+    const d = parseDate(p.published_at);
+    return d ? ukDate(d) : "";
+  };
   const postedToday = {};
   (published || []).forEach((p) => {
-    if (String(p.published_at || "").slice(0, 10) === todayKey && p.mode !== "ready-manual") {
+    if (publishedUkDay(p) === todayKey && p.mode !== "ready-manual") {
       postedToday[p.platform] = (postedToday[p.platform] || 0) + 1;
     }
   });
   const autoPosted = (published || []).filter((p) =>
-    String(p.published_at || "").slice(0, 10) === todayKey && p.mode === "api-auto").length;
+    publishedUkDay(p) === todayKey && p.mode === "api-auto").length;
   const caps = policy.max_posts_per_day_by_platform || {};
   const capRows = Object.keys(caps).map((p) =>
     '<div class="guard-row"><span class="k">' + esc(titleCase(p)) + " posts today</span><span class=\"v\">" +

@@ -37,10 +37,20 @@ export const TEXT_FIELDS = [
 
 export function textOf(payload = {}) {
   const parts = [];
-  for (const f of TEXT_FIELDS) {
-    const v = payload[f];
-    if (Array.isArray(v)) parts.push(v.join(" "));
-    else if (typeof v === "string") parts.push(v);
+  const collect = (obj) => {
+    for (const f of TEXT_FIELDS) {
+      const v = obj?.[f];
+      if (Array.isArray(v)) parts.push(v.join(" "));
+      else if (typeof v === "string") parts.push(v);
+    }
+  };
+  collect(payload);
+  // Paid drafts nest creative copy under campaigns[].creative — scan those too.
+  for (const c of Array.isArray(payload.campaigns) ? payload.campaigns : []) {
+    if (typeof c?.campaign_name === "string") parts.push(c.campaign_name);
+    if (typeof c?.rationale === "string") parts.push(c.rationale);
+    collect(c);
+    collect(c?.creative);
   }
   return parts.join("\n");
 }

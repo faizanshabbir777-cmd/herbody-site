@@ -84,7 +84,12 @@ for (const { item } of queueItems()) {
     }
   }
 
-  if (changed) putDraft(item.agent, { ...item, payload: p });
+  if (changed) {
+    // The payload changed → the previous compliance-gate stamp is stale; drop it
+    // so the next gate pass re-checks the item with its new media/fields.
+    delete p.compliance_gate;
+    putDraft(item.agent, { ...item, payload: p });
+  }
 }
 
 console.log(`[collect-pending] ${collected} render(s) collected · ${hosted} hosting URL(s) resolved · ${failed} failed · ${stillPending} still pending`);

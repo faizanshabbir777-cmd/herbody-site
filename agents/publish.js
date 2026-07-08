@@ -77,12 +77,36 @@ async function publishOne(item, { auto = false } = {}) {
 }
 
 // ---------- path 1: human-approved items ----------
+// Human approval is the final say on copy/creative judgement, but two states are
+// contradictory with an approval and always block:
+//  - mechanical compliance gate verdict REJECT (hard-banned claim present),
+//  - visual QA "fail"/"failed_auto" (the media was explicitly failed).
+// Such items stay in the queue with a logged reason for the founder to resolve.
+function approvedContradiction(item) {
+  if (item.payload?.compliance_gate?.verdict === "REJECT") {
+    return `compliance gate REJECT (${(item.payload.compliance_gate.reasons || []).join("; ").slice(0, 200)}) — fix the draft or clear the verdict before publishing`;
+  }
+  const qaStatus = item.payload?.visual_qa_status;
+  if (qaStatus === "fail" || qaStatus === "failed_auto") {
+    return `visual QA "${qaStatus}" — media was failed; regenerate or replace it before publishing`;
+  }
+  return null;
+}
+
 const approved = approvedUnpublished();
+let approvedPublished = 0;
 for (const { item } of approved) {
   try {
     // Stamp the human QA verdict into the payload so the published record (and
     // the creative-performance loop) carries the final visual QA status.
-    await publishOne(withResolvedVisualQa(item, qa));
+    const resolved = withResolvedVisualQa(item, qa);
+    const contradiction = approvedContradiction(resolved);
+    if (contradiction) {
+      console.log(`[publish] BLOCKED approved item ${item.id}: ${contradiction}`);
+      continue;
+    }
+    await publishOne(resolved);
+    approvedPublished++;
   } catch (e) {
     console.log(`[publish] ${item.id} FAILED: ${String(e.message).slice(0, 200)} — left in queue for retry`);
   }
@@ -120,8 +144,8 @@ if (modeAllows(policy, "post_organic")) {
   console.log("[publish] autonomy OFF — kill switch active");
 }
 
-if (!approved.length && !autoCount) {
+if (!approvedPublished && !autoCount) {
   console.log("[publish] nothing published this run");
 } else {
-  console.log(`[publish] done · ${approved.length} approved · ${autoCount} auto-posted (mode ${policy.mode})`);
+  console.log(`[publish] done · ${approvedPublished}/${approved.length} approved published · ${autoCount} auto-posted (mode ${policy.mode})`);
 }
