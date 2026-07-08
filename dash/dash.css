@@ -43,6 +43,9 @@
   --agent-social: #F4A8CC;
   --agent-ppc: #060507;
   --agent-master: #9A9286;
+  --agent-video: #7B4FD0;
+  --agent-image: #2F9E7A;
+  --agent-paid: #D08A2E;
 
   --r: 5px;
   --r-lg: 14px;
@@ -273,6 +276,9 @@ img { max-width: 100%; display: block; }
 .agent-social .dot { background: var(--agent-social); }
 .agent-ppc .dot { background: var(--agent-ppc); border-color: var(--agent-ppc); }
 .agent-master .dot { background: var(--agent-master); }
+.agent-video .dot { background: var(--agent-video); border-color: var(--agent-video); }
+.agent-image .dot { background: var(--agent-image); border-color: var(--agent-image); }
+.agent-paid .dot { background: var(--agent-paid); border-color: var(--agent-paid); }
 
 /* status chips */
 .status-chip {
@@ -457,6 +463,9 @@ img { max-width: 100%; display: block; }
 .cal-item.c-social { border-left-color: var(--agent-social); }
 .cal-item.c-ppc { border-left-color: var(--agent-ppc); }
 .cal-item.c-master { border-left-color: var(--agent-master); }
+.cal-item.c-video { border-left-color: var(--agent-video); }
+.cal-item.c-image { border-left-color: var(--agent-image); }
+.cal-item.c-paid { border-left-color: var(--agent-paid); }
 .cal-item.published { opacity: .82; }
 .cal-item .tick { color: var(--good); font-weight: 700; }
 
@@ -492,6 +501,9 @@ img { max-width: 100%; display: block; }
 .cal-row.c-social { border-left-color: var(--agent-social); }
 .cal-row.c-ppc { border-left-color: var(--agent-ppc); }
 .cal-row.c-master { border-left-color: var(--agent-master); }
+.cal-row.c-video { border-left-color: var(--agent-video); }
+.cal-row.c-image { border-left-color: var(--agent-image); }
+.cal-row.c-paid { border-left-color: var(--agent-paid); }
 .cal-row .title { font-weight: 600; flex: 1 1 220px; font-size: 14px; }
 .cal-row .meta { font-size: 12px; color: var(--oat-ink-2); }
 
@@ -598,6 +610,9 @@ img { max-width: 100%; display: block; }
 .approval-item.c-social { border-left-color: var(--agent-social); }
 .approval-item.c-ppc { border-left-color: var(--agent-ppc); }
 .approval-item.c-master { border-left-color: var(--agent-master); }
+.approval-item.c-video { border-left-color: var(--agent-video); }
+.approval-item.c-image { border-left-color: var(--agent-image); }
+.approval-item.c-paid { border-left-color: var(--agent-paid); }
 .approval-summary {
   width: 100%;
   text-align: left;

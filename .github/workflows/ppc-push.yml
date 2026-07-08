@@ -9,6 +9,14 @@ on:
       channel:
         description: "Channel to push (google/meta/tiktok/all)"
         default: "google"
+      enforce_stop_loss:
+        description: "Also PAUSE live campaigns flagged by the stop-loss sweep (true/false)"
+        default: "false"
+concurrency:
+  group: repo-writer
+  cancel-in-progress: false
+permissions:
+  contents: write
 jobs:
   push-drafts:
     runs-on: ubuntu-latest
@@ -27,7 +35,7 @@ jobs:
       TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
       TIKTOK_ADVERTISER_ID: ${{ secrets.TIKTOK_ADVERTISER_ID }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Guard — human approval file must exist
         run: |
           if [ ! -f approvals/ADS_LAUNCH_APPROVAL.json ]; then
@@ -35,16 +43,31 @@ jobs:
             exit 1
           fi
           cat approvals/ADS_LAUNCH_APPROVAL.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with: { node-version: 20 }
-      - name: Push paused drafts / regenerate import files
+      - name: Install agent deps
+        working-directory: agents
+        run: npm ci || npm install
+      - name: Push approved paid drafts as PAUSED campaigns
+        working-directory: agents
+        env:
+          PUSH_CHANNEL: ${{ github.event.inputs.channel }}
+          ENFORCE_STOP_LOSS: ${{ github.event.inputs.enforce_stop_loss }}
         run: |
           echo "Channel: ${{ github.event.inputs.channel }}"
-          echo "No live-activation code path exists in this repo by design."
           echo "Google: use the Ads Editor CSVs in data/ppc-export/ (regenerated daily by the fleet)."
-          echo "Meta/TikTok API draft-push scripts are a documented follow-up once tokens are approved — see SETUP.md."
+          echo "Meta/TikTok: pushing human-approved paid queue drafts — ALWAYS PAUSED, budgets re-clamped by autonomy policy."
+          node ads-push.js
+      - name: Commit push records
+        run: |
+          git config user.name "herbody-fleet[bot]"
+          git config user.email "fleet@herbody.local"
+          git add data/
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "ads-push: paused campaign push $(date -u +%FT%H:%M) [bot]"
+          git pull --rebase origin ${GITHUB_REF_NAME} && git push
       - name: Upload latest Ads Editor CSVs as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: google-ads-editor-csv
           path: data/ppc-export/*.csv

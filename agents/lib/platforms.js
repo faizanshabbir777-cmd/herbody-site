@@ -37,6 +37,82 @@ export const shopify = {
     if (body.errors?.length) throw new Error(body.errors[0].message);
     return { available: true, data: body.data };
   },
+  /**
+   * Host a generated media URL on Shopify Files (public CDN) so TikTok/IG APIs can
+   * pull it. fileCreate accepts an external originalSource URL — no bytes touch the
+   * repo. Returns { available, id, url|pending } — CDN URL may lag while Shopify
+   * processes the file; callers keep the provider URL as fallback.
+   */
+  async hostMediaFromUrl(sourceUrl, { alt = "", contentType = "IMAGE" } = {}) {
+    if (!this.available) {
+      const base = env("MEDIA_CDN_BASE_URL");
+      return base
+        ? { available: false, manual: true, note: `upload manually to ${base} and paste the URL into the queue item` }
+        : { available: false };
+    }
+    const m = `mutation($files:[FileCreateInput!]!){ fileCreate(files:$files){ files{ id fileStatus preview{ image{ url } } } userErrors{ message } } }`;
+    const r = await this.gql(m, {
+      files: [{ originalSource: sourceUrl, alt, contentType }],
+    });
+    const errs = r.data?.fileCreate?.userErrors || [];
+    if (errs.length) throw new Error(errs[0].message);
+    const f = r.data?.fileCreate?.files?.[0];
+    audit("shopify", "hostMediaFromUrl", true, f?.id || "");
+    if (f?.id && f?.fileStatus === "READY") {
+      const st = await this.fileById(f.id);
+      return { available: true, id: f.id, url: st.url, pending: !st.url };
+    }
+    return { available: true, id: f?.id || null, url: null, pending: true };
+  },
+  /** Resolve a hosted file's public CDN URL once Shopify has processed it. */
+  async fileById(id) {
+    if (!this.available) return { available: false };
+    const q = `query($id:ID!){ node(id:$id){
+      ... on MediaImage { fileStatus image { url } }
+      ... on Video { fileStatus sources { url mimeType } preview { image { url } } }
+      ... on GenericFile { fileStatus url }
+    } }`;
+    const r = await this.gql(q, { id });
+    const n = r.data?.node || {};
+    const url = n.image?.url || n.sources?.[0]?.url || n.url || null;
+    return {
+      available: true,
+      status: n.fileStatus || "UNKNOWN",
+      url,
+      preview_url: n.preview?.image?.url || null,
+      ready: n.fileStatus === "READY" && !!url,
+    };
+  },
+  /**
+   * Revenue attribution per utm_content over the last 30 days, via the order's
+   * customer journey (last visit UTM parameters). Availability of journey data
+   * varies by plan/app setup — degrades to an empty map, never throws upward.
+   */
+  async revenueByUtmContent() {
+    if (!this.available) return { available: false };
+    try {
+      const q = `query($q:String!){ orders(first: 100, query:$q){ nodes{
+        currentTotalPriceSet{shopMoney{amount}}
+        customerJourneySummary{ lastVisit{ utmParameters{ content } } }
+      } } }`;
+      const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+      const r = await this.gql(q, { q: `created_at:>=${since}` });
+      const map = {};
+      for (const o of r.data?.orders?.nodes || []) {
+        const content = o.customerJourneySummary?.lastVisit?.utmParameters?.content;
+        if (!content) continue;
+        const key = String(content).toLowerCase();
+        const m = (map[key] ||= { orders: 0, revenue_gbp: 0 });
+        m.orders++;
+        m.revenue_gbp = Math.round((m.revenue_gbp + parseFloat(o.currentTotalPriceSet?.shopMoney?.amount || 0)) * 100) / 100;
+      }
+      audit("shopify", "revenueByUtmContent", true, `${Object.keys(map).length} utm_content keys`);
+      return { available: true, by_utm_content: map };
+    } catch (e) {
+      audit("shopify", "revenueByUtmContent", false, String(e.message).slice(0, 120));
+      return { available: true, by_utm_content: {}, note: `journey data unavailable: ${String(e.message).slice(0, 120)}` };
+    }
+  },
   /** Yesterday+today order rollup for metrics. */
   async orderStats() {
     if (!this.available) return { available: false };
@@ -80,6 +156,69 @@ export const tiktok = {
     });
     audit("tiktok", "post.init", true, body?.data?.publish_id || "");
     return { available: true, id: body?.data?.publish_id, mode: "SELF_ONLY" };
+  },
+  /** Organic video metrics (Display API /v2/video/list/). Read-only; degrades gracefully. */
+  async organicVideoMetrics() {
+    if (!this.postingAvailable) return { available: false };
+    const body = await jfetch(
+      "https://open.tiktokapis.com/v2/video/list/?fields=id,title,create_time,view_count,like_count,comment_count,share_count",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${env("TIKTOK_ACCESS_TOKEN")}` },
+        body: JSON.stringify({ max_count: 20 }),
+      }
+    );
+    const videos = body?.data?.videos || [];
+    audit("tiktok", "organicVideoMetrics", true, `${videos.length} videos`);
+    return {
+      available: true,
+      rows: videos.map((v) => ({
+        post_id: String(v.id),
+        platform: "tiktok",
+        title: v.title || "",
+        caption: v.title || "", // Display API "title" is the caption text — join key for UTMs
+        published_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
+        views: v.view_count || 0,
+        impressions: v.view_count || 0,
+        likes: v.like_count || 0,
+        comments: v.comment_count || 0,
+        shares: v.share_count || 0,
+      })),
+    };
+  },
+  /** Pause a live TikTok campaign (stop-loss enforcement — the safe direction). */
+  async pauseCampaign(campaignId) {
+    if (!this.adsAvailable) return { available: false };
+    await jfetch("https://business-api.tiktok.com/open_api/v1.3/campaign/status/update/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Access-Token": env("TIKTOK_ACCESS_TOKEN") },
+      body: JSON.stringify({
+        advertiser_id: env("TIKTOK_ADVERTISER_ID"),
+        campaign_ids: [String(campaignId)],
+        operation_status: "DISABLE",
+      }),
+    });
+    audit("tiktok", "pauseCampaign", true, String(campaignId));
+    return { available: true, id: String(campaignId) };
+  },
+  /** Create a TikTok campaign in DISABLE (paused) state. Campaign level only. */
+  async createCampaignPaused({ name, objective = "TRAFFIC", dailyBudgetGbp = 5 }) {
+    if (!this.adsAvailable) return { available: false };
+    const body = await jfetch("https://business-api.tiktok.com/open_api/v1.3/campaign/create/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Access-Token": env("TIKTOK_ACCESS_TOKEN") },
+      body: JSON.stringify({
+        advertiser_id: env("TIKTOK_ADVERTISER_ID"),
+        campaign_name: name,
+        objective_type: objective,
+        budget_mode: "BUDGET_MODE_DAY",
+        budget: dailyBudgetGbp,
+        operation_status: "DISABLE", // paused — a human enables in Ads Manager
+      }),
+    });
+    const id = body?.data?.campaign_id;
+    audit("tiktok", "createCampaignPaused", true, id || "");
+    return { available: true, id };
   },
   async adInsights() {
     if (!this.adsAvailable) return { available: false };
@@ -125,6 +264,19 @@ export const meta = {
   },
   async pagePost(payload) {
     if (!this.pageAvailable) return { available: false };
+    // Image posts go through /photos; text/link posts through /feed.
+    if (payload.image_url) {
+      const body = await jfetch(`https://graph.facebook.com/${META_V}/${env("META_PAGE_ID")}/photos`, {
+        method: "POST",
+        body: new URLSearchParams({
+          access_token: env("META_ACCESS_TOKEN"),
+          url: payload.image_url,
+          caption: payload.caption || payload.text || "",
+        }),
+      });
+      audit("meta", "pagePhoto", true, body.post_id || body.id);
+      return { available: true, id: body.post_id || body.id };
+    }
     const body = await jfetch(`https://graph.facebook.com/${META_V}/${env("META_PAGE_ID")}/feed`, {
       method: "POST",
       body: new URLSearchParams({
@@ -136,13 +288,85 @@ export const meta = {
     audit("meta", "pagePost", true, body.id);
     return { available: true, id: body.id };
   },
+  /** Organic IG media metrics (Graph API), incl. per-media reach/views insights. */
+  async igMediaMetrics() {
+    if (!this.igAvailable) return { available: false };
+    const u = `https://graph.facebook.com/${META_V}/${env("META_IG_USER_ID")}/media?` +
+      new URLSearchParams({
+        access_token: env("META_ACCESS_TOKEN"),
+        fields: "id,caption,media_type,like_count,comments_count,timestamp,permalink",
+        limit: "20",
+      });
+    const body = await jfetch(u);
+    const rows = [];
+    for (const m of body?.data || []) {
+      // Per-media insights (reach/views/saved) — metric availability varies by
+      // media type, so failures degrade to zeros rather than dropping the row.
+      let reach = 0, views = 0, saved = 0;
+      try {
+        const iu = `https://graph.facebook.com/${META_V}/${m.id}/insights?` +
+          new URLSearchParams({ access_token: env("META_ACCESS_TOKEN"), metric: "reach,views,saved" });
+        const ins = await jfetch(iu);
+        for (const metric of ins?.data || []) {
+          const v = metric?.values?.[0]?.value || 0;
+          if (metric.name === "reach") reach = v;
+          if (metric.name === "views") views = v;
+          if (metric.name === "saved") saved = v;
+        }
+      } catch { /* insights unavailable for this media type — keep zeros */ }
+      rows.push({
+        post_id: String(m.id),
+        platform: "instagram",
+        title: String(m.caption || "").slice(0, 120),
+        caption: String(m.caption || "").slice(0, 500),
+        published_at: m.timestamp || null,
+        impressions: reach || views || 0,
+        views,
+        likes: m.like_count || 0,
+        comments: m.comments_count || 0,
+        saves: saved,
+        media_type: m.media_type || "",
+        permalink: m.permalink || "",
+      });
+    }
+    audit("meta", "igMediaMetrics", true, `${rows.length} media`);
+    return { available: true, rows };
+  },
+  /** Pause a live Meta campaign (stop-loss enforcement — the safe direction). */
+  async pauseCampaign(campaignId) {
+    if (!this.adsAvailable) return { available: false };
+    await jfetch(`https://graph.facebook.com/${META_V}/${campaignId}`, {
+      method: "POST",
+      body: new URLSearchParams({ access_token: env("META_ACCESS_TOKEN"), status: "PAUSED" }),
+    });
+    audit("meta", "pauseCampaign", true, String(campaignId));
+    return { available: true, id: String(campaignId) };
+  },
+  /** Create a Meta campaign in PAUSED state. Campaign level only. */
+  async createCampaignPaused({ name, objective = "OUTCOME_TRAFFIC", dailyBudgetGbp = 5 }) {
+    if (!this.adsAvailable) return { available: false };
+    const acct = env("META_AD_ACCOUNT_ID").replace(/^act_/, "");
+    const body = await jfetch(`https://graph.facebook.com/${META_V}/act_${acct}/campaigns`, {
+      method: "POST",
+      body: new URLSearchParams({
+        access_token: env("META_ACCESS_TOKEN"),
+        name,
+        objective,
+        status: "PAUSED", // a human enables in Ads Manager
+        special_ad_categories: "[]",
+        daily_budget: String(Math.round(dailyBudgetGbp * 100)), // minor units
+      }),
+    });
+    audit("meta", "createCampaignPaused", true, body?.id || "");
+    return { available: true, id: body?.id };
+  },
   async adInsights() {
     if (!this.adsAvailable) return { available: false };
     const u = `https://graph.facebook.com/${META_V}/act_${env("META_AD_ACCOUNT_ID").replace(/^act_/, "")}/insights?` +
       new URLSearchParams({
         access_token: env("META_ACCESS_TOKEN"),
         date_preset: "last_7d", level: "campaign",
-        fields: "campaign_name,spend,impressions,clicks,actions",
+        fields: "campaign_id,campaign_name,spend,impressions,clicks,actions",
       });
     const body = await jfetch(u);
     audit("meta", "adInsights", true);

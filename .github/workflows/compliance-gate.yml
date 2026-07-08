@@ -1,0 +1,41 @@
+name: compliance-gate
+# Safety-net sweep: re-stamps every queue draft with the mechanical compliance
+# verdict (PASS / NEEDS_REVIEW / REJECT + reasons). The fleet and publisher run
+# the gate inline; this workflow catches drafts committed by any other path
+# (manual edits, dashboard fixes) and can be dispatched on demand.
+on:
+  workflow_run:
+    workflows: [agent-fleet]
+    types: [completed]
+  workflow_dispatch: {}
+concurrency:
+  group: repo-writer
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20 }
+      - name: Install agent deps
+        working-directory: agents
+        run: npm ci || npm install
+      - name: Run compliance gate over the full queue
+        working-directory: agents
+        run: node compliance-gate.js --all
+      - name: Commit verdicts
+        run: |
+          git config user.name "herbody-fleet[bot]"
+          git config user.email "fleet@herbody.local"
+          git add data/
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "compliance-gate: sweep $(date -u +%FT%H:%M) [bot]"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep $((RANDOM % 5 + 2))
+          done
+          exit 1

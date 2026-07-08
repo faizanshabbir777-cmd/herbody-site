@@ -5,8 +5,7 @@
    ============================================================ */
 "use strict";
 
-/* IMPORTANT: change GH_BRANCH to "main" after the dashboards branch is merged. */
-const GH_BRANCH = "shopify-agents-dashboards-build";
+const GH_BRANCH = "main";
 const GH_OWNER = "faizanshabbir777-cmd";
 const GH_REPO = "herbody-site";
 const GH_API = "https://api.github.com/repos/" + GH_OWNER + "/" + GH_REPO;
@@ -16,8 +15,11 @@ const DATA = "../data";
 const PAT_KEY = "hb_dash_pat";
 const IS_FILE = location.protocol === "file:";
 
-const AGENTS = ["master", "tiktok", "social", "ppc"];
-const AGENT_LABELS = { master: "Master", tiktok: "TikTok", social: "Social", ppc: "PPC" };
+const AGENTS = ["master", "tiktok", "social", "video", "image", "ppc", "paid"];
+const AGENT_LABELS = {
+  master: "Master", tiktok: "TikTok", social: "Social",
+  video: "Video", image: "Image", ppc: "PPC", paid: "Paid Growth"
+};
 
 /* ---------------- fetch helpers ---------------- */
 
@@ -43,6 +45,15 @@ function parseDate(v) {
 function ymd(d) {
   const p = (n) => String(n).padStart(2, "0");
   return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
+/** The fleet's day boundary is Europe/London — mirror agents/lib/state.js today(). */
+function ukDate(d) {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  } catch (e) {
+    return ymd(d);
+  }
 }
 
 function fmtDate(v) {
@@ -256,7 +267,13 @@ function decidedIds(decisions) {
 
 /* ---------------- payload rendering (drawer / approvals) ---------------- */
 
-const FIELD_ORDER = ["hook", "script", "caption", "hashtags", "title", "headline", "primary_text", "description", "cta", "landing_url", "utm"];
+const FIELD_ORDER = [
+  "media_url", "video_url", "image_url", "preview_url", "thumbnail_url",
+  "visual_qa_status", "media_status", "product_on_screen_plan", "product_spec_version", "product_asset_ids",
+  "hook", "script", "shot_list", "voiceover", "caption", "hashtags", "alt_text",
+  "generation_prompt", "visual_prompt", "negative_prompt", "trend_basis", "expiry",
+  "title", "headline", "primary_text", "description", "cta", "landing_url", "utm"
+];
 
 function fieldCopyValue(v) {
   if (Array.isArray(v)) {
@@ -268,10 +285,24 @@ function fieldCopyValue(v) {
   return String(v == null ? "" : v);
 }
 
+const MEDIA_URL_KEYS = new Set(["media_url", "video_url", "image_url", "preview_url", "thumbnail_url"]);
+
 function renderField(key, value) {
   const label = titleCase(key);
   const copyVal = fieldCopyValue(value);
   let valueHtml;
+  if (MEDIA_URL_KEYS.has(key) && typeof value === "string" && /^https?:\/\//.test(value)) {
+    const isImg = key === "image_url" || key === "thumbnail_url" || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(value);
+    valueHtml = '<div class="field-value">' +
+      (isImg
+        ? '<a href="' + esc(value) + '" target="_blank" rel="noopener"><img src="' + esc(value) + '" alt="' + esc(label) + ' preview" style="max-width:220px;max-height:220px;border-radius:8px;display:block;margin-bottom:6px" loading="lazy"></a>'
+        : "") +
+      '<a href="' + esc(value) + '" target="_blank" rel="noopener">' + esc(value) + "</a></div>";
+    return '<div class="field">' +
+      '<div class="field-head"><span class="field-label">' + esc(label) + "</span>" +
+      '<button type="button" class="copy-btn" data-copy="' + esc(copyVal) + '">Copy</button></div>' +
+      valueHtml + "</div>";
+  }
   if (key === "hashtags" && Array.isArray(value)) {
     valueHtml = '<div class="field-value"><div class="hashtag-wrap">' +
       value.map((h) => '<span class="hashtag">' + esc(String(h).startsWith("#") ? h : "#" + h) + "</span>").join("") +
@@ -311,6 +342,121 @@ function itemMetaChips(item, statusLabelHtml) {
   return html;
 }
 
+/* ---------------- autonomy status panel ---------------- */
+
+function renderAutonomyPanel(policy, published, usage, integrations) {
+  const el = document.getElementById("autonomy");
+  if (!el) return;
+  if (!policy) {
+    el.innerHTML = emptyState(
+      "No autonomy config",
+      "data/config/autonomy.json controls how automatic the fleet is — from draft-only up to autonomous organic posting and ad scaling.",
+      "Everything behaves as draft_only until the file exists."
+    );
+    return;
+  }
+  const kill = policy.kill_switch === true;
+  const mode = policy.mode || "draft_only";
+  const todayKey = ukDate(new Date());
+  const publishedUkDay = (p) => {
+    const d = parseDate(p.published_at);
+    return d ? ukDate(d) : "";
+  };
+  const postedToday = {};
+  (published || []).forEach((p) => {
+    if (publishedUkDay(p) === todayKey && p.mode !== "ready-manual") {
+      postedToday[p.platform] = (postedToday[p.platform] || 0) + 1;
+    }
+  });
+  const autoPosted = (published || []).filter((p) =>
+    publishedUkDay(p) === todayKey && p.mode === "api-auto").length;
+  const caps = policy.max_posts_per_day_by_platform || {};
+  const capRows = Object.keys(caps).map((p) =>
+    '<div class="guard-row"><span class="k">' + esc(titleCase(p)) + " posts today</span><span class=\"v\">" +
+    esc(String(postedToday[p] || 0)) + " / " + esc(String(caps[p])) + "</span></div>").join("");
+  const ads = policy.ads || {};
+  el.innerHTML = '<div class="card">' +
+    '<div class="guard-row"><span class="k">Mode</span><span class="v' + (mode === "draft_only" ? "" : " on") + '">' + esc(mode) + "</span></div>" +
+    '<div class="guard-row"><span class="k">Kill switch</span><span class="v">' + (kill ? "🔴 ACTIVE — all automation halted" : "off") + "</span></div>" +
+    '<div class="guard-row"><span class="k">Allowed platforms</span><span class="v">' + esc((policy.allowed_platforms || []).join(", ") || "none") + "</span></div>" +
+    capRows +
+    '<div class="guard-row"><span class="k">Auto-posted today</span><span class="v">' + esc(String(autoPosted)) + "</span></div>" +
+    '<div class="guard-row"><span class="k">Ad budget cap</span><span class="v">' + esc(fmtGBP(ads.max_daily_ad_budget_gbp)) + "/day · stop-loss " + esc(fmtGBP(ads.stop_loss_spend_gbp)) + "</span></div>" +
+    '<div class="guard-row"><span class="k">Gates</span><span class="v">' +
+    (policy.requires_compliance_pass ? "compliance PASS" : "⚠ compliance gate OFF") + " · " +
+    (policy.requires_visual_qa_pass ? "visual QA pass" : "⚠ visual QA gate OFF") + "</span></div>" +
+    (function () {
+      const day = usage && usage.dates && usage.dates[todayKey];
+      const budget = policy.llm && policy.llm.daily_budget_gbp;
+      return '<div class="guard-row"><span class="k">Anthropic today</span><span class="v">' +
+        (day
+          ? esc(fmtNum(day.input_tokens) + " in / " + fmtNum(day.output_tokens) + " out · ~" + fmtGBP(day.est_cost_gbp || 0)) +
+            (budget ? esc(" / " + fmtGBP(budget) + " budget") : "")
+          : "—") + "</span></div>";
+    })() +
+    (function () {
+      if (!integrations) return "";
+      const live = (integrations.live || []).length;
+      const degraded = integrations.degraded || [];
+      return '<div class="guard-row"><span class="k">Integrations</span><span class="v">' +
+        esc(live + " live") +
+        (degraded.length ? esc(" · degraded: " + degraded.join(", ")) : " · all configured") + "</span></div>";
+    })() +
+    '<p class="footnote" style="margin:10px 0 0">Config lives in data/config/autonomy.json — flip kill_switch to true to stop all automatic generation, posting and scaling instantly.</p>' +
+    "</div>";
+}
+
+/* ---------------- learning loop panel ---------------- */
+
+function renderLearningPanel(meta, lessons, experiments) {
+  const el = document.getElementById("learning");
+  if (!el) return;
+  if (!meta && !lessons) {
+    el.innerHTML = emptyState(
+      "The learning loop hasn't run yet",
+      "Every draft, verdict, decision and performance result becomes an event; events become evidence-backed lessons that feed straight back into the producers. Trends appear here after the first learn run.",
+      "Events land in data/learning/ after each fleet run."
+    );
+    return;
+  }
+  const pct = (v) => (v == null ? "—" : Math.round(v * 100) + "%");
+  const arrow = (now, prev, downIsGood) => {
+    if (now == null || prev == null || now === prev) return "";
+    const better = downIsGood ? now < prev : now > prev;
+    return better ? " ↓✦" : " ↑⚠";
+  };
+  const l7 = (meta && meta.last7) || {}, p7 = (meta && meta.prev7) || {};
+  const rows = [
+    ["Human rejection rate", l7.human_rejection_rate, p7.human_rejection_rate, true],
+    ["Gate REJECT rate", l7.gate_reject_rate, p7.gate_reject_rate, true],
+    ["Visual QA fail rate", l7.qa_fail_rate, p7.qa_fail_rate, true],
+    ["Editorial needs-work rate", l7.editorial_needs_work_rate, p7.editorial_needs_work_rate, true],
+    ["Winner rate", l7.winner_rate, p7.winner_rate, false]
+  ].map(([k, now, prev, downGood]) =>
+    '<div class="guard-row"><span class="k">' + esc(k) + ' (7d)</span><span class="v">' +
+    esc(pct(now)) + (prev != null ? " (prev " + esc(pct(prev)) + ")" : "") +
+    esc(downGood !== null ? arrow(now, prev, downGood) : "") + "</span></div>"
+  ).join("");
+  const active = ((lessons && lessons.lessons) || []).filter((l) => l.status === "active")
+    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0)).slice(0, 5);
+  const lessonHtml = active.length
+    ? '<div class="mini-label" style="margin-top:12px">Active lessons</div><ul>' +
+      active.map((l) => "<li>" + esc(l.statement) + " <i>(confidence " + esc(String(l.confidence)) + ")</i></li>").join("") + "</ul>"
+    : '<p class="skeleton" style="margin-top:10px">No confirmed lessons yet — the loop needs outcome data.</p>';
+  const open = ((experiments && experiments.experiments) || []).filter((e) => e.status === "open").slice(0, 3);
+  const expHtml = (open.length || (experiments && experiments.next_hypothesis))
+    ? '<div class="mini-label" style="margin-top:12px">Experiments</div><ul>' +
+      open.map((e) => "<li>Open: " + esc(e.hypothesis) + "</li>").join("") +
+      (experiments && experiments.next_hypothesis ? "<li>Next: " + esc(experiments.next_hypothesis) + "</li>" : "") + "</ul>"
+    : "";
+  const regr = ((meta && meta.regressions) || []).length
+    ? '<div class="guard-row"><span class="k">⚠ Regressions</span><span class="v">' +
+      esc(meta.regressions.map((r) => r.metric).join(", ")) + "</span></div>"
+    : "";
+  el.innerHTML = '<div class="card">' + rows + regr + lessonHtml + expHtml +
+    '<p class="footnote" style="margin:10px 0 0">Lessons and hints are advisory inputs to the producers — compliance rules and the autonomy policy never change automatically.</p></div>';
+}
+
 /* ============================================================
    PAGE: index.html — master overview
    ============================================================ */
@@ -318,16 +464,27 @@ function itemMetaChips(item, statusLabelHtml) {
 async function initIndex() {
   insertLocalBanner();
 
-  const [metrics, queue, decisions, master, tiktok, social, ppc, brief] = await Promise.all([
+  const [metrics, queue, decisions, brief, autonomy, published, ...agentStates] = await Promise.all([
     fetchJSON(DATA + "/metrics/latest.json"),
     loadQueue(),
     loadApprovals(),
-    fetchJSON(DATA + "/state/master.json"),
-    fetchJSON(DATA + "/state/tiktok.json"),
-    fetchJSON(DATA + "/state/social.json"),
-    fetchJSON(DATA + "/state/ppc.json"),
-    loadLatestBrief()
+    loadLatestBrief(),
+    fetchJSON(DATA + "/config/autonomy.json"),
+    loadPublished(),
+    ...AGENTS.map((a) => fetchJSON(DATA + "/state/" + a + ".json"))
   ]);
+  const stateByAgent = {};
+  AGENTS.forEach((a, i) => { stateByAgent[a] = agentStates[i]; });
+  const master = stateByAgent.master;
+  const [usage, integrations, learningMeta, lessons, experiments] = await Promise.all([
+    fetchJSON(DATA + "/state/anthropic-usage.json"),
+    fetchJSON(DATA + "/state/integrations.json"),
+    fetchJSON(DATA + "/metrics/learning/latest.json"),
+    fetchJSON(DATA + "/learning/lessons.json"),
+    fetchJSON(DATA + "/learning/experiments.json")
+  ]);
+  renderAutonomyPanel(autonomy, published, usage, integrations);
+  renderLearningPanel(learningMeta, lessons, experiments);
 
   /* --- KPI tiles --- */
   const sh = (metrics && metrics.shopify) || {};
@@ -385,7 +542,7 @@ async function initIndex() {
   }
 
   /* --- per-agent status cards --- */
-  const states = { master, tiktok, social, ppc };
+  const states = stateByAgent;
   const anyState = AGENTS.some((a) => states[a] && states[a].last_run);
   const cardsEl = document.getElementById("agent-cards");
   cardsEl.innerHTML = AGENTS.map((a) => {
@@ -717,6 +874,7 @@ const APPROVALS_REPO_PATH = "data/approvals.json";
 async function initApprovals() {
   insertLocalBanner();
   setupTokenPanel();
+  setupKillSwitchPanel();
 
   const [queue, decisions] = await Promise.all([loadQueue(), loadApprovals()]);
   const done = decidedIds(decisions);
@@ -739,20 +897,39 @@ async function initApprovals() {
     return;
   }
 
+  const qaDoc = await fetchJSON(DATA + "/visual-qa.json");
+  const qaById = {};
+  ((qaDoc && qaDoc.decisions) || []).forEach((d) => { qaById[d.id] = d; });
+
   listEl.innerHTML = pending.map((it) => {
+    const qa = qaById[it.id];
+    const qaChip = qa
+      ? '<span class="status-chip status-' + (qa.status === "pass" ? "approved" : "rejected") + '">QA ' + esc(qa.status) + "</span>"
+      : "";
     return '<div class="approval-item ' + agentClass(it.agent) + '" data-id="' + esc(it.id) + '">' +
       '<button type="button" class="approval-summary" data-toggle="' + esc(it.id) + '">' +
-      '<span class="title">' + esc(it.title || titleCase(it.type || "Untitled draft")) + "</span>" +
+      '<span class="title">' + esc(it.title || titleCase(it.type || "Untitled draft")) + " " + qaChip + "</span>" +
       agentChip(it.agent) +
       '<span class="meta">' + esc(titleCase(it.platform || "")) +
       (it.scheduled_for ? " · " + esc(fmtDate(it.scheduled_for)) : "") + "</span>" +
       '<span class="chev">▾</span></button>' +
       '<div class="approval-body">' +
       '<div class="payload-slot"><p class="skeleton">Expand to load the full draft…</p></div>' +
+      '<div class="decision-bar" style="flex-wrap:wrap;gap:6px">' +
+      '<span class="field-label" style="align-self:center">If rejecting, tag why (feeds the learning loop):</span>' +
+      REJECT_REASONS.map((r) =>
+        '<button type="button" class="pill pill-ghost reason-chip" data-reason="' + esc(r) + '">' + esc(titleCase(r)) + "</button>"
+      ).join("") +
+      "</div>" +
       '<div class="decision-bar">' +
       '<input type="text" class="decision-note" placeholder="Optional note (kept with the decision)" aria-label="Decision note">' +
       '<button type="button" class="pill pill-good" data-decide="approved">Approve ✦</button>' +
       '<button type="button" class="pill pill-bad" data-decide="rejected">Reject</button>' +
+      "</div>" +
+      '<div class="decision-bar qa-bar" hidden>' +
+      '<span class="field-label" style="align-self:center">Visual QA — does the media show the REAL product (pouch, label, powder) exactly?</span>' +
+      '<button type="button" class="pill pill-good" data-qa="pass">QA pass ✦</button>' +
+      '<button type="button" class="pill pill-bad" data-qa="fail">QA fail</button>' +
       "</div>" +
       '<div class="decision-result" hidden></div>' +
       "</div></div>";
@@ -773,6 +950,15 @@ async function initApprovals() {
         slot.innerHTML = full
           ? renderPayload(full.payload || full)
           : '<p class="skeleton">Could not load the item file' + (IS_FILE ? " — payloads load when served from GitHub Pages." : ".") + "</p>";
+        // Show the visual-QA bar only for items that actually carry generated media.
+        const payload = (full && (full.payload || full)) || {};
+        if (payload.media_url || payload.video_url || payload.image_url || payload.media_status === "generated" || payload.media_status === "pending") {
+          const qaBar = itemEl.querySelector(".qa-bar");
+          if (qaBar) qaBar.hidden = false;
+          // Fingerprint: record WHICH media the verdict applies to, so a stale
+          // pass never covers a newer render.
+          itemEl.dataset.mediaUrl = payload.media_url || payload.video_url || payload.image_url || "";
+        }
       }
       return;
     }
@@ -780,8 +966,78 @@ async function initApprovals() {
     if (decideBtn) {
       const itemEl = decideBtn.closest(".approval-item");
       decide(itemEl, decideBtn.dataset.decide);
+      return;
+    }
+    const qaBtn = ev.target.closest("[data-qa]");
+    if (qaBtn) {
+      const itemEl = qaBtn.closest(".approval-item");
+      qaDecide(itemEl, qaBtn.dataset.qa);
     }
   });
+}
+
+const VISUAL_QA_REPO_PATH = "data/visual-qa.json";
+
+/** Machine-readable rejection reasons — the learning loop's highest-quality negative signal. */
+const REJECT_REASONS = ["claim-risk", "off-brand", "weak-hook", "wrong-product-visual", "duplicate", "bad-timing", "other"];
+
+document.addEventListener("click", (ev) => {
+  const chip = ev.target.closest(".reason-chip");
+  if (chip) chip.classList.toggle("copied"); // reuse the highlighted style as "selected"
+});
+
+/** Write a visual-QA verdict (pass/fail) to data/visual-qa.json via the Contents API. */
+async function qaDecide(itemEl, status) {
+  const id = itemEl.dataset.id;
+  const note = itemEl.querySelector(".decision-note").value.trim();
+  const resultEl = itemEl.querySelector(".decision-result");
+  const buttons = itemEl.querySelectorAll("[data-qa]");
+  resultEl.hidden = false;
+  resultEl.className = "decision-result";
+
+  if (!getPAT()) {
+    resultEl.className = "decision-result err";
+    resultEl.textContent = "No token saved — add your fine-grained GitHub token in the settings panel above first.";
+    return;
+  }
+  buttons.forEach((b) => b.classList.add("busy"));
+  resultEl.textContent = "Writing visual-QA verdict to GitHub…";
+
+  const decision = { id: id, status: status, by: "owner-dashboard", at: new Date().toISOString() };
+  if (note) decision.note = note;
+  if (itemEl.dataset.mediaUrl) decision.media_url = itemEl.dataset.mediaUrl;
+
+  const attempt = async () => {
+    let json = { version: 1, decisions: [] }, sha = undefined;
+    try {
+      const got = await ghGetJSON(VISUAL_QA_REPO_PATH);
+      json = got.json; sha = got.sha;
+    } catch (e) {
+      if (e.status !== 404) throw e; // 404 → first verdict creates the file
+    }
+    if (!Array.isArray(json.decisions)) json.decisions = [];
+    json.decisions = json.decisions.filter((d) => d.id !== id);
+    json.decisions.push(decision);
+    return ghPutJSON(VISUAL_QA_REPO_PATH, json, sha, "Visual QA " + status + " " + id + " via dashboard");
+  };
+
+  try {
+    let res;
+    try { res = await attempt(); }
+    catch (e) { if (e.status === 409) { res = await attempt(); } else { throw e; } }
+    const commitUrl = res && res.commit && res.commit.html_url;
+    resultEl.className = "decision-result ok";
+    resultEl.innerHTML = "Visual QA " + esc(status) + " saved" +
+      (commitUrl ? ' — <a href="' + esc(commitUrl) + '" target="_blank" rel="noopener">view commit</a>.' : ".") +
+      (status === "pass" ? " This asset can now auto-post / promote once compliance and mode allow." : " This asset is blocked from auto-posting and paid promotion.");
+    itemEl.querySelector(".approval-summary .title").insertAdjacentHTML("beforeend",
+      ' <span class="status-chip status-' + (status === "pass" ? "approved" : "rejected") + '">QA ' + esc(status) + "</span>");
+  } catch (e) {
+    resultEl.className = "decision-result err";
+    resultEl.textContent = "Could not save the visual-QA verdict (" + (e.status || "network error") + "). Check your token and connection, then try again.";
+  } finally {
+    buttons.forEach((b) => b.classList.remove("busy"));
+  }
 }
 
 /** Write a decision to data/approvals.json via the GitHub Contents API. */
@@ -809,6 +1065,9 @@ async function decide(itemEl, status) {
     at: new Date().toISOString()
   };
   if (note) decision.note = note;
+  const reasons = Array.from(itemEl.querySelectorAll(".reason-chip.copied"))
+    .map((c) => c.getAttribute("data-reason")).filter(Boolean);
+  if (status === "rejected" && reasons.length) decision.reasons = reasons;
 
   const attempt = async () => {
     const { json, sha } = await ghGetJSON(APPROVALS_REPO_PATH);
@@ -859,6 +1118,72 @@ async function decide(itemEl, status) {
   } finally {
     buttons.forEach((b) => b.classList.remove("busy"));
   }
+}
+
+/* --- kill switch panel --- */
+
+const AUTONOMY_REPO_PATH = "data/config/autonomy.json";
+
+function setupKillSwitchPanel() {
+  const btn = document.getElementById("kill-switch-btn");
+  const statusEl = document.getElementById("kill-switch-status");
+  if (!btn) return;
+
+  let active = null;
+
+  const render = () => {
+    if (active === null) {
+      btn.textContent = "Unavailable";
+      btn.disabled = true;
+      statusEl.className = "token-status none";
+      statusEl.textContent = "Could not read data/config/autonomy.json.";
+      return;
+    }
+    btn.disabled = false;
+    if (active) {
+      btn.textContent = "Resume automation";
+      btn.className = "pill pill-good";
+      statusEl.className = "token-status ok";
+      statusEl.textContent = "🔴 KILL SWITCH ACTIVE — all automatic generation, posting and scaling is halted.";
+    } else {
+      btn.textContent = "STOP all automation";
+      btn.className = "pill pill-bad";
+      statusEl.className = "token-status none";
+      statusEl.textContent = "Automation running normally (kill switch off).";
+    }
+  };
+
+  fetchJSON(DATA + "/config/autonomy.json").then((cfg) => {
+    active = cfg ? cfg.kill_switch === true : null;
+    render();
+  });
+
+  btn.addEventListener("click", async () => {
+    if (!getPAT()) {
+      statusEl.className = "token-status none";
+      statusEl.textContent = "No token saved — add your GitHub token above first.";
+      return;
+    }
+    const next = !active;
+    if (next && !window.confirm("Activate the kill switch? All automatic generation, posting and ad scaling stops on the next run.")) return;
+    btn.disabled = true;
+    statusEl.textContent = "Writing to GitHub…";
+    try {
+      const attempt = async () => {
+        const { json, sha } = await ghGetJSON(AUTONOMY_REPO_PATH);
+        json.kill_switch = next;
+        return ghPutJSON(AUTONOMY_REPO_PATH, json, sha,
+          (next ? "KILL SWITCH ON" : "kill switch off") + " via dashboard");
+      };
+      try { await attempt(); } catch (e) { if (e.status === 409) await attempt(); else throw e; }
+      active = next;
+      render();
+    } catch (e) {
+      statusEl.className = "token-status none";
+      statusEl.textContent = "Could not update the kill switch (" + (e.status || "network error") + ").";
+      btn.disabled = false;
+    }
+  });
 }
 
 /* --- token settings panel --- */

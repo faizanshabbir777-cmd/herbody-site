@@ -7,7 +7,11 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const repoPath = (...p) => join(ROOT, ...p);
 
-export const today = () => new Date().toISOString().slice(0, 10);
+// The fleet's "day" is the BRAND's day (Europe/London) — posting caps, schedule
+// checks, ids and filenames all roll over at UK midnight, not UTC midnight.
+export const today = () =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" })
+    .format(new Date());
 export const nowIso = () => new Date().toISOString();
 
 export function readJson(rel, fallback = null) {

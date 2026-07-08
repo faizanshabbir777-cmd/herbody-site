@@ -8,7 +8,7 @@ Policy: **every dependency is a liability with a changelog.** This build runs un
 |---|---|---|
 | `@anthropic-ai/sdk` | Pinned exact version in `package.json`; bumped deliberately, never `latest` | Official client for the API every agent depends on. Hand-rolling auth, retries, streaming and structured-output handling against the raw HTTP API would be more code to audit than the SDK itself. MIT-licensed, first-party maintained. |
 
-That is the whole list. Node's built-ins cover the rest: `fetch` (Meta/TikTok/Shopify/GA4 HTTP calls), `fs`/`path` (repo-as-database reads/writes), `crypto` (event IDs, hashing for CAPI email matching when phase 2 lands).
+That is the whole list. Node's built-ins cover the rest: `fetch` (Meta/TikTok/Shopify/GA4 HTTP calls **and** the Higgsfield-style creative-generation + trends collectors — no provider SDKs), `fs`/`path` (repo-as-database reads/writes), `crypto` (event IDs, hashing for CAPI email matching when phase 2 lands), `node --test` (the creative-growth unit tests in `agents/test/`).
 
 ## What we deliberately did NOT install, and why
 

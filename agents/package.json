@@ -5,8 +5,14 @@
   "engines": { "node": ">=20" },
   "dependencies": { "@anthropic-ai/sdk": "^0.39.0" },
   "scripts": {
-    "fleet": "node metrics.js && node tiktok.js && node social.js && node ppc.js && node master.js",
-    "weekly": "node master.js --weekly",
-    "publish": "node publish.js"
+    "fleet": "node doctor.js && node metrics.js && node collect-pending.js && node trends.js && node social.js && node video.js && node image.js && node tiktok.js && node compliance-gate.js && node creative-performance.js && node learning-collector.js && node learn.js && node ppc.js && node paid-growth.js && node tiktok-shop-ads.js && node compliance-gate.js && node master.js && node notify.js",
+    "weekly": "node learn.js --weekly && node master.js --weekly",
+    "learn": "node learning-collector.js && node learn.js",
+    "publish": "node compliance-gate.js && node publish.js",
+    "trends": "node trends.js",
+    "creative": "node video.js && node image.js",
+    "performance": "node creative-performance.js && node paid-growth.js && node tiktok-shop-ads.js",
+    "compliance": "node compliance-gate.js --all",
+    "test": "node --test test/*.test.mjs"
   }
 }

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "note": "Autonomy policy for the creative growth fleet. mode ladder: draft_only < auto_generate < auto_post_organic < auto_scale_ads. Each mode includes everything below it. kill_switch:true stops ALL automatic generation, posting and scaling immediately regardless of mode.",
+  "mode": "auto_generate",
+  "kill_switch": false,
+  "allowed_platforms": ["tiktok", "instagram", "facebook"],
+  "max_posts_per_day_by_platform": { "tiktok": 2, "instagram": 2, "facebook": 1 },
+  "requires_visual_qa_pass": true,
+  "requires_compliance_pass": true,
+  "requires_editorial_pass": true,
+  "allow_self_only_tiktok_posts": false,
+  "ads": {
+    "max_daily_ad_budget_gbp": 25,
+    "max_budget_increase_pct": 20,
+    "stop_loss_spend_gbp": 40,
+    "min_roas_gate": 1.5,
+    "max_cpa_gbp_gate": 25
+  },
+  "winner_thresholds": {
+    "min_impressions": 2000,
+    "min_engagement_rate_pct": 6,
+    "min_completion_rate_pct": 25,
+    "promising_engagement_rate_pct": 3.5,
+    "fatigue_drop_pct": 50,
+    "min_revenue_gbp": 40,
+    "adaptive": { "enabled": true, "min_winner_er_pct": 3, "max_winner_er_pct": 12 }
+  },
+  "llm": { "daily_budget_gbp": 5 }
+}

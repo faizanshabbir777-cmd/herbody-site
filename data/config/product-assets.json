@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "note": "SINGLE SOURCE OF TRUTH for what generated creative is allowed to depict. Generated media must show THIS product — never a random/generic supplement, stock bottle, pills/gummies (this is a powder product) or competitor packaging. Update `approved_reference_assets` as real pack shots land on the website; keep `approved_for_generation` accurate. Doses/prices always come from data/config/product-facts.json — never from this file.",
+  "brand_name": "HerBody",
+  "product_type": "Powdered daily supplement (creatine + collagen + multivitamin)",
+  "product_name": "HerBody No.01 — The Daily",
+  "website_product_url": "https://{{SHOPIFY_STORE_DOMAIN}}/products/the-daily-creatine-collagen",
+  "utm_prefix": "hb_uk",
+  "visual_spec": {
+    "packaging_type": "premium matte stand-up supplement pouch (300g) with a black label block",
+    "container_shape": "stand-up pouch, soft rectangular silhouette",
+    "closure": "resealable zip seal with a 14g scoop inside",
+    "label_colours": ["cream/oat ground", "black label block", "pink #ED2078 spark accent"],
+    "logo_usage": "HerBody wordmark with the ✦ spark exactly as supplied — never redrawn, restyled or approximated by the model",
+    "product_form": "fine powder, one 14g scoop per serving, mixed into 200ml cold water or a shaker",
+    "product_colour": "pale pink powder; prepared drink is a soft strawberry-lemonade pink",
+    "serving_visual_rules": "Scoop from pouch into glass or shaker, shake 10 seconds, calm morning-light framing. Never medical settings, never body-transformation framing, never pills/capsules/gummies standing in for the powder, never an AI-invented ingredient panel — real label artwork is composited before publishing."
+  },
+  "must_show_product": true,
+  "approved_reference_assets": [],
+  "reference_asset_contract": {
+    "note": "Each entry: { id, url, role (hero|label|lifestyle|powder-macro|drink), angle, background_notes, approved_for_generation: true|false, last_reviewed: YYYY-MM-DD }. Only entries with approved_for_generation:true are ever passed to generation providers.",
+    "allowed_sources": [
+      "website_product_url page images (first-party only)",
+      "founder-supplied media URLs added to approved_reference_assets"
+    ]
+  },
+  "forbidden_visual_substitutes": [
+    "stock supplement bottles or jars",
+    "pills, capsules or gummies (this is a powder)",
+    "invented or redesigned labels",
+    "invented ingredient panels",
+    "competitor packaging",
+    "third-party logos",
+    "generic protein tubs standing in for the pouch"
+  ],
+  "tiktok_shop": {
+    "approved": false,
+    "note": "TikTok Shop UK listing requires category approval + document checks (see marketing/TIKTOK_GROWTH_PACK.md §4). Until approved:true, all paid/organic traffic routes to the DTC website PDP."
+  }
+}

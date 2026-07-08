@@ -1,0 +1,33 @@
+name: tests
+# Agent-fleet unit tests (node:test) — run on every PR and push to main.
+on:
+  push:
+    branches: [main]
+    paths: ["agents/**"]
+  pull_request:
+    paths: ["agents/**"]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: agents/package-lock.json
+      - name: Install agent deps
+        working-directory: agents
+        run: npm ci || npm install
+      - name: Unit tests
+        working-directory: agents
+        run: npm test
+      - name: Syntax check every agent entrypoint
+        working-directory: agents
+        run: |
+          for f in *.js lib/*.js lib/*.mjs; do node --check "$f"; done
+          echo "all agent files parse"

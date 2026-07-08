@@ -13,14 +13,14 @@ One entry per agent in the fleet. Shared rules for **all** agents: system prompt
 - **Runs:** daily ~05:30 UK, before content agents; Monday extended run for the digest.
 - **Code:** `agents/master.js` · workflow `.github/workflows/agent-master.yml`.
 
-## 2. TikTok agent — "OmniFlash"
+## 2. TikTok agent — "OmniFlash" (EDITOR layer)
 
-- **Does:** drafts short-video concepts: hook, shot list, script, caption, sounds note, cover-text suggestion. Formats: label-read, ritual/ASMR morning, COA-explainer, pledge-explainer, founder-less brand voiceover.
-- **Inputs:** master task list, `docs/COPY_BANK.md`, trend notes from the metrics agent (untrusted-data wrapped), past approval rates per format.
-- **Outputs:** `data/queue/tiktok/YYYY-MM-DD-<slug>.json` (structured: hook/script/caption/utm/compliance fields).
-- **Guardrails:** creator/brand framing only — never a scripted "customer" voice (DMCC); no before/after, no body-transformation shots in shot lists; captions from approved bank or matrix-mapped; unaudited API = SELF_ONLY, so publishing is manual-post from the queue card until the app passes TikTok audit.
-- **Runs:** daily after master.
-- **Code:** `agents/tiktok.js` · workflow `.github/workflows/agent-tiktok.yml`.
+- **Does:** the TikTok channel's editorial layer. Reviews every TikTok-bound draft the producers queued today: sharpens the first-2-seconds hook, tightens the caption, sets the posting slot, keeps the calendar, and stamps `payload.editorial` with a verdict (`approved` / `needs_work` + notes). The autonomy policy requires this verdict before any TikTok item auto-posts. **Fallback:** when the day's TikTok queue is empty, drafts 1–2 founder-filmable scripts itself (no media generation — the video producer is the fleet's only renderer).
+- **Inputs:** today's TikTok-bound queue items, strategy, creative learnings digest, metrics + trends (untrusted-data wrapped).
+- **Outputs:** editorial stamps on other agents' queue items (compliance-gate stamp invalidated when it edits copy, so the gate re-checks); fallback drafts in `data/queue/tiktok/`.
+- **Guardrails:** creator/brand framing only — never a scripted "customer" voice (DMCC); no before/after; verdicts only downgrade autonomy eligibility, never bypass compliance or visual QA; unaudited API = SELF_ONLY, so publishing is manual-post until the app passes TikTok audit.
+- **Runs:** daily AFTER the producers (social → video → image → OmniFlash).
+- **Code:** `agents/tiktok.js`.
 
 ## 3. Social agent
 
@@ -58,9 +58,93 @@ One entry per agent in the fleet. Shared rules for **all** agents: system prompt
 - **Runs:** daily ~05:00 UK, before master.
 - **Code:** `agents/metrics.js` · workflow `.github/workflows/agent-metrics.yml`.
 
-## 7. Publisher
+## 7. Trends collector
 
-- **Does:** the only component with platform **write** credentials. Reads `data/approvals.json`, publishes exactly the items marked `approved`: Meta posts/campaigns via Graph/Marketing API (campaigns still paused unless the approval explicitly says `enable`), TikTok via Content Posting API (SELF_ONLY until audited — otherwise marks ready-for-manual-post), Klaviyo email drafts, moves published items to `data/published/`.
+- **Does:** dependency-free competitor/trend ingestion. Reads allowlisted sources from `data/config/competitors.json` and founder notes from `data/trends/manual/`, normalises them into canonical trend records, scores relevance against brand keywords, hard-rejects banned themes (diet-culture, body-checking, before/after, medical-adjacent, testimonial fabrication, fake urgency, licensing-risk sounds).
+- **Inputs:** `data/config/competitors.json`, `data/trends/manual/*.json`, allowlisted public URLs only.
+- **Outputs:** `data/trends/YYYY-MM-DD.json`, `data/trends/latest.json` (relevant + rejected with reasons).
+- **Guardrails:** never fetches unlisted URLs, never scrapes logged-in pages from CI; everything collected is untrusted DATA — downstream agents receive it wrapped in `untrusted()`. No LLM call.
+- **Runs:** daily, after metrics, before the content agents.
+- **Code:** `agents/trends.js` + `agents/lib/trends.js`.
+
+## 8. Video producer
+
+- **Does:** turns relevant trend records + strategy + creative-performance labels into full video production packs (hook, shot list, voiceover, on-screen text, caption, hashtags, CTA, generation prompt) and — when the autonomy mode allows — generates the actual asset through the shared creative producer.
+- **Inputs:** `data/trends/latest.json` (untrusted-wrapped), `data/config/strategy.json`, `data/config/product-assets.json`, `data/state/creative-performance.json`.
+- **Outputs:** `data/queue/video/YYYY-MM-DD-<slug>.json` with product spec version, asset IDs, generation prompt, media URL (if generated), `visual_qa_status`, compliance fields.
+- **Guardrails:** the **product gate** — every concept must visibly depict the real product per `data/config/product-assets.json`; if neither approved references nor a complete visual spec exist, the agent queues a blocked checklist and generates NOTHING. Generated media is always `visual_qa_status: needs_review` until a human passes it. Media files never enter the repo — URLs only.
+- **Runs:** daily after tiktok/social.
+- **Code:** `agents/video.js` + `agents/lib/creative-requests.js` + `agents/lib/creative-gen.js` + `agents/lib/product-assets.js`.
+
+## 9. Image producer
+
+- **Does:** static creative — Instagram feed/stories/carousel frames, ad stills, video thumbnails, TikTok Shop product images — with prompts, on-image text, captions, alt text. Same generation path and product gate as the video producer.
+- **Inputs/Outputs:** as video producer, queued to `data/queue/image/`.
+- **Guardrails:** identical product gate + visual QA rules; alt text mandatory; real label artwork composited before publish (never an AI-invented label).
+- **Runs:** daily after the video producer.
+- **Code:** `agents/image.js`.
+
+## 10. Creative performance
+
+- **Does:** mechanical winner selection. Labels every published creative `winner / promising / fatigue / reject` against `data/config/autonomy.json → winner_thresholds`, with reasons and recommended next actions. Feedback for the producers; promotion candidates for paid.
+- **Inputs:** `data/metrics/creative/latest.json` (organic per-post metrics joined to published queue items).
+- **Outputs:** `data/state/creative-performance.json`.
+- **Guardrails:** no LLM call; thresholds only from config; labels never publish or spend anything by themselves.
+- **Runs:** daily after the producers, before PPC/paid.
+- **Code:** `agents/creative-performance.js` + `agents/lib/performance.js`.
+
+## 11. Paid growth (winner scaling)
+
+- **Does:** turns winning organic creatives into PAUSED paid test campaign drafts (Meta/TikTok/Google) to scale the DTC website; sweeps live ad rows for stop-loss breaches and flags them.
+- **Inputs:** `data/state/creative-performance.json`, `data/config/autonomy.json`, `data/config/budgets.json`, `data/metrics/latest.json`, `data/config/product-assets.json`.
+- **Outputs:** `data/queue/paid/*.json` (campaign drafts, always PAUSED), `data/state/paid-growth-latest.json`.
+- **Guardrails:** never promotes creative without visual-QA pass + compliance PASS; budgets clamped by `canAutoScale` (fleet cap, max increase %); `auto_scale_eligible` is metadata only — nothing unpauses without the publisher flow/human; stop-loss flags require human action to pause.
+- **Runs:** daily after creative-performance.
+- **Code:** `agents/paid-growth.js`.
+
+## 12. TikTok Shop ads (gated)
+
+- **Does:** once `data/config/product-assets.json → tiktok_shop.approved` is true, drafts PAUSED TikTok Shop ad campaigns from winning TikTok creatives. Until then it only maintains the readiness checklist — all paid traffic routes to the website PDP.
+- **Outputs:** `data/state/tiktok-shop-readiness.json`; `data/queue/paid/*.json` once approved.
+- **Guardrails:** hard-gated on Shop approval flag; same budget/QA/compliance gates as paid growth.
+- **Runs:** daily after paid growth.
+- **Code:** `agents/tiktok-shop-ads.js`.
+
+## 13. Autonomy policy (cross-cutting)
+
+- **What:** `data/config/autonomy.json` — mode ladder `draft_only < auto_generate < auto_post_organic < auto_scale_ads`, `kill_switch`, per-platform daily post caps (UK day boundary), visual-QA/compliance/editorial requirements, `allow_self_only_tiktok_posts` (off until the TikTok app audit passes), ad budget caps, LLM daily budget, stop-loss and winner thresholds (adaptive to the account's own median engagement; revenue-attributed creatives are winners regardless of engagement).
+- **Enforced by:** `agents/lib/autonomy.js` in the producers (generate?), publisher (auto-post?) and paid agents (auto-scale?). `kill_switch: true` halts every automatic action instantly — toggleable from the Approvals dashboard.
+- **Publisher autonomy path:** in `auto_post_organic`+, the publisher may post organic items that pass ALL gates — human compliance `PASS` **and** mechanical compliance-gate `PASS`, human visual-QA `pass` in `data/visual-qa.json`, allowed platform, scheduled today, hosted media URL from an allowlisted host, cap not reached — without a queue approval; everything else still requires `data/approvals.json`. Ready-manual outcomes are never marked published by the autonomy path.
+- **Visual QA:** producers stamp generated media `needs_review`; an optional Claude-vision pre-check (`agents/lib/vision-qa.js`) can auto-FAIL obvious product substitutions but can never auto-pass; the founder's pass/fail verdict is written by the dashboard to `data/visual-qa.json` **with a media-URL fingerprint** — a pass never covers a newer render.
+
+## 13d. Learning loop (cross-cutting — the fleet improves on every output)
+
+- **Event spine** (`agents/learning-collector.js` + `agents/lib/learning.js`): derives normalized, deduplicated events from repo state — every draft, gate verdict, editorial verdict, human decision (+ rejection-reason chips from the dashboard), visual/vision QA outcome, render failure, publish outcome and performance/revenue label becomes an event in `data/learning/events/`. No agent has to emit anything; the dashboard stays a pure file writer.
+- **Lessons** (`agents/learn.js` daily): mechanical aggregation per tag dimension (`hook_type` / `pillar` / posting `slot` — producers tag every draft) creates evidence-backed lessons with a lifecycle: confirm (+confidence) → decay (21d unconfirmed) → contradict → retire (2 contradictions). Delayed credit assignment: a draft only teaches once its outcome is known. Weekly, one Claude call writes a narrative from the NUMERIC aggregates only (no raw platform text — no new injection surface).
+- **Closed-loop actions:** producers receive their scoped lessons + schedule hints (epsilon-greedy slot/pillar chooser, 20% exploration); vision-QA failure reasons grow a bounded learned-negative-prompt library merged into every generation call; A/B variant groups auto-register in `data/learning/experiments.json`, resolve into lessons, and the least-sampled hook type becomes the next proposed experiment; trend-source ROI reweights trend relevance so sources that produce winners surface first.
+- **Meta-metrics** (`data/metrics/learning/latest.json`): 7d vs prior-7d human-rejection / gate-REJECT / QA-fail / editorial needs-work / winner rates. If the loop works these improve; regressions raise notify alerts. Dashboard "Learning" panel shows trends, active lessons and open experiments; the master brief includes what the fleet learned and is testing next.
+- **GUARDRAIL:** learning writes only advisory inputs (`data/learning/*`, hints, negatives). It can never modify compliance rules, the autonomy policy, budgets or gates — the gate always runs after the prompts, so performance pressure cannot erode safety.
+
+## 13c. Doctor & Notify (ops surface)
+
+- **Doctor** (`agents/doctor.js`): presence-only integration check, runs first — `data/state/integrations.json` shows live vs degraded platforms on the dashboard.
+- **Notify** (`agents/notify.js`): runs last; collects critical events (kill switch, stop-loss flags, blocked product spec, compliance REJECTs, failed renders, LLM budget breach) into ONE GitHub issue labelled `fleet-alert`. Degrades to log-only without a token.
+- **Housekeeping:** collect-pending archives decided queue items older than 30 days to `data/archive/queue/`; per-day Anthropic usage (+£ estimate) accrues in `data/state/anthropic-usage.json`.
+
+## 13a. Collect-pending
+
+- **Does:** start-of-fleet sweep that finalises provider render jobs that outlived a previous run (`media_status: "pending"` + `provider_job_id`) and resolves Shopify Files CDN URLs still processing. Runs the vision pre-check on newly collected renders.
+- **Code:** `agents/collect-pending.js` + `checkJob` in `agents/lib/creative-gen.js`.
+
+## 13b. Ads push (the only campaign-creation path)
+
+- **Does:** pushes human-approved paid queue drafts to Meta/TikTok as **PAUSED** campaigns (campaign level only — ad groups/creatives finished by a human in Ads Manager). Budgets re-clamped through the autonomy policy at push time.
+- **Gates:** manual workflow dispatch + GitHub `ads-production` environment + `approvals/ADS_LAUNCH_APPROVAL.json` + per-item approval in `data/approvals.json` + kill switch.
+- **Code:** `agents/ads-push.js` · workflow `.github/workflows/ppc-push.yml`.
+
+## 14. Publisher
+
+- **Does:** the only component with platform **write** credentials. Reads `data/approvals.json`, publishes the items marked `approved`: Meta posts/campaigns via Graph/Marketing API (campaigns still paused unless the approval explicitly says `enable`), TikTok via Content Posting API (SELF_ONLY until audited — otherwise marks ready-for-manual-post), Klaviyo email drafts, moves published items to `data/published/`. In autonomy mode `auto_post_organic`+ it additionally publishes organic items that pass every policy gate (see §13).
 - **Inputs:** `data/approvals.json`, approved queue items.
 - **Outputs:** platform publications; `data/published/` records with platform IDs and timestamps; failure reports to the next brief.
 - **Guardrails:** runs in the GitHub **`production` environment with required-reviewer protection** — the founder approves each run in the GitHub UI (lock 3 of Decision D4); refuses to run if `data/approvals.json` has `frozen: true`; idempotent — an item already in `data/published/` is never re-published; never enables a campaign whose budget would push fleet total over £25/day.
