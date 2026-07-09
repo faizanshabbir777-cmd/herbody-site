@@ -1,0 +1,7 @@
+{
+  "sections": {
+    "main": { "type": "main-quarterly" },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["main", "capture"]
+}
