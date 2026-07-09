@@ -1,8 +1,19 @@
 # HerBody
 
-A static marketing site for **HerBody** — a halal beauty-supplement house from London. One pouch carries creatine, collagen, a full multivitamin and botanicals at clinically meaningful doses, plus a pact: £1 and 10% of profit from every pouch goes to the cause she names each month.
+The storefront and brand home of **HerBody** — a halal beauty-supplement house from London. One pouch carries creatine, collagen, a full multivitamin and botanicals at clinically meaningful doses, plus a pact: £1 and 10% of profit from every pouch goes to the cause she names each month.
 
-Live at **https://faizanshabbir777-cmd.github.io/herbody-site/**
+> **Two transitions in progress:**
+> 1. **Storefront → Shopify.** The complete OS 2.0 theme lives under
+>    `shopify/theme/` (deployed by `shopify-theme-deploy`); the cutover
+>    runbook is `shopify/MIGRATION.md`. The static site below remains live
+>    until DNS cuts over, then retires.
+> 2. **Growth automation → the shared engine.** The agent fleet's
+>    capabilities have merged into
+>    [GrowthEnginge](https://github.com/faizanshabbir777-cmd/GrowthEnginge)
+>    (tenant `brands/herbody`). **The fleet here stays the system of record
+>    until the shadow-mode cutover completes** — see `agents/DEPRECATED.md`.
+
+Static site live at **https://faizanshabbir777-cmd.github.io/herbody-site/**
 
 ## Pages
 
