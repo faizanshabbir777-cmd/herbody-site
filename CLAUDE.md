@@ -1,12 +1,14 @@
 # HerBody — working in this repo
 
-This repo is the **storefront + legacy fleet**: the Shopify OS 2.0 theme under
+This repo is the **storefront**: the Shopify OS 2.0 theme under
 `shopify/theme/` (cutover runbook: `shopify/MIGRATION.md`; static site retires
-after DNS cutover) and the legacy agent fleet under `agents/`, which REMAINS
-THE SYSTEM OF RECORD until the shadow-mode cutover to the shared engine
-completes (github.com/faizanshabbir777-cmd/GrowthEnginge, tenant
-`brands/herbody` — see `agents/DEPRECATED.md`). Do not extend the legacy fleet
-or disable its scheduled workflows until the cutover runbook says so.
+after DNS cutover). The legacy agent fleet under `agents/` is RETIRED — it
+never went live, its scheduled workflows have been deleted (recoverable from
+git history), and it is kept read-only as a porting reference only (see
+`agents/DEPRECATED.md`). The shared engine
+(github.com/faizanshabbir777-cmd/GrowthEnginge, tenant `brands/herbody`) is
+the system of record for growth automation. This repo's only live concern is
+the storefront (`shopify/theme/`, cutover runbook `shopify/MIGRATION.md`).
 Compliance rails are hard: UK ASA/DMCC — no fake reviews, no medical claims,
 no fake urgency; drafts-first, campaigns always PAUSED.
 
@@ -25,9 +27,9 @@ consume their conclusions — don't re-read what a worker already summarized.
 decision call the `advisor` agent with the full problem context; it returns a
 plan/verdict only (never edits); keep executing on its plan.
 
-**"Hard" means:** irreversible or externally-visible actions (posting, deploys,
-cutover steps), cross-cutting design choices, anything touching the compliance
-rails or the fleet's gates/kill-switch, or a bug that survived two fix attempts.
+**"Hard" means:** irreversible or externally-visible actions (storefront
+deploys, DNS cutover steps), cross-cutting design choices, anything touching
+the compliance rails, or a bug that survived two fix attempts.
 
 **Fallback:** if the Fable tier is unavailable, use the next-best available
 tier for the advisor — today that is Opus 4.8 (`model: "opus"` on the Agent
