@@ -1,0 +1,8 @@
+{
+  "sections": {
+    "main": { "type": "main-about" },
+    "pledge": { "type": "pledge-band" },
+    "capture": { "type": "email-capture" }
+  },
+  "order": ["main", "pledge", "capture"]
+}
