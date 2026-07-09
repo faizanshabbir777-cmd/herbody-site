@@ -2,16 +2,17 @@
 
 The storefront and brand home of **HerBody** — a halal beauty-supplement house from London. One pouch carries creatine, collagen, a full multivitamin and botanicals at clinically meaningful doses, plus a pact: £1 and 10% of profit from every pouch goes to the cause she names each month.
 
-> **Two transitions in progress:**
-> 1. **Storefront → Shopify.** The complete OS 2.0 theme lives under
->    `shopify/theme/` (deployed by `shopify-theme-deploy`); the cutover
+> **One transition in progress, one already complete:**
+> 1. **Storefront → Shopify (in progress).** The complete OS 2.0 theme lives
+>    under `shopify/theme/` (deployed by `shopify-theme-deploy`); the cutover
 >    runbook is `shopify/MIGRATION.md`. The static site below remains live
 >    until DNS cuts over, then retires.
-> 2. **Growth automation → the shared engine.** The agent fleet's
->    capabilities have merged into
+> 2. **Growth automation → the shared engine (complete).** Growth automation
+>    now runs in the shared
 >    [GrowthEnginge](https://github.com/faizanshabbir777-cmd/GrowthEnginge)
->    (tenant `brands/herbody`). **The fleet here stays the system of record
->    until the shadow-mode cutover completes** — see `agents/DEPRECATED.md`.
+>    (tenant `brands/herbody`), which is the system of record from day one.
+>    The legacy agent fleet under `agents/` was retired without a shadow-mode
+>    cutover because it never went live — see `agents/DEPRECATED.md`.
 
 Static site live at **https://faizanshabbir777-cmd.github.io/herbody-site/**
 
@@ -82,19 +83,18 @@ herbody-site/
 
 ---
 
-# Growth automation system (added July 2026)
+# Repo contents (July 2026)
 
-This repo now also contains HerBody's full launch + growth stack alongside the static site:
+Growth automation now runs in the shared engine (GrowthEnginge, tenant `brands/herbody`) — the `agents/` fleet here is retired, read-only reference code (see `agents/DEPRECATED.md`). What this repo still carries:
 
 | Where | What |
 |---|---|
-| `shopify/theme/` + `shopify/setup/` | Complete Shopify OS 2.0 theme (cream v10 brand) + idempotent store provisioning |
-| `agents/` | AI agent fleet (Node 20, runs on GitHub Actions): **MASTER** orchestrator, **OmniFlash** TikTok manager, **Social** (IG/FB/Pinterest), **PPC** manager, metrics collector, publisher |
-| `dash/` | Founder dashboards on GitHub Pages: overview + brief, content calendar, PPC, approval queue |
-| `data/` | The system's database — agent state, drafts queue, approvals, briefs, metrics (committed by Actions) |
-| `ads/`, `marketing/`, `analytics/`, `seo/`, `operations/`, `docs/` | Campaign drafts (all PAUSED), growth packs, tracking plan, compliance suite |
-| `.github/workflows/` | agent-fleet (daily), weekly-strategy, publish-approved, shopify-theme-deploy, shopify-store-setup, ppc-push (gated), Pages deploy |
+| `shopify/theme/` + `shopify/setup/` | Complete Shopify OS 2.0 theme (cream v10 brand) + idempotent store provisioning — the LIVE concern |
+| `agents/` | RETIRED legacy fleet (never went live; scheduled workflows deleted) — porting reference only |
+| `dash/`, `data/` | Legacy dashboards + state from the retired fleet — inert; the live dashboard is the engine's fleet artifact |
+| `ads/`, `marketing/`, `analytics/`, `seo/`, `operations/`, `docs/` | Campaign drafts (all PAUSED), growth packs, tracking plan, compliance suite, brand docs |
+| `.github/workflows/` | shopify-theme-deploy, shopify-store-setup, Pages deploy, agents CI (path-gated) |
 
-**Start here → [`SETUP.md`](SETUP.md)** — the zero-to-full-auto guide. Tier 1 is a single secret (`ANTHROPIC_API_KEY`) and gives you the entire drafting fleet.
+**Setup lives in the engine now** — see GrowthEnginge `docs/ONBOARDING.md`; `SETUP.md` here covers only the storefront.
 
 Safety model: agents draft, humans approve (dashboard), campaigns are always created PAUSED, live ad pushes sit behind a triple gate (environment reviewer + approval file + platform UI). No fake reviews (DMCC), no medical claims (ASA/GB-NHC), no secrets in the repo.
